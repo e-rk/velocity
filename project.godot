@@ -1,0 +1,30 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Velocity"
+config/features=PackedStringArray("4.2", "Forward Plus")
+
+[layer_names]
+
+3d_render/layer_1="TRACK"
+3d_render/layer_2="OPPONENTS"
+3d_render/layer_3="PLAYER"
+3d_physics/layer_1="TRACK_ROAD"
+3d_physics/layer_2="TRACK_WALLS"
+3d_physics/layer_3="TRACK_CEILING"
+3d_physics/layer_4="RACERS"
+3d_physics/layer_5="TRAFFIC"
+3d_physics/layer_6="POLICE"
+
+[physics]
+
+common/physics_ticks_per_second=64
