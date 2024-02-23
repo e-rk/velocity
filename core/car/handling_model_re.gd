@@ -59,3 +59,30 @@ func drag(params: Dictionary) -> float:
 	if velocity_max_diff > 0:
 		result += (velocity_max_diff ** 2) * 0.01
 	return result
+
+func calculate_speed_xz(params: Dictionary) -> float:
+	var basis = params["basis_to_road"]
+	var velocity_xz = basis.inverse() * params["linear_velocity"]
+	velocity_xz.y = 0
+	var speed_xz = velocity_xz.length()
+	return speed_xz if velocity_xz.z > 0 else -speed_xz
+
+func angular_velocity_factor(params: Dictionary) -> float:
+	const SOME_FACTOR = 0.0125
+	const SOME_OFFSET = -0.25
+	const UPPER_LIMIT = 1
+	const LOWER_LIMIT = 0.1
+	var result = 0
+	if params["has_contact_with_ground"]:
+		var angular_velocity = params["angular_velocity"]
+		var inertia_inv = params["inertia_inv"]
+		var mass = params["mass"]
+		var gear = params["gear"]
+		var speed_xz = calculate_speed_xz(params)
+		var velocity_factor = speed_xz * SOME_FACTOR + SOME_OFFSET
+		velocity_factor = clamp(velocity_factor, LOWER_LIMIT, UPPER_LIMIT)
+		var ang_vel = abs(angular_velocity.y)
+		result = -velocity_factor * ang_vel * 32 * mass * inertia_inv.y
+		if gear == CarTypes.Gear.REVERSE:
+			result /= 2
+	return -result
