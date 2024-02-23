@@ -141,3 +141,51 @@ func steering_angle_factor(params: Dictionary) -> float:
 	result = steering_acceleration * 1.5 * 0.00277777777 * steering * 0.0078125
 	result = clamp(result, -1.0, 1.0)
 	return result
+
+func turning_circle(params: Dictionary) -> Vector3:
+	var performance = params["performance"]
+	var basis = params["basis_to_road"]
+	var steering = params["current_steering"]
+	var throttle = params["throttle_input"]
+	var brake = params["brake_input"]
+	var gear = params["gear"]
+	var local_angular_velocity = basis.inverse() * params["angular_velocity"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var slip_angle = self.vehicle_slip_angle(params)
+	var turning_radius = performance.turning_circle_radius()
+	var result = local_angular_velocity
+	var radius = performance.turning_circle_radius()
+	if throttle < 0.5 or brake < 0.75 or abs(steering) <= 64 or 5 < abs(velocity_local.z):
+		if abs(steering) < 4 and gear == CarTypes.Gear.REVERSE:
+			result.y *= 0.95
+	else:
+		result.y = 0
+	if abs(velocity_local.z) < abs(velocity_local.x):
+		if velocity_local.length() < 2.0:
+			var factor = abs(result.y) * TAU * turning_radius * 0.5
+			if factor <= abs(velocity_local.z) or factor <= abs(velocity_local.x):
+				if 0.2 <= abs(slip_angle):
+					factor = 0.95 * result.y
+				else:
+					factor = 0.90 * result.y
+			else:
+				var f = abs(velocity_local.z) / factor
+				f = min(f, 0.98)
+				factor = result.y * f
+			result.y = factor
+			var velocity_factor = 0.8
+			if abs(velocity_local.z) < 5.0:
+				velocity_factor = 0.7
+	else:
+		var factor = abs(result.y) * TAU * turning_radius * 0.5
+		if factor <= abs(velocity_local.z) or factor <= abs(velocity_local.x):
+			if abs(slip_angle) < 0.2:
+				result.y *= 0.95
+			else:
+				result.y *= 0.99
+		else:
+			var f = abs(velocity_local.z) / factor
+			f = min(f, 0.98)
+			factor = result.y * f
+			result.y = factor
+	return result
