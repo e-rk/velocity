@@ -12,14 +12,8 @@ func torque_curve() -> Array:
 func gear_efficiency(gear) -> float:
 	return data["manual_gear_efficiency"][gear]
 
-func gear_effective_ratio(gear) -> float:
-	return self.gear_velocity_to_rpm(gear) * self.gear_efficiency(gear) / (10 * self.mass())
-
 func gear_velocity_to_rpm(gear) -> float:
 	return data["manual_velocity_to_rpm_ratio"][gear]
-
-func gear_rpm_to_velocity(gear) -> float:
-	return 1.0 / self.gear_velocity_to_rpm(gear)
 
 func max_gear() -> int:
 	return data["num_gears"] - 1
