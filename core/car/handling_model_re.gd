@@ -202,3 +202,24 @@ func turning_circle(params: Dictionary) -> Vector3:
 			factor = result.y * f
 			result.y = factor
 	return result
+
+func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float:
+	const DOWNFORCE_THRESHOLD_SPEED = 10.0
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var performance = params["performance"]
+	var downforce = performance.downforce_mult()
+	if abs(velocity_local.z) < DOWNFORCE_THRESHOLD_SPEED:
+		return downforce + 1.0
+	# Missing body damage influence on downforce
+	downforce = velocity_local.z * downforce
+	var rear_factor = 1.5
+	# Missing speed condition
+	if !performance.has_spoiler():
+		rear_factor *= 1.75
+	match wheel_data["type"]:
+		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+			downforce += 1.0
+		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+			downforce = downforce * rear_factor + 1.0
+	return downforce
