@@ -30,3 +30,6 @@ func rpm(data: Dictionary) -> float:
 
 func torque(data: Dictionary) -> float:
 	return float(data["torque"])
+
+func gear(data: Dictionary) -> int:
+	return int(data["gear"])
