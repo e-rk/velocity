@@ -86,3 +86,57 @@ func angular_velocity_factor(params: Dictionary) -> float:
 		if gear == CarTypes.Gear.REVERSE:
 			result /= 2
 	return -result
+
+func vehicle_slip_angle_tg(params: Dictionary) -> float:
+	const VELOCITY_LONGITUDAL_THRESHOLD = 0.5
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var result = 0
+	if VELOCITY_LONGITUDAL_THRESHOLD < abs(velocity_local.z):
+		result = velocity_local.x / velocity_local.z
+	return result
+
+func vehicle_slip_angle(params: Dictionary) -> float:
+	return vehicle_slip_angle_tg(params)
+
+func slip_angle_factor(params: Dictionary) -> float:
+	const MEDIUM_VELOCITY_THRESHOLD = 13.4
+	const HIGH_VELOCITY_THRESHOLD = 26.7
+	const MEDIUM_VELOCITY_SLIP_ANGLE_THRESHOLD = 0.15
+	const HIGH_VELOCITY_SLIP_ANGLE_THRESHOLD = 0.05
+	var steering = params["current_steering"]
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var slip_angle = self.vehicle_slip_angle(params)
+	var is_same_dir = (slip_angle * steering) > 0
+	var result := 1.0
+	if params["handbrake"] == false and is_same_dir:
+		if HIGH_VELOCITY_THRESHOLD < velocity_local.z:
+			if HIGH_VELOCITY_SLIP_ANGLE_THRESHOLD < abs(slip_angle):
+				result = 2 * abs(slip_angle)
+		elif MEDIUM_VELOCITY_THRESHOLD < velocity_local.z:
+			if MEDIUM_VELOCITY_SLIP_ANGLE_THRESHOLD < abs(slip_angle):
+				result = 2 * abs(slip_angle)
+		result = min(1.0, result)
+	elif params["handbrake"] == true and !is_same_dir:
+		result = 0.85 - abs(velocity_local.z) * 0.0056
+		result = max(result, 0.55)
+	return result
+
+func steering_angle_factor(params: Dictionary) -> float:
+	if !params["has_contact_with_ground"]:
+		return 0.0
+	var result = 0
+	var steering = params["current_steering"]
+	var basis = params["basis_to_road"]
+	var performance = params["performance"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var slip_angle_factor = self.slip_angle_factor(params)
+	steering *= slip_angle_factor
+	if 40.0 < abs(velocity_local.z):
+		var something = 0.015 * abs(velocity_local.z)
+		something = clamp(something, 1, 1.5)
+		steering = steering / something
+	result = performance.minimum_steering_acceleration() * 1.5 * 0.00277777777 * steering * 0.0078125
+	result = clamp(result, -1.0, 1.0)
+	return result
