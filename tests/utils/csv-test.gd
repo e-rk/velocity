@@ -58,3 +58,9 @@ func mass(data: Dictionary) -> float:
 func is_airborne(data: Dictionary) -> bool:
 	var airborne_counter = int(data["airborne_counter"])
 	return airborne_counter != 0
+
+func handbrake(data: Dictionary) -> bool:
+	return data["handbrake"] != "0"
+
+func steering(data: Dictionary) -> int:
+	return int(data["turn_angle"])
