@@ -203,6 +203,46 @@ func turning_circle(params: Dictionary) -> Vector3:
 			result.y = factor
 	return result
 
+func tire_factor(params: Dictionary) -> float:
+	var tire_tuning = 1.0
+	var weather = params["weather"]
+	var result
+	if weather == 0:
+		result = 28.0 - (tire_tuning - 0.8) * 40
+		result = 1 / max(16.0, result)
+	elif weather == 1:
+		result = 16.0 - (tire_tuning - 0.8) * 32
+		result = 3.0 / max(6.0, result)
+	elif weather == 2:
+		result = 12.0 - (tire_tuning - 0.8) * 24
+		result = 3.0 / max(4.0, result)
+	return result
+
+func steering_acceleration(params: Dictionary, wheel_data: Dictionary, some_vector: Vector3) -> float:
+	var grip = wheel_data["lateral_grip"]
+	var angle = atan2(some_vector.x, abs(some_vector.z))
+	var grip_loss = grip - grip * tire_factor(params)
+	var value = 0
+	if is_gear_reverse(params):
+		value = sin(angle / 2) * grip_loss * 2.0
+	else:
+		value = sin(angle / 2) * grip_loss * 4.0
+	return value
+
+func vector_rotate_y(v: Vector3, angle: float) -> Vector3:
+	return v.rotated(Vector3.UP, angle * TAU)
+
+func turned_steering_acceleration(params: Dictionary, wheel_data: Dictionary) -> float:
+	var steering
+	match wheel_data["type"]:
+		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+			steering = steering_angle(params)
+		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+			steering = 0
+	var planar_vector = self.wheel_planar_vector(params, wheel_data)
+	planar_vector = vector_rotate_y(planar_vector, -steering)
+	return steering_acceleration(params, wheel_data, planar_vector)
+
 func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float:
 	const DOWNFORCE_THRESHOLD_SPEED = 10.0
 	var basis = params["basis_to_road"]
@@ -223,3 +263,11 @@ func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float
 		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
 			downforce = downforce * rear_factor + 1.0
 	return downforce
+
+# Predicates
+
+func is_gear_neutral(params: Dictionary) -> bool:
+	return params["gear"] == CarTypes.Gear.NEUTRAL
+
+func is_gear_reverse(params: Dictionary) -> bool:
+	return params["gear"] == CarTypes.Gear.REVERSE
