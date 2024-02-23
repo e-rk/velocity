@@ -87,6 +87,19 @@ func angular_velocity_factor(params: Dictionary) -> float:
 			result /= 2
 	return -result
 
+func wheel_planar_vector(params: Dictionary, wheel_data: Dictionary) -> Vector3:
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var planar_vector = -0.5 * velocity_local * 32
+	var angular_velocity_factor = self.angular_velocity_factor(params)
+	match wheel_data["type"]:
+		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+			planar_vector.x += angular_velocity_factor
+		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+			planar_vector.x -= angular_velocity_factor
+	planar_vector.y = 0
+	return planar_vector
+
 func vehicle_slip_angle_tg(params: Dictionary) -> float:
 	const VELOCITY_LONGITUDAL_THRESHOLD = 0.5
 	var basis = params["basis_to_road"]
