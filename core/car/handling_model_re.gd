@@ -32,3 +32,30 @@ func traction_powertrain(params: Dictionary, rpm: float) -> float:
 	else:
 		torque_output = min(torque_output, 8)
 	return torque_output
+
+func drag_coefficient(params: Dictionary) -> float:
+	const COEFF1 = 3.0 / 2.0
+	const COEFF2 = 0.98
+	const COEFF3 = 0.36757159
+	var performance = params["performance"]
+	var max_gear = performance.max_gear()
+	var max_velocity = performance.max_velocity()
+	var velocity_to_rpm = performance.gear_velocity_to_rpm(max_gear)
+	var rpm_for_max_speed = velocity_to_rpm * max_velocity
+	var torque_for_max_speed = self.torque_for_rpm(params, rpm_for_max_speed)
+	var mass = performance.mass()
+	var result = torque_for_max_speed * velocity_to_rpm / (10 * mass)
+	result = COEFF1 * result * COEFF2 / (max_velocity**3 * COEFF3)
+	return result
+
+func drag(params: Dictionary) -> float:
+	const DRAG_INIT = 0.2450477
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var performance = params["performance"]
+	var result = DRAG_INIT * self.drag_coefficient(params)
+	var velocity_max_diff = abs(velocity_local.z) - performance.max_velocity()
+	result = result * velocity_local.z ** 3
+	if velocity_max_diff > 0:
+		result += (velocity_max_diff ** 2) * 0.01
+	return result
