@@ -39,3 +39,22 @@ func local_linear_velocity(data: Dictionary) -> Vector3:
 	var vy = float(data.get("local_linear_velocity_y", "0.0"))
 	var vz = float(data.get("local_linear_velocity_z", "0.0"))
 	return Vector3(vx, vy, vz)
+
+func global_angular_velocity(data: Dictionary) -> Vector3:
+	var wx = float(data.get("global_angular_velocity_x", "0.0"))
+	var wy = float(data.get("global_angular_velocity_y", "0.0"))
+	var wz = float(data.get("global_angular_velocity_z", "0.0"))
+	return Vector3(wx, wy, wz)
+
+func inertia_inv(data: Dictionary) -> Vector3:
+	var ix = float(data.get("inertia_inv_x", "0.0"))
+	var iy = float(data.get("inertia_inv_y", "0.0"))
+	var iz = float(data.get("inertia_inv_z", "0.0"))
+	return Vector3(ix, iy, iz)
+
+func mass(data: Dictionary) -> float:
+	return float(data["mass"])
+
+func is_airborne(data: Dictionary) -> bool:
+	var airborne_counter = int(data["airborne_counter"])
+	return airborne_counter != 0
