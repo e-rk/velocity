@@ -46,6 +46,12 @@ func global_angular_velocity(data: Dictionary) -> Vector3:
 	var wz = float(data.get("global_angular_velocity_z", "0.0"))
 	return Vector3(wx, wy, wz)
 
+func local_angular_velocity(data: Dictionary) -> Vector3:
+	var wx = float(data.get("local_angular_velocity_x", "0.0"))
+	var wy = float(data.get("local_angular_velocity_y", "0.0"))
+	var wz = float(data.get("local_angular_velocity_z", "0.0"))
+	return Vector3(wx, wy, wz)
+
 func inertia_inv(data: Dictionary) -> Vector3:
 	var ix = float(data.get("inertia_inv_x", "0.0"))
 	var iy = float(data.get("inertia_inv_y", "0.0"))
@@ -64,3 +70,12 @@ func handbrake(data: Dictionary) -> bool:
 
 func steering(data: Dictionary) -> int:
 	return int(data["turn_angle"])
+
+func throttle(data: Dictionary) -> float:
+	return float(data["throttle"])
+
+func brake_input(data: Dictionary) -> float:
+	return float(data["brake"])
+
+func slip_angle(data: Dictionary) -> float:
+	return float(data["slip_angle"])
