@@ -24,7 +24,7 @@ func make_params(data: Dictionary) -> Dictionary:
 func body(data: Dictionary):
 	var params = self.make_params(data)
 	var expected = float(data["result"])
-	var result = self.model.steering_angle_factor(params)
+	var result = self.model.steering_angle(params)
 	var msg = "hb="+str(params["handbrake"]) \
 			+ " st="+str(params["current_steering"]) \
 			+ " v="+str(params["linear_velocity"])
