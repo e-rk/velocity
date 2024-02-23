@@ -87,3 +87,6 @@ func wheel_planar_vector(data: Dictionary) -> Vector3:
 
 func wheel_type(data: Dictionary) -> int:
 	return int(data["wheel_type"])
+
+func wheel_downforce(data: Dictionary, wheel_idx: int) -> float:
+	return float(data["wheel_" + str(wheel_idx) + "_downforce_factor"])
