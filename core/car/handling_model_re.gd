@@ -136,7 +136,7 @@ func slip_angle_factor(params: Dictionary) -> float:
 		result = max(result, 0.55)
 	return result
 
-func steering_angle_factor(params: Dictionary) -> float:
+func steering_angle(params: Dictionary) -> float:
 	if !params["has_contact_with_ground"]:
 		return 0.0
 	var result = 0
