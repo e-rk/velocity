@@ -16,7 +16,7 @@ func gear_velocity_to_rpm(gear) -> float:
 	return data["manual_velocity_to_rpm_ratio"][gear]
 
 func max_gear() -> int:
-	return data["num_gears"] - 1
+	return data["manual_number_of_gears"] - 1
 
 func front_drive_ratio() -> float:
 	return data["front_drive_ratio"]
