@@ -79,3 +79,11 @@ func brake_input(data: Dictionary) -> float:
 
 func slip_angle(data: Dictionary) -> float:
 	return float(data["slip_angle"])
+
+func wheel_planar_vector(data: Dictionary) -> Vector3:
+	var fx = float(data.get("wheel_planar_vector_lateral", "0.0"))
+	var fz = float(data.get("wheel_planar_vector_longitudal", "0.0"))
+	return Vector3(fx, 0, fz)
+
+func wheel_type(data: Dictionary) -> int:
+	return int(data["wheel_type"])
