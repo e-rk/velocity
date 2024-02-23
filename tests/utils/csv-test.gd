@@ -33,3 +33,9 @@ func torque(data: Dictionary) -> float:
 
 func gear(data: Dictionary) -> int:
 	return int(data["gear"])
+
+func local_linear_velocity(data: Dictionary) -> Vector3:
+	var vx = float(data.get("local_linear_velocity_x", "0.0"))
+	var vy = float(data.get("local_linear_velocity_y", "0.0"))
+	var vz = float(data.get("local_linear_velocity_z", "0.0"))
+	return Vector3(vx, vy, vz)
