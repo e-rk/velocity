@@ -132,11 +132,12 @@ func steering_angle_factor(params: Dictionary) -> float:
 	var performance = params["performance"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var slip_angle_factor = self.slip_angle_factor(params)
+	var steering_acceleration = performance.minimum_steering_acceleration()
 	steering *= slip_angle_factor
 	if 40.0 < abs(velocity_local.z):
 		var something = 0.015 * abs(velocity_local.z)
 		something = clamp(something, 1, 1.5)
 		steering = steering / something
-	result = performance.minimum_steering_acceleration() * 1.5 * 0.00277777777 * steering * 0.0078125
+	result = steering_acceleration * 1.5 * 0.00277777777 * steering * 0.0078125
 	result = clamp(result, -1.0, 1.0)
 	return result
