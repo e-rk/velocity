@@ -97,10 +97,22 @@ func wheel_downforce(data: Dictionary, wheel_idx: int) -> float:
 func wheel_lateral_grip(data: Dictionary) -> float:
 	return float(data["lateral_grip"])
 
-func wheel_acceleration(data: Dictionary, prefix="") -> Vector3:
-	var fx = float(data.get(prefix + "lateral_acceleration", "0.0"))
-	var fz = float(data.get(prefix + "longitudal_acceleration", "0.0"))
+func wheel_force(data: Dictionary, prefix="") -> Vector3:
+	var fx = float(data.get(prefix + "lateral_force", "0.0"))
+	var fz = float(data.get(prefix + "longitudal_force", "0.0"))
 	return Vector3(fx, 0, fz)
 
 func wheel_traction(data: Dictionary) -> float:
 	return float(data["wheel_traction"])
+
+func road_basis_normal_y(data: Dictionary) -> Vector3:
+	var nx = float(data.get("road_basis_normal_x", "0.0"))
+	var ny = float(data.get("road_basis_normal_y", "0.0"))
+	var nz = float(data.get("road_basis_normal_z", "0.0"))
+	return Vector3(nx, ny, nz)
+
+func local_linear_acceleration(data: Dictionary) -> Vector3:
+	var ax = float(data.get("local_linear_acceleration_x", "0.0"))
+	var ay = float(data.get("local_linear_acceleration_y", "0.0"))
+	var az = float(data.get("local_linear_acceleration_z", "0.0"))
+	return Vector3(ax, ay, az)
