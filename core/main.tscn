@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://drxrxxcoribky"]
+[gd_scene load_steps=9 format=3 uid="uid://drxrxxcoribky"]
 
 [ext_resource type="Script" path="res://core/main.gd" id="1_ga4gl"]
 [ext_resource type="PackedScene" uid="uid://b00fb5ox2w4oh" path="res://core/ui/car_picker.tscn" id="2_msbl2"]
@@ -6,6 +6,8 @@
 [ext_resource type="Script" path="res://core/ui/disconnect_button.gd" id="4_gm1a6"]
 [ext_resource type="Script" path="res://core/ui/join_button.gd" id="4_gwb6y"]
 [ext_resource type="PackedScene" uid="uid://b06d2fypc8o5p" path="res://core/ui/join_game_dialog.tscn" id="5_fw77u"]
+[ext_resource type="Script" path="res://core/ui/host_button.gd" id="6_ttran"]
+[ext_resource type="PackedScene" uid="uid://dj051yp3mnerg" path="res://core/ui/host_game_dialog.tscn" id="7_stv8w"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -75,6 +77,13 @@ script = ExtResource("4_gwb6y")
 unique_name_in_owner = true
 visible = false
 
+[node name="Host" type="Button" parent="HBoxContainer2"]
+layout_mode = 2
+text = "Host game..."
+script = ExtResource("6_ttran")
+
+[node name="HostGameDialog" parent="HBoxContainer2/Host" instance=ExtResource("7_stv8w")]
+
 [node name="Disconnect" type="Button" parent="HBoxContainer2"]
 layout_mode = 2
 disabled = true
@@ -86,5 +95,6 @@ initial_position = 4
 
 [connection signal="pressed" from="HBoxContainer2/Join" to="HBoxContainer2/Join" method="_on_pressed"]
 [connection signal="server_selected" from="HBoxContainer2/Join/JoinGameDialog" to="." method="_on_join_game_dialog_server_selected"]
+[connection signal="pressed" from="HBoxContainer2/Host" to="HBoxContainer2/Host" method="_on_pressed"]
 [connection signal="pressed" from="HBoxContainer2/Disconnect" to="HBoxContainer2/Disconnect" method="_on_pressed"]
 [connection signal="confirmed" from="HBoxContainer2/Disconnect/DisconnectDialog" to="." method="_on_disconnect_dialog_confirmed"]
