@@ -305,6 +305,23 @@ func wheel_forces_to_angular_acceleration(params: Dictionary, forces: Array) -> 
 					* 0.5 * 4 * mass * inertia_inv.y * timestep
 	return Vector3(0, ang_accel_y, 0)
 
+func weather_factor() -> float:
+	const SUNNY = 1.0
+	const RAIN = 0.9
+	const SNOW = 0.8
+	return SUNNY
+
+func wheel_surface_grip_factor(params: Dictionary, wheel_data: Dictionary) -> float:
+	const road_factors = [
+		1.0, 1.0, 0.75, 0.8, 0.98, 0.8, 0.75, 0.95, 0.75,
+		0.75, 0.98, 0.95, 0.95, 0.8, 1.0, 0.75, 0.98, 0.98,
+		0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
+	var road_surface = wheel_data["road_surface"]
+	var slope = clamp(self.orientation_to_ground(params).y, 0.75, 1.0)
+	var road_factor = road_factors[road_surface]
+	var weather_factor = slope * road_factor * self.weather_factor() * 0.25
+	return (weather_factor + slope) * road_factor
+
 # Predicates
 
 func is_gear_neutral(params: Dictionary) -> bool:
