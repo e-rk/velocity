@@ -277,6 +277,34 @@ func longitudal_acceleration(params: Dictionary, wheel_data: Dictionary, wheel_p
 	traction = traction * lateral_grip_mult
 	return traction
 
+func orientation_to_ground(params: Dictionary) -> Vector3:
+	var basis_to_road = params["basis_to_road"]
+	var basis = params["basis"]
+	var normal = basis_to_road.y
+	var x = basis.x.dot(normal)
+	var y = basis.y.dot(normal)
+	var z = basis.z.dot(normal)
+	return Vector3(x, y, z)
+
+func wheel_slope_vector(params: Dictionary, vector: Vector3) -> Vector3:
+	var slope = orientation_to_ground(params).y
+	return vector * slope
+
+func wheel_forces_to_linear_acceleration(params: Dictionary, forces: Array) -> Vector3:
+	var sloped = forces.map(func(x): return wheel_slope_vector(params, x))
+	var result = 0.5 * sloped.reduce(func(a, x): return a + x)
+	return result
+
+func wheel_forces_to_angular_acceleration(params: Dictionary, forces: Array) -> Vector3:
+	var mass = params["mass"]
+	var inertia_inv = params["inertia_inv"]
+	var timestep = params["timestep"]
+	var sloped = forces.map(func(x): return wheel_slope_vector(params, x))
+	var ang_accel_y = ((sloped[0].x + sloped[1].x) \
+					- (sloped[2].x + sloped[3].x)) \
+					* 0.5 * 4 * mass * inertia_inv.y * timestep
+	return Vector3(0, ang_accel_y, 0)
+
 # Predicates
 
 func is_gear_neutral(params: Dictionary) -> bool:
