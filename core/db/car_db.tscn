@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://bqikxwi6sfkmt"]
+
+[ext_resource type="Script" path="res://core/db/car_db.gd" id="1_d48wt"]
+[ext_resource type="PackedScene" uid="uid://byytg52xlx8dy" path="res://core/utils/directory_watcher.tscn" id="2_dn6jv"]
+
+[node name="CarDB" type="Node"]
+script = ExtResource("1_d48wt")
+
+[node name="DirectoryWatcher" parent="." instance=ExtResource("2_dn6jv")]
+unique_name_in_owner = true
+directory = "res://import/cars"
+mode = 1
+
+[connection signal="content_changed" from="DirectoryWatcher" to="." method="_on_directory_watcher_content_changed"]
