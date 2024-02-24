@@ -91,12 +91,12 @@ func wheel_planar_vector(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var planar_vector = -0.5 * velocity_local * 32
-	var some_value = self.angular_velocity_factor(params)
+	var angular_velocity_factor = self.angular_velocity_factor(params)
 	match wheel_data["type"]:
 		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
-			planar_vector.x += some_value
+			planar_vector.x += angular_velocity_factor
 		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
-			planar_vector.x -= some_value
+			planar_vector.x -= angular_velocity_factor
 	planar_vector.y = 0
 	return planar_vector
 
