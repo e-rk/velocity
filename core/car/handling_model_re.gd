@@ -67,6 +67,22 @@ func drag(params: Dictionary) -> float:
 		result += (velocity_max_diff ** 2) * 0.01
 	return result
 
+func traction_model(params: Dictionary) -> Dictionary:
+	var performance = params["performance"]
+	var rpm = params["rpm"]
+	var lost_grip = params["handbrake"]
+	var engine_redline_rpm = performance.engine_redline_rpm()
+	var above_redline = false
+	if engine_redline_rpm < rpm:
+		above_redline = true
+	if (4 * engine_redline_rpm / 3) < rpm:
+		lost_grip = true
+	rpm = min(rpm, engine_redline_rpm)
+	return {
+		"rpm": rpm,
+		"has_grip": not lost_grip,
+		"force": 0.0,
+	}
 
 func calculate_speed_xz(params: Dictionary) -> float:
 	var basis = params["basis_to_road"]
