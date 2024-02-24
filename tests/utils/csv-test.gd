@@ -119,3 +119,6 @@ func local_linear_acceleration(data: Dictionary) -> Vector3:
 
 func road_surface(data: Dictionary) -> int:
 	return int(data["road_surface"])
+
+func weather(data: Dictionary) -> int:
+	return int(data["weather"])
