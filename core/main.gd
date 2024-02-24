@@ -13,3 +13,7 @@ func _process(delta):
 
 func _on_disconnect_dialog_confirmed():
 	pass # Replace with function body.
+
+
+func _on_join_game_dialog_server_selected():
+	pass # Replace with function body.
