@@ -13,6 +13,11 @@ config_version=5
 config/name="Velocity"
 config/features=PackedStringArray("4.2", "Forward Plus")
 
+[autoload]
+
+CarDB="*res://core/db/car_db.tscn"
+TrackDB="*res://core/db/track_db.tscn"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg")
