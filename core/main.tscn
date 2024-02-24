@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://drxrxxcoribky"]
+[gd_scene load_steps=5 format=3 uid="uid://drxrxxcoribky"]
 
 [ext_resource type="Script" path="res://core/main.gd" id="1_ga4gl"]
+[ext_resource type="PackedScene" uid="uid://b00fb5ox2w4oh" path="res://core/ui/car_picker.tscn" id="2_msbl2"]
+[ext_resource type="PackedScene" uid="uid://cf011ecvi2pr7" path="res://core/ui/track_picker.tscn" id="3_vrrd8"]
+[ext_resource type="Script" path="res://core/ui/disconnect_button.gd" id="4_gm1a6"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -10,3 +13,53 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ga4gl")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -25.0
+offset_right = 158.0
+offset_bottom = 25.0
+grow_vertical = 2
+
+[node name="CarPicker" parent="VBoxContainer" instance=ExtResource("2_msbl2")]
+layout_mode = 2
+
+[node name="TrackPicker" parent="VBoxContainer" instance=ExtResource("3_vrrd8")]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Button" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "Ready"
+
+[node name="StartRace" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Start race"
+
+[node name="Disconnect" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "Disconnect"
+script = ExtResource("4_gm1a6")
+
+[node name="DisconnectDialog" type="ConfirmationDialog" parent="HBoxContainer/Disconnect"]
+initial_position = 4
+
+[connection signal="pressed" from="HBoxContainer/Disconnect" to="HBoxContainer/Disconnect" method="_on_pressed"]
+[connection signal="confirmed" from="HBoxContainer/Disconnect/DisconnectDialog" to="." method="_on_disconnect_dialog_confirmed"]
