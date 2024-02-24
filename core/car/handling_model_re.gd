@@ -372,7 +372,6 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var lateral_grip_mult = performance.lateral_grip_multiplier()
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var wheel_planar_vector = self.wheel_planar_vector(params, wheel_data)
-	var some_flag = false
 	var is_front = false
 	var steering
 	match wheel_data["type"]:
