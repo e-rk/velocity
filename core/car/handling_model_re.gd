@@ -264,6 +264,19 @@ func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float
 			downforce = downforce * rear_factor + 1.0
 	return downforce
 
+func longitudal_acceleration(params: Dictionary, wheel_data: Dictionary, wheel_planar_vector: Vector3) -> float:
+	var performance = params["performance"]
+	var traction = wheel_data["traction"]
+	var throttle = params["throttle_input"]
+	var lateral_grip_mult = performance.lateral_grip_multiplier()
+	if 0.0 < traction or 0.0 < wheel_planar_vector.z:
+		if 0.0 < traction and 0.0 < wheel_planar_vector.z and (throttle < 0.25 or params["gear"] == CarTypes.Gear.REVERSE):
+			traction = min(traction, wheel_planar_vector.z)
+	elif throttle < 0.25 or not is_gear_reverse(params):
+		traction = max(traction, wheel_planar_vector.z)
+	traction = traction * lateral_grip_mult
+	return traction
+
 # Predicates
 
 func is_gear_neutral(params: Dictionary) -> bool:
