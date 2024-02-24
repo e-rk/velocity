@@ -218,9 +218,9 @@ func tire_factor(params: Dictionary) -> float:
 		result = 3.0 / max(4.0, result)
 	return result
 
-func steering_acceleration(params: Dictionary, wheel_data: Dictionary, some_vector: Vector3) -> float:
+func steering_acceleration(params: Dictionary, wheel_data: Dictionary, planar_vector: Vector3) -> float:
 	var grip = wheel_data["lateral_grip"]
-	var angle = atan2(some_vector.x, abs(some_vector.z))
+	var angle = atan2(planar_vector.x, abs(planar_vector.z))
 	var grip_loss = grip - grip * tire_factor(params)
 	var value = 0
 	if is_gear_reverse(params):
