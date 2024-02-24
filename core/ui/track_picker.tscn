@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://cf011ecvi2pr7"]
+
+[ext_resource type="Script" path="res://core/ui/track_picker.gd" id="1_iq34u"]
+
+[node name="TrackPicker" type="HBoxContainer"]
+script = ExtResource("1_iq34u")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Selected track"
+
+[node name="TrackSelection" type="OptionButton" parent="."]
+layout_mode = 2
+
+[connection signal="item_selected" from="TrackSelection" to="." method="_on_track_selection_item_selected"]
