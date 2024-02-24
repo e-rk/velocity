@@ -116,3 +116,6 @@ func local_linear_acceleration(data: Dictionary) -> Vector3:
 	var ay = float(data.get("local_linear_acceleration_y", "0.0"))
 	var az = float(data.get("local_linear_acceleration_z", "0.0"))
 	return Vector3(ax, ay, az)
+
+func road_surface(data: Dictionary) -> int:
+	return int(data["road_surface"])
