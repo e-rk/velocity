@@ -96,3 +96,11 @@ func wheel_downforce(data: Dictionary, wheel_idx: int) -> float:
 
 func wheel_lateral_grip(data: Dictionary) -> float:
 	return float(data["lateral_grip"])
+
+func wheel_acceleration(data: Dictionary, prefix="") -> Vector3:
+	var fx = float(data.get(prefix + "lateral_acceleration", "0.0"))
+	var fz = float(data.get(prefix + "longitudal_acceleration", "0.0"))
+	return Vector3(fx, 0, fz)
+
+func wheel_traction(data: Dictionary) -> float:
+	return float(data["wheel_traction"])
