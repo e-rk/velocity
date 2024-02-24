@@ -322,6 +322,47 @@ func wheel_surface_grip_factor(params: Dictionary, wheel_data: Dictionary) -> fl
 	var weather_factor = slope * road_factor * self.weather_factor() * 0.25
 	return (weather_factor + slope) * road_factor
 
+func road_factor(params: Dictionary) -> float:
+	const road_factors =	[
+		1.0, 1.0, 0.75, 0.8, 0.98, 0.8, 0.75, 0.95, 0.75,
+		0.75, 0.98, 0.95, 0.95, 0.8, 1.0, 0.75, 0.98, 0.98,
+		0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
+	const weather_factors = [1.0, 0.87, 0.75]
+	var road_surface = params["road_surface"]
+	var weather = params["weather"]
+	return road_factors[road_surface] * weather_factors[weather]
+
+func wheel_loss_of_grip(params: Dictionary, wheel_data: Dictionary, forces: Vector3) -> Vector3:
+	var gear = params["gear"]
+	var throttle = params["throttle_input"]
+	var performance = params["performance"]
+	var rpm = params["rpm"]
+	var engine_redline_rpm = performance.engine_redline_rpm()
+	var force_magnitude = forces.length()
+	var lateral_grip = wheel_data["lateral_grip"]
+	var tire_factor = self.tire_factor(params)
+	var grip_loss = lateral_grip - lateral_grip * tire_factor
+	var is_front = false
+	var result = forces
+	if grip_loss < force_magnitude:
+		var diff = force_magnitude - grip_loss
+		var val = min(diff, grip_loss) * tire_factor
+		# Missing other weather conditions
+		var factor = (grip_loss - val) / force_magnitude
+		if force_magnitude <= (grip_loss - val):
+			factor = 1.0
+		match wheel_data["type"]:
+			CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+				is_front = true
+		if not is_front \
+		   and gear == CarTypes.Gear.GEAR_1 \
+		   and 0.85 < throttle \
+		   and engine_redline_rpm * 0.85 <= rpm \
+		   and 0.95 <= road_factor(params): # Bug here, road factor effect only, no weather
+			result.z = 0.5 * factor * forces.z
+			result.x = factor * forces.x
+	return result
+
 # Predicates
 
 func is_gear_neutral(params: Dictionary) -> bool:
