@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://drxrxxcoribky"]
+[gd_scene load_steps=10 format=3 uid="uid://drxrxxcoribky"]
 
 [ext_resource type="Script" path="res://core/main.gd" id="1_ga4gl"]
 [ext_resource type="PackedScene" uid="uid://b00fb5ox2w4oh" path="res://core/ui/car_picker.tscn" id="2_msbl2"]
@@ -8,6 +8,14 @@
 [ext_resource type="PackedScene" uid="uid://b06d2fypc8o5p" path="res://core/ui/join_game_dialog.tscn" id="5_fw77u"]
 [ext_resource type="Script" path="res://core/ui/host_button.gd" id="6_ttran"]
 [ext_resource type="PackedScene" uid="uid://dj051yp3mnerg" path="res://core/ui/host_game_dialog.tscn" id="7_stv8w"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_h2h8r"]
+properties/0/path = NodePath(".:players")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+properties/1/path = NodePath("VBoxContainer/TrackPicker:selected_track")
+properties/1/spawn = true
+properties/1/replication_mode = 2
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -29,10 +37,24 @@ offset_bottom = 25.0
 grow_vertical = 2
 
 [node name="CarPicker" parent="VBoxContainer" instance=ExtResource("2_msbl2")]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="TrackPicker" parent="VBoxContainer" instance=ExtResource("3_vrrd8")]
+unique_name_in_owner = true
 layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Player name"
+
+[node name="PlayerName" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Player"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -83,8 +105,10 @@ text = "Host game..."
 script = ExtResource("6_ttran")
 
 [node name="HostGameDialog" parent="HBoxContainer2/Host" instance=ExtResource("7_stv8w")]
+visible = false
 
 [node name="Disconnect" type="Button" parent="HBoxContainer2"]
+unique_name_in_owner = true
 layout_mode = 2
 disabled = true
 text = "Disconnect"
@@ -92,9 +116,48 @@ script = ExtResource("4_gm1a6")
 
 [node name="DisconnectDialog" type="ConfirmationDialog" parent="HBoxContainer2/Disconnect"]
 initial_position = 4
+dialog_text = "Leave the lobby?"
 
+[node name="PanelContainer" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(400, 400)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -200.0
+offset_bottom = 200.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Players"
+horizontal_alignment = 1
+
+[node name="PlayerList" type="ItemList" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_h2h8r")
+
+[connection signal="car_selected" from="VBoxContainer/CarPicker" to="." method="_on_car_picker_car_selected"]
+[connection signal="track_selected" from="VBoxContainer/TrackPicker" to="." method="_on_track_picker_track_selected"]
+[connection signal="text_changed" from="VBoxContainer/HBoxContainer/PlayerName" to="." method="_on_player_name_text_changed"]
+[connection signal="pressed" from="HBoxContainer/StartRace" to="." method="_on_start_race_pressed"]
 [connection signal="pressed" from="HBoxContainer2/Join" to="HBoxContainer2/Join" method="_on_pressed"]
 [connection signal="server_selected" from="HBoxContainer2/Join/JoinGameDialog" to="." method="_on_join_game_dialog_server_selected"]
 [connection signal="pressed" from="HBoxContainer2/Host" to="HBoxContainer2/Host" method="_on_pressed"]
+[connection signal="host_mode_set" from="HBoxContainer2/Host/HostGameDialog" to="." method="_on_host_game_dialog_host_mode_set"]
 [connection signal="pressed" from="HBoxContainer2/Disconnect" to="HBoxContainer2/Disconnect" method="_on_pressed"]
 [connection signal="confirmed" from="HBoxContainer2/Disconnect/DisconnectDialog" to="." method="_on_disconnect_dialog_confirmed"]
