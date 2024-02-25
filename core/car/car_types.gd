@@ -12,9 +12,4 @@ enum Gear {
 	GEAR_6,
 }
 
-enum Wheel {
-	FRONT_RIGHT,
-	FRONT_LEFT,
-	REAR_RIGHT,
-	REAR_LEFT
-}
+enum Wheel { FRONT_RIGHT, FRONT_LEFT, REAR_RIGHT, REAR_LEFT }

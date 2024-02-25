@@ -1,6 +1,7 @@
 extends HandlingModel
 class_name HandlingModelRE
 
+
 func torque_for_rpm(params: Dictionary, rpm: float) -> float:
 	var performance = params["performance"]
 	var torque_curve = performance.torque_curve()
@@ -13,12 +14,14 @@ func torque_for_rpm(params: Dictionary, rpm: float) -> float:
 	var factor = torque_div - torque_idx
 	return lerp(torque_1, torque_2, factor)
 
+
 func gear_effective_ratio(params: Dictionary, gear: CarTypes.Gear) -> float:
 	var performance = params["performance"]
 	var velocity_to_rpm = performance.gear_velocity_to_rpm(gear)
 	var gear_efficiency = performance.gear_efficiency(gear)
 	var mass = performance.mass()
-	return velocity_to_rpm  * gear_efficiency / (10 * mass)
+	return velocity_to_rpm * gear_efficiency / (10 * mass)
+
 
 func traction_powertrain(params: Dictionary, rpm: float) -> float:
 	var gear = params["gear"]
@@ -33,6 +36,7 @@ func traction_powertrain(params: Dictionary, rpm: float) -> float:
 		torque_output = min(torque_output, 8)
 	return torque_output
 
+
 func drag_coefficient(params: Dictionary) -> float:
 	const COEFF1 = 3.0 / 2.0
 	const COEFF2 = 0.98
@@ -45,8 +49,9 @@ func drag_coefficient(params: Dictionary) -> float:
 	var torque_for_max_speed = self.torque_for_rpm(params, rpm_for_max_speed)
 	var mass = performance.mass()
 	var result = torque_for_max_speed * velocity_to_rpm / (10 * mass)
-	result = COEFF1 * result * COEFF2 / (max_velocity**3 * COEFF3)
+	result = COEFF1 * result * COEFF2 / (max_velocity ** 3 * COEFF3)
 	return result
+
 
 func drag(params: Dictionary) -> float:
 	const DRAG_INIT = 0.2450477
@@ -60,12 +65,14 @@ func drag(params: Dictionary) -> float:
 		result += (velocity_max_diff ** 2) * 0.01
 	return result
 
+
 func calculate_speed_xz(params: Dictionary) -> float:
 	var basis = params["basis_to_road"]
 	var velocity_xz = basis.inverse() * params["linear_velocity"]
 	velocity_xz.y = 0
 	var speed_xz = velocity_xz.length()
 	return speed_xz if velocity_xz.z > 0 else -speed_xz
+
 
 func angular_velocity_factor(params: Dictionary) -> float:
 	const SOME_FACTOR = 0.0125
@@ -87,6 +94,7 @@ func angular_velocity_factor(params: Dictionary) -> float:
 			result /= 2
 	return -result
 
+
 func wheel_planar_vector(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
@@ -100,6 +108,7 @@ func wheel_planar_vector(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	planar_vector.y = 0
 	return planar_vector
 
+
 func vehicle_slip_angle_tg(params: Dictionary) -> float:
 	const VELOCITY_LONGITUDAL_THRESHOLD = 0.5
 	var basis = params["basis_to_road"]
@@ -109,8 +118,10 @@ func vehicle_slip_angle_tg(params: Dictionary) -> float:
 		result = velocity_local.x / velocity_local.z
 	return result
 
+
 func vehicle_slip_angle(params: Dictionary) -> float:
 	return vehicle_slip_angle_tg(params)
+
 
 func slip_angle_factor(params: Dictionary) -> float:
 	const MEDIUM_VELOCITY_THRESHOLD = 13.4
@@ -136,6 +147,7 @@ func slip_angle_factor(params: Dictionary) -> float:
 		result = max(result, 0.55)
 	return result
 
+
 func steering_angle(params: Dictionary) -> float:
 	if !params["has_contact_with_ground"]:
 		return 0.0
@@ -154,6 +166,7 @@ func steering_angle(params: Dictionary) -> float:
 	result = steering_acceleration * 1.5 * 0.00277777777 * steering * 0.0078125
 	result = clamp(result, -1.0, 1.0)
 	return result
+
 
 func turning_circle(params: Dictionary) -> Vector3:
 	var performance = params["performance"]
@@ -203,6 +216,7 @@ func turning_circle(params: Dictionary) -> Vector3:
 			result.y = factor
 	return result
 
+
 func tire_factor(params: Dictionary) -> float:
 	var tire_tuning = 1.0
 	var weather = params["weather"]
@@ -218,7 +232,10 @@ func tire_factor(params: Dictionary) -> float:
 		result = 3.0 / max(4.0, result)
 	return result
 
-func steering_acceleration(params: Dictionary, wheel_data: Dictionary, planar_vector: Vector3) -> float:
+
+func steering_acceleration(
+	params: Dictionary, wheel_data: Dictionary, planar_vector: Vector3
+) -> float:
 	var grip = wheel_data["lateral_grip"]
 	var angle = atan2(planar_vector.x, abs(planar_vector.z))
 	var grip_loss = grip - grip * tire_factor(params)
@@ -229,8 +246,10 @@ func steering_acceleration(params: Dictionary, wheel_data: Dictionary, planar_ve
 		value = sin(angle / 2) * grip_loss * 4.0
 	return value
 
+
 func vector_rotate_y(v: Vector3, angle: float) -> Vector3:
 	return v.rotated(Vector3.UP, angle * TAU)
+
 
 func turned_steering_acceleration(params: Dictionary, wheel_data: Dictionary) -> float:
 	var steering
@@ -242,6 +261,7 @@ func turned_steering_acceleration(params: Dictionary, wheel_data: Dictionary) ->
 	var planar_vector = self.wheel_planar_vector(params, wheel_data)
 	planar_vector = vector_rotate_y(planar_vector, -steering)
 	return steering_acceleration(params, wheel_data, planar_vector)
+
 
 func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float:
 	const DOWNFORCE_THRESHOLD_SPEED = 10.0
@@ -264,18 +284,26 @@ func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float
 			downforce = downforce * rear_factor + 1.0
 	return downforce
 
-func longitudal_acceleration(params: Dictionary, wheel_data: Dictionary, wheel_planar_vector: Vector3) -> float:
+
+func longitudal_acceleration(
+	params: Dictionary, wheel_data: Dictionary, wheel_planar_vector: Vector3
+) -> float:
 	var performance = params["performance"]
 	var traction = wheel_data["traction"]
 	var throttle = params["throttle_input"]
 	var lateral_grip_mult = performance.lateral_grip_multiplier()
 	if 0.0 < traction or 0.0 < wheel_planar_vector.z:
-		if 0.0 < traction and 0.0 < wheel_planar_vector.z and (throttle < 0.25 or params["gear"] == CarTypes.Gear.REVERSE):
+		if (
+			0.0 < traction
+			and 0.0 < wheel_planar_vector.z
+			and (throttle < 0.25 or params["gear"] == CarTypes.Gear.REVERSE)
+		):
 			traction = min(traction, wheel_planar_vector.z)
 	elif throttle < 0.25 or not is_gear_reverse(params):
 		traction = max(traction, wheel_planar_vector.z)
 	traction = traction * lateral_grip_mult
 	return traction
+
 
 func orientation_to_ground(params: Dictionary) -> Vector3:
 	var basis_to_road = params["basis_to_road"]
@@ -286,24 +314,33 @@ func orientation_to_ground(params: Dictionary) -> Vector3:
 	var z = basis.z.dot(normal)
 	return Vector3(x, y, z)
 
+
 func wheel_slope_vector(params: Dictionary, vector: Vector3) -> Vector3:
 	var slope = orientation_to_ground(params).y
 	return vector * slope
+
 
 func wheel_forces_to_linear_acceleration(params: Dictionary, forces: Array) -> Vector3:
 	var sloped = forces.map(func(x): return wheel_slope_vector(params, x))
 	var result = 0.5 * sloped.reduce(func(a, x): return a + x)
 	return result
 
+
 func wheel_forces_to_angular_acceleration(params: Dictionary, forces: Array) -> Vector3:
 	var mass = params["mass"]
 	var inertia_inv = params["inertia_inv"]
 	var timestep = params["timestep"]
 	var sloped = forces.map(func(x): return wheel_slope_vector(params, x))
-	var ang_accel_y = ((sloped[0].x + sloped[1].x) \
-					- (sloped[2].x + sloped[3].x)) \
-					* 0.5 * 4 * mass * inertia_inv.y * timestep
+	var ang_accel_y = (
+		((sloped[0].x + sloped[1].x) - (sloped[2].x + sloped[3].x))
+		* 0.5
+		* 4
+		* mass
+		* inertia_inv.y
+		* timestep
+	)
 	return Vector3(0, ang_accel_y, 0)
+
 
 func weather_factor() -> float:
 	const SUNNY = 1.0
@@ -311,26 +348,73 @@ func weather_factor() -> float:
 	const SNOW = 0.8
 	return SUNNY
 
+
 func wheel_surface_grip_factor(params: Dictionary, wheel_data: Dictionary) -> float:
 	const road_factors = [
-		1.0, 1.0, 0.75, 0.8, 0.98, 0.8, 0.75, 0.95, 0.75,
-		0.75, 0.98, 0.95, 0.95, 0.8, 1.0, 0.75, 0.98, 0.98,
-		0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
+		1.0,
+		1.0,
+		0.75,
+		0.8,
+		0.98,
+		0.8,
+		0.75,
+		0.95,
+		0.75,
+		0.75,
+		0.98,
+		0.95,
+		0.95,
+		0.8,
+		1.0,
+		0.75,
+		0.98,
+		0.98,
+		0.8,
+		0.8,
+		0.8,
+		0.8,
+		0.8,
+		0.8
+	]
 	var road_surface = wheel_data["road_surface"]
 	var slope = clamp(self.orientation_to_ground(params).y, 0.75, 1.0)
 	var road_factor = road_factors[road_surface]
 	var weather_factor = slope * road_factor * self.weather_factor() * 0.25
 	return (weather_factor + slope) * road_factor
 
+
 func road_factor(params: Dictionary) -> float:
-	const road_factors =	[
-		1.0, 1.0, 0.75, 0.8, 0.98, 0.8, 0.75, 0.95, 0.75,
-		0.75, 0.98, 0.95, 0.95, 0.8, 1.0, 0.75, 0.98, 0.98,
-		0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
+	const road_factors = [
+		1.0,
+		1.0,
+		0.75,
+		0.8,
+		0.98,
+		0.8,
+		0.75,
+		0.95,
+		0.75,
+		0.75,
+		0.98,
+		0.95,
+		0.95,
+		0.8,
+		1.0,
+		0.75,
+		0.98,
+		0.98,
+		0.8,
+		0.8,
+		0.8,
+		0.8,
+		0.8,
+		0.8
+	]
 	const weather_factors = [1.0, 0.87, 0.75]
 	var road_surface = params["road_surface"]
 	var weather = params["weather"]
 	return road_factors[road_surface] * weather_factors[weather]
+
 
 func wheel_loss_of_grip(params: Dictionary, wheel_data: Dictionary, forces: Vector3) -> Vector3:
 	var gear = params["gear"]
@@ -354,14 +438,17 @@ func wheel_loss_of_grip(params: Dictionary, wheel_data: Dictionary, forces: Vect
 		match wheel_data["type"]:
 			CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
 				is_front = true
-		if not is_front \
-		   and gear == CarTypes.Gear.GEAR_1 \
-		   and 0.85 < throttle \
-		   and engine_redline_rpm * 0.85 <= rpm \
-		   and 0.95 <= road_factor(params): # Bug here, road factor effect only, no weather
+		if (
+			not is_front
+			and gear == CarTypes.Gear.GEAR_1
+			and 0.85 < throttle
+			and engine_redline_rpm * 0.85 <= rpm
+			and 0.95 <= road_factor(params)
+		):  # Bug here, road factor effect only, no weather
 			result.z = 0.5 * factor * forces.z
 			result.x = factor * forces.x
 	return result
+
 
 func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var basis = params["basis_to_road"]
@@ -386,7 +473,10 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var value = self.turned_steering_acceleration(params, wheel_data)
 	var steering_accel = performance.minimum_steering_acceleration() * 2.0
 	steering_accel = min(abs(value), steering_accel)
-	if (abs(velocity_local.z) < 13.4 && ((throttle < 0.02 && 127 <= abs(current_steering)) or throttle < 0.015)) :
+	if (
+		abs(velocity_local.z) < 13.4
+		&& ((throttle < 0.02 && 127 <= abs(current_steering)) or throttle < 0.015)
+	):
 		steering_accel *= 0.25
 	var understeer_gradient = performance.understeer_gradient()
 	var understeer = sign(wheel_planar_vector.x) * min(steering_accel, abs(wheel_planar_vector.x))
@@ -403,10 +493,13 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var forces = vector_rotate_y(f, -steering)
 	return forces
 
+
 # Predicates
+
 
 func is_gear_neutral(params: Dictionary) -> bool:
 	return params["gear"] == CarTypes.Gear.NEUTRAL
+
 
 func is_gear_reverse(params: Dictionary) -> bool:
 	return params["gear"] == CarTypes.Gear.REVERSE

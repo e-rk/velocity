@@ -6,8 +6,10 @@ signal car_selected
 
 @onready var car_selection = $CarSelection
 
+
 func _ready():
 	CarDB.database_updated.connect(self._on_car_database_updated)
+
 
 func _on_car_database_updated():
 	car_selection.clear()
@@ -17,6 +19,7 @@ func _on_car_database_updated():
 		car_selection.set_item_metadata(idx, car.path)
 		idx += 1
 	car_selection.select(0)
+
 
 func _on_car_selection_item_selected(index):
 	selected_car = car_selection.get_item_metadata(index)

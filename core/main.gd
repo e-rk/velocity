@@ -8,7 +8,6 @@ class_name MainLobby
 	get:
 		return players
 
-
 @onready var player_list = %PlayerList
 @onready var player_name = %PlayerName
 @onready var track_picker = %TrackPicker
@@ -30,6 +29,7 @@ func _update_player_list(players: Dictionary):
 		var content = player["name"] + " " + player["car"]
 		player_list.add_item(content, null, false)
 
+
 @rpc("any_peer", "call_local", "reliable")
 func send_player_data(name: String, car: String):
 	var id = multiplayer.get_remote_sender_id()
@@ -41,6 +41,7 @@ func send_player_data(name: String, car: String):
 		"car": car,
 	}
 	self.players = players
+
 
 func remove_player_data(id: int):
 	var players = self.players
@@ -94,7 +95,7 @@ func _on_car_picker_car_selected():
 
 
 func _on_track_picker_track_selected():
-	pass # Replace with function body.
+	pass  # Replace with function body.
 
 
 func _on_start_race_pressed():
