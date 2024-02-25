@@ -1,0 +1,95 @@
+[gd_scene load_steps=4 format=3 uid="uid://colfm2qj3jw7b"]
+
+[ext_resource type="Theme" uid="uid://df6k5ankl68ft" path="res://core/resources/ui/game_theme.tres" id="1_bx0lb"]
+[ext_resource type="Script" path="res://core/ui/game/rpm_meter_digital.gd" id="2_u64gp"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_32msy"]
+bg_color = Color(0.329412, 0.901961, 0.866667, 1)
+draw_center = false
+border_width_bottom = 1
+border_color = Color(0.329412, 0.901961, 0.866667, 1)
+
+[node name="RpmMeterDigital" type="PanelContainer"]
+custom_minimum_size = Vector2(180, 180)
+offset_right = 188.0
+offset_bottom = 180.0
+theme = ExtResource("1_bx0lb")
+script = ExtResource("2_u64gp")
+
+[node name="Background" type="Panel" parent="."]
+z_index = -1
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+z_index = -1
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"PanelHeader"
+text = "RPM X1000"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="RpmMeter" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"PrimaryPanelValue"
+theme_override_styles/normal = SubResource("StyleBoxFlat_32msy")
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Gears" type="HBoxContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="N" type="Label" parent="VBoxContainer/Gears"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "N"
+
+[node name="1" type="Label" parent="VBoxContainer/Gears"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "1"
+
+[node name="2" type="Label" parent="VBoxContainer/Gears"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "2"
+
+[node name="3" type="Label" parent="VBoxContainer/Gears"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "3"
+
+[node name="4" type="Label" parent="VBoxContainer/Gears"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "4"
+
+[node name="5" type="Label" parent="VBoxContainer/Gears"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "5"
+
+[node name="6" type="Label" parent="VBoxContainer/Gears"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "6"
+
+[node name="R" type="Label" parent="VBoxContainer/Gears"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "R"
