@@ -1,0 +1,41 @@
+[gd_scene load_steps=3 format=3 uid="uid://pwgwatjtewlu"]
+
+[ext_resource type="Script" path="res://core/ui/game/lap_timer.gd" id="1_sjpu7"]
+[ext_resource type="Theme" uid="uid://df6k5ankl68ft" path="res://core/resources/ui/game_theme.tres" id="1_tapyx"]
+
+[node name="LapTimer" type="PanelContainer"]
+custom_minimum_size = Vector2(180, 180)
+offset_right = 180.0
+offset_bottom = 180.0
+theme = ExtResource("1_tapyx")
+script = ExtResource("1_sjpu7")
+
+[node name="Background" type="Panel" parent="."]
+z_index = -1
+layout_mode = 2
+
+[node name="Container" type="VBoxContainer" parent="."]
+z_index = -1
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container"]
+layout_mode = 2
+theme_type_variation = &"PanelHeader"
+text = "TIME"
+horizontal_alignment = 1
+
+[node name="CurrentTime" type="Label" parent="Container"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"PrimaryPanelValueMedium"
+text = "00:00:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LastTime" type="Label" parent="Container"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SecondaryPanelValueMedium"
+text = "00:00:00"
+horizontal_alignment = 1
