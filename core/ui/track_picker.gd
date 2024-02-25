@@ -18,6 +18,7 @@ signal track_selected
 
 @onready var track_selection: OptionButton = $TrackSelection
 
+
 func _ready():
 	TrackDB.database_updated.connect(self._on_track_database_updated)
 

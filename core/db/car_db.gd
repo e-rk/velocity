@@ -1,19 +1,22 @@
 extends Node
 class_name CarDatabase
 
-signal database_updated;
+signal database_updated
 
 @onready var watcher = %DirectoryWatcher
 
 var cars: Dictionary = {}
+
 
 class CarData:
 	var name: String
 	var path: String
 	var uuid: String
 
+
 func get_car_by_uuid(uuid: String) -> CarData:
 	return cars[uuid]
+
 
 func _on_directory_watcher_content_changed():
 	var cars = {}
