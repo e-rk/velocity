@@ -1,0 +1,15 @@
+[gd_resource type="Theme" load_steps=4 format=3 uid="uid://df6k5ankl68ft"]
+
+[ext_resource type="StyleBox" uid="uid://b8s4yplp5dsor" path="res://core/resources/ui/panel_background.tres" id="1_7fnqq"]
+[ext_resource type="StyleBox" uid="uid://qcetvcoa6nbf" path="res://core/resources/ui/panel_border.tres" id="1_eh36u"]
+[ext_resource type="StyleBox" uid="uid://bh8nujt7ghkn0" path="res://core/resources/ui/header_label.tres" id="3_atw6y"]
+
+[resource]
+Panel/styles/panel = ExtResource("1_7fnqq")
+PanelContainer/styles/panel = ExtResource("1_eh36u")
+PanelHeader/base_type = &"Label"
+PanelHeader/colors/font_color = Color(0.0392157, 0.27451, 1, 1)
+PanelHeader/font_sizes/font_size = 30
+PanelHeader/styles/normal = ExtResource("3_atw6y")
+PrimaryPanelValue/base_type = &"Label"
+PrimaryPanelValue/font_sizes/font_size = 46
