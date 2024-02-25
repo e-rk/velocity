@@ -21,7 +21,13 @@ TrackDB="*res://core/db/track_db.tscn"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/speedtools-gltf/plugin.cfg")
+
+[importer_defaults]
+
+scene={
+"import_script/path": "res://addons/speedtools-gltf/post-import.gd"
+}
 
 [layer_names]
 
