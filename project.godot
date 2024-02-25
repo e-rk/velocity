@@ -38,3 +38,9 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 [physics]
 
 common/physics_ticks_per_second=64
+3d/default_linear_damp=0.0
+3d/default_angular_damp=0.0
+
+[rendering]
+
+textures/default_filters/texture_mipmap_bias=-1.0
