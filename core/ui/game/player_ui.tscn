@@ -1,0 +1,59 @@
+[gd_scene load_steps=7 format=3 uid="uid://n6ecpp4f60w8"]
+
+[ext_resource type="Script" path="res://core/ui/game/ui_player_top.gd" id="1_u41d7"]
+[ext_resource type="PackedScene" uid="uid://pwgwatjtewlu" path="res://core/ui/game/lap_timer.tscn" id="1_x1foh"]
+[ext_resource type="PackedScene" uid="uid://bys21a36e3wlm" path="res://core/ui/game/kph_meter_digital.tscn" id="2_gd0ag"]
+[ext_resource type="PackedScene" uid="uid://b5plb6024tl3w" path="res://core/ui/game/rear_view_mirror.tscn" id="3_q0m1n"]
+[ext_resource type="PackedScene" uid="uid://colfm2qj3jw7b" path="res://core/ui/game/rpm_meter_digital.tscn" id="4_85hwj"]
+[ext_resource type="PackedScene" uid="uid://51iduyulvjlr" path="res://core/ui/game/minimap_window.tscn" id="6_mcqk3"]
+
+[node name="PlayerUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_u41d7")
+
+[node name="HSplitContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -436.0
+offset_right = 436.0
+offset_bottom = 120.0
+grow_horizontal = 2
+
+[node name="LapTimer" parent="HSplitContainer" instance=ExtResource("1_x1foh")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SpeedMeter" parent="HSplitContainer" instance=ExtResource("2_gd0ag")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RearViewMirror" parent="HSplitContainer" instance=ExtResource("3_q0m1n")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="RpmMeter" parent="HSplitContainer" instance=ExtResource("4_85hwj")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MinimapWindow" parent="." instance=ExtResource("6_mcqk3")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+offset_left = -250.0
+offset_top = -300.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[editable path="HSplitContainer/RearViewMirror"]
