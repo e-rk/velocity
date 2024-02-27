@@ -16,3 +16,4 @@ size_flags_vertical = 0
 [node name="SubViewport" type="SubViewport" parent="RearViewMirror"]
 handle_input_locally = false
 size = Vector2i(500, 120)
+render_target_update_mode = 4
