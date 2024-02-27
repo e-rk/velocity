@@ -12,6 +12,8 @@ border_width_bottom = 4
 border_color = Color(0.215686, 0.215686, 0.215686, 1)
 
 [resource]
+HeaderBackground/base_type = &"PanelContainer"
+HeaderBackground/styles/panel = ExtResource("3_atw6y")
 Panel/styles/panel = ExtResource("1_7fnqq")
 PanelContainer/styles/panel = ExtResource("1_eh36u")
 PanelHeader/base_type = &"Label"
