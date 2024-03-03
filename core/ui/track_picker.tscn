@@ -12,4 +12,5 @@ text = "Selected track"
 [node name="TrackSelection" type="OptionButton" parent="."]
 layout_mode = 2
 
+[connection signal="track_externally_changed" from="." to="." method="_on_track_externally_changed"]
 [connection signal="item_selected" from="TrackSelection" to="." method="_on_track_selection_item_selected"]
