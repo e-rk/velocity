@@ -50,23 +50,6 @@ func create_environment(environment: Dictionary):
 	worldenv.environment.sky.sky_material.set_shader_parameter("CloudTexture", load("res://core/resources/clouds.tres"))
 	return worldenv
 
-func import_extras(json: Dictionary, root: Node):
-	var main_scene_idx = json["scene"]
-	var scene = json["scenes"][main_scene_idx]
-	if scene.has("extras") == false:
-		return OK
-	var extras = scene["extras"]
-	if extras.has("SPT_waypoints"):
-		var waypoints = extras["SPT_waypoints"]
-		var node = self.create_waypoints(waypoints)
-		root.add_child(node, true)
-		node.owner = root
-	if extras.has("SPT_environment"):
-		var node = self.create_environment(extras["SPT_environment"])
-		root.add_child(node, true)
-		node.owner = root
-	return OK
-
 func finalize_additive_materials(json: Dictionary, materials: Array[Material]):
 	var json_materials = json["materials"]
 	for i in len(materials):
@@ -106,30 +89,33 @@ func remove_metallic_specular(materials: Array[Material]):
 			material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	return OK
 
-func make_car_node(car_data: Dictionary) -> Car:
-	var car_node = Car.new()
-	var perf_dict = car_data["performance"]
-	var performance = CarPerformance.new()
-	performance.data = perf_dict
-	car_node.performance = performance
-	var dimensions = car_data["dimensions"]
-	var collisionshape = CollisionShape3D.new()
-	car_node.add_child(collisionshape)
-	car_node.collision_layer = 1 << 1
-	car_node.collision_mask = 1 << 1
-	car_node.continuous_cd = true
-	collisionshape.owner = car_node
-	collisionshape.name = "Collider"
-	collisionshape.shape = BoxShape3D.new()
-	collisionshape.shape.size = Vector3(dimensions[0], dimensions[1], dimensions[2])
+func process_car_extras(root: Node, data: Dictionary):
 	var synchronizer = CarSynchronizer.new()
 	synchronizer.name = "CarSynchronizer"
 	var config = SceneReplicationConfig.new()
 	config.add_property("CarSynchronizer:sync_state")
 	synchronizer.replication_config = config
-	car_node.add_child(synchronizer)
-	synchronizer.owner = car_node
-	return car_node
+	root.add_child(synchronizer)
+	synchronizer.owner = root
+	var dimensions = data["dimensions"]
+	var collisionshape = CollisionShape3D.new()
+	collisionshape.owner = root
+	collisionshape.name = "Collider"
+	collisionshape.shape = BoxShape3D.new()
+	collisionshape.shape.size = Vector3(dimensions[0], dimensions[1], dimensions[2])
+	root.add_child(collisionshape)
+	collisionshape.owner = root
+	root.set_meta("performance", data["performance"])
+	root.set_meta("type", "car")
+
+func process_track_extras(root: Node, data: Dictionary):
+	var node = self.create_environment(data["environment"])
+	root.add_child(node)
+	node.owner = root
+	node = self.create_waypoints(data["waypoints"])
+	root.add_child(node, true)
+	node.owner = root
+	root.set_meta("type", "track")
 
 func make_track_node(environment_data: Dictionary) -> RaceTrack:
 	var track_node = RaceTrack.new()
@@ -141,22 +127,13 @@ func process_scene_extras(state: GLTFState, root: Node):
 	if !scene.has("extras"):
 		return null
 	var extras = scene["extras"]
-	var node = null
 	if extras.has("SPT_car"):
-		node = make_car_node(extras["SPT_car"])
-	if extras.has("SPT_environment"):
-		node = make_track_node(extras["SPT_environment"])
-	node.name = root.name
-	for child in root.get_children(true):
-		child.reparent(node, false)
-		child.owner = node
-	root.add_child(node)
-	node.owner = root
+		process_car_extras(root, extras["SPT_car"])
+	if extras.has("SPT_track"):
+		process_track_extras(root, extras["SPT_track"])
 
 func _import_post(state: GLTFState, root: Node):
-	var err = import_extras(state.json, root)
-	if err != OK:
-		return err
+	var err
 	err = scale_light_energy(root)
 	if err != OK:
 		return err
@@ -169,6 +146,5 @@ func _import_post(state: GLTFState, root: Node):
 	#err = finalize_static_bodies(state, root)
 	#if err != OK:
 		#return err
-	#root.replace_by(Car.new())
 	process_scene_extras(state, root)
 	return OK

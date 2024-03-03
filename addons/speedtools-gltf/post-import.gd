@@ -1,21 +1,21 @@
-@tool # Needed so it runs in editor.
+@tool
 extends EditorScenePostImport
 
-# This sample changes all node names.
-# Called right after the scene is imported and gets the root node.
 func _post_import(scene):
-	var new_root = scene
-	var node = scene.get_child(0, true)
-	if node is RaceTrack:
-		new_root = node
-		var name = scene.name
-		var packed = PackedScene.new()
-		packed.pack(new_root)
-		ResourceSaver.save(packed, "res://import/tracks/%s/%s.tscn" % [name, name])
-	if node is Car:
-		new_root = node
-		var name = scene.name
-		var packed = PackedScene.new()
-		packed.pack(new_root)
-		ResourceSaver.save(packed, "res://import/cars/%s/%s.tscn" % [name, name])
-	return new_root # Remember to return the imported scene
+	if scene.get_meta("type") == "track":
+		var new_scene = RaceTrack.new()
+		new_scene.name = scene.name
+		scene.replace_by(new_scene)
+		return new_scene
+	elif scene.get_meta("type") == "car":
+		var new_scene = Car.new()
+		new_scene.name = scene.name
+		scene.replace_by(new_scene)
+		var performance = CarPerformance.new()
+		performance.data = scene.get_meta("performance")
+		new_scene.performance = performance
+		new_scene.collision_layer = Constants.collision_layer_to_mask([Constants.CollisionLayer.RACERS])
+		new_scene.collision_mask = Constants.collision_layer_to_mask([Constants.CollisionLayer.RACERS])
+		new_scene.continuous_cd = true
+		scene = new_scene
+	return scene
