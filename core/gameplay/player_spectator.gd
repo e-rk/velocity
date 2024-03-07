@@ -6,6 +6,8 @@ extends Node3D
 	get:
 		return racer
 
+@export var race_laps: int = 2
+
 @export_exp_easing("attenuation") var easing
 
 @onready var ui: PlayerUI = $PlayerUI
@@ -34,13 +36,14 @@ func player_to_minimap_data(node: Node) -> Dictionary:
 func _physics_process(delta):
 	var racer = get_tree().get_first_node_in_group(&"SpectatedRacer")
 	var player_data = get_tree().get_nodes_in_group(&"Racers").map(player_to_minimap_data)
-	self.global_transform = racer.car.global_transform
-	ui.set_speed(racer.car.linear_velocity.length())
-	ui.set_rpm(racer.car.current_rpm)
-	ui.set_gear(racer.car.current_gear)
-	ui.set_minimap_center(racer.car.global_position)
-	ui.set_minimap_rotation(racer.car.global_rotation.y)
-	ui.set_minimap_players(player_data)
-	ui.set_laps(racer.laps, 2)
-	ui.set_current_lap_time(racer.current_lap_time)
-	ui.set_last_lap_time(racer.last_lap_time)
+	if racer:
+		self.global_transform = racer.car.global_transform
+		ui.set_speed(racer.car.linear_velocity.length())
+		ui.set_rpm(racer.car.current_rpm)
+		ui.set_gear(racer.car.current_gear)
+		ui.set_minimap_center(racer.car.global_position)
+		ui.set_minimap_rotation(racer.car.global_rotation.y)
+		ui.set_minimap_players(player_data)
+		ui.set_laps(racer.laps, self.race_laps)
+		ui.set_current_lap_time(racer.current_lap_time)
+		ui.set_last_lap_time(racer.last_lap_time)
