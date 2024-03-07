@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3 uid="uid://cvfpcatdlp81m"]
+
+[ext_resource type="Script" path="res://core/ui/config/modes/single_race_configurator.gd" id="1_dtip5"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_6cqhs"]
+properties/0/path = NodePath("HBoxContainer/LapNumber:value")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+
+[node name="SingleRaceConfigurator" type="VBoxContainer"]
+offset_right = 123.0
+offset_bottom = 31.0
+script = ExtResource("1_dtip5")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Laps"
+
+[node name="LapNumber" type="SpinBox" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 16.0
+value = 1.0
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_6cqhs")
+
+[connection signal="value_changed" from="HBoxContainer/LapNumber" to="." method="_on_lap_number_value_changed"]
