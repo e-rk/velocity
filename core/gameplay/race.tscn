@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://fnr6x5fft0m6"]
+
+[ext_resource type="Script" path="res://core/gameplay/race.gd" id="1_1qfiq"]
+[ext_resource type="Script" path="res://core/gameplay/racer_controller.gd" id="6_58nx4"]
+
+[node name="Race" type="Node"]
+script = ExtResource("1_1qfiq")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://core/gameplay/race.tscn")
+spawn_path = NodePath("..")
+
+[node name="RacerController" type="Node" parent="."]
+script = ExtResource("6_58nx4")
+
+[connection signal="rules_changed" from="." to="." method="_on_rules_changed"]
+[connection signal="reposition_requested" from="RacerController" to="." method="_on_racer_controller_reposition_requested"]
