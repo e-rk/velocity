@@ -35,6 +35,8 @@ var prev_linear_velocity = Vector3.ZERO
 var prev_angular_velocity = Vector3.ZERO
 var skip_counter = 0
 
+@onready var collider: CollisionShape3D = $Collider
+
 
 func _ready():
 	if handling_model == null:
@@ -42,6 +44,10 @@ func _ready():
 	self.set_use_custom_integrator(true)
 	self.mass = self.performance.mass()
 	self.center_of_mass_mode = CENTER_OF_MASS_MODE_CUSTOM
+
+
+func dimensions() -> Vector3:
+	return collider.shape.size
 
 
 func shift_up():
