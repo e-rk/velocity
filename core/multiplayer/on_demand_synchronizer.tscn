@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://bxxaadjg00dar"]
+
+[ext_resource type="Script" path="res://core/multiplayer/on_demand_synchronizer.gd" id="1_gwvtl"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_kvh6g"]
+properties/0/path = NodePath("OnDemandSynchronizer:sequence_counter")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+
+[node name="OnDemandSynchronizer" type="MultiplayerSynchronizer"]
+replication_config = SubResource("SceneReplicationConfig_kvh6g")
+script = ExtResource("1_gwvtl")
+
+[connection signal="delta_synchronized" from="." to="." method="_on_delta_synchronized"]
