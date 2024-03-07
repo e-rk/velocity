@@ -1,25 +1,12 @@
 extends HBoxContainer
 class_name TrackPicker
 
+@export var config: TrackConfig = TrackConfig.new()
+
+@onready var track_selection: SyncableOptionButton = $TrackSelection
+
 signal track_selected
-signal track_externally_changed
 signal track_not_found
-
-@export var selected_track: String = "":
-	set(value):
-		selected_track = value
-		self.track_externally_changed.emit()
-	get:
-		return selected_track
-
-@export var disabled: bool = false:
-	set(value):
-		disabled = value
-		self._on_disable_state_changed()
-	get:
-		return disabled
-
-@onready var track_selection: OptionButton = $TrackSelection
 
 
 func _ready():
@@ -27,27 +14,10 @@ func _ready():
 
 
 func _on_track_database_updated():
-	var idx = 0
 	for track in TrackDB.tracks.values():
-		track_selection.add_item(track.name)
-		track_selection.set_item_metadata(idx, track.path)
-		idx += 1
-	track_selection.select(0)
+		track_selection.add_syncable_item(track.name, track.uuid)
 
 
-func _on_track_selection_item_selected(index):
-	selected_track = track_selection.get_item_metadata(index)
-	self.track_selected.emit()
-
-
-func _on_disable_state_changed():
-	for i in track_selection.item_count:
-		track_selection.set_item_disabled(i, self.disabled)
-
-
-func _on_track_externally_changed():
-	for i in track_selection.item_count:
-		var track = track_selection.get_item_metadata(i)
-		if track == self.selected_track:
-			track_selection.selected = i
-			break
+func _on_track_selection_syncable_item_selected(uuid):
+	self.config.track_uuid = uuid
+	self.track_selected.emit(self.config.duplicate(true))
