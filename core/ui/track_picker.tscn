@@ -1,6 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://cf011ecvi2pr7"]
+[gd_scene load_steps=4 format=3 uid="uid://cf011ecvi2pr7"]
 
 [ext_resource type="Script" path="res://core/ui/track_picker.gd" id="1_iq34u"]
+[ext_resource type="Script" path="res://core/ui/common/syncable_option_button.gd" id="2_rh82l"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_lrg3q"]
+properties/0/path = NodePath("TrackSelection:selected_uuid")
+properties/0/spawn = true
+properties/0/replication_mode = 1
 
 [node name="TrackPicker" type="HBoxContainer"]
 script = ExtResource("1_iq34u")
@@ -11,6 +17,9 @@ text = "Selected track"
 
 [node name="TrackSelection" type="OptionButton" parent="."]
 layout_mode = 2
+script = ExtResource("2_rh82l")
 
-[connection signal="track_externally_changed" from="." to="." method="_on_track_externally_changed"]
-[connection signal="item_selected" from="TrackSelection" to="." method="_on_track_selection_item_selected"]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_lrg3q")
+
+[connection signal="syncable_item_selected" from="TrackSelection" to="." method="_on_track_selection_syncable_item_selected"]
