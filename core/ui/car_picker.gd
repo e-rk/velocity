@@ -4,7 +4,7 @@ class_name CarPicker
 signal car_selected
 @export var selected_car: String = ""
 
-@onready var car_selection = $CarSelection
+@onready var car_selection: OptionButton = $CarSelection
 
 
 func _ready():
@@ -19,6 +19,7 @@ func _on_car_database_updated():
 		car_selection.set_item_metadata(idx, car.path)
 		idx += 1
 	car_selection.select(0)
+	self.selected_car = car_selection.get_selected_metadata()
 
 
 func _on_car_selection_item_selected(index):
