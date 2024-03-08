@@ -14,6 +14,9 @@ class_name MainLobby
 @onready var car_picker = %CarPicker
 @onready var disconnect_button = %Disconnect
 
+var race_rules: RaceRules
+var track_config: TrackConfig
+
 
 func _ready():
 	multiplayer.peer_connected.connect(self._on_peer_connected)
@@ -86,7 +89,6 @@ func _on_host_game_dialog_host_mode_set(lobby_name: String):
 		multiplayer.multiplayer_peer = peer
 	if err != OK:
 		print("Host error: " + str(err))
-	track_picker.visible = true
 	self.send_current_player_data()
 
 
@@ -94,8 +96,8 @@ func _on_car_picker_car_selected():
 	self.send_current_player_data()
 
 
-func _on_track_picker_track_selected():
-	pass  # Replace with function body.
+func _on_track_picker_track_selected(config: TrackConfig):
+	self.track_config = config
 
 
 func _on_start_race_pressed():
@@ -109,7 +111,6 @@ func _on_player_name_text_changed(new_text):
 func _on_peer_connected(id):
 	print("Connected: %d" % id)
 	disconnect_button.disabled = false
-	track_picker.disabled = false
 
 
 func _on_peer_disconnected(id):
@@ -120,9 +121,12 @@ func _on_peer_disconnected(id):
 func _on_connected_to_server():
 	print("Connected to server")
 	disconnect_button.disabled = false
-	track_picker.disabled = true
 	self.send_current_player_data()
 
 
 func _on_connection_failed():
 	print("Connection failed")
+
+
+func _on_rule_configurator_rules_changed(rules: RaceRules):
+	race_rules = rules
