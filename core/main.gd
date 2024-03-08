@@ -65,7 +65,7 @@ func send_current_player_data():
 
 
 func _on_disconnect_dialog_confirmed():
-	multiplayer.multiplayer_peer = null
+	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 
 
 func _on_join_game_dialog_server_selected(server_address: String):
