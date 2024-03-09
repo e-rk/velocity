@@ -1,17 +1,91 @@
-[gd_scene load_steps=3 format=3 uid="uid://fnr6x5fft0m6"]
+[gd_scene load_steps=10 format=3 uid="uid://fnr6x5fft0m6"]
 
 [ext_resource type="Script" path="res://core/gameplay/race.gd" id="1_1qfiq"]
+[ext_resource type="Script" path="res://core/gameplay/race_state_context.gd" id="2_p7ekf"]
+[ext_resource type="Script" path="res://core/gameplay/race_state_ending.gd" id="4_nr0d0"]
+[ext_resource type="Script" path="res://core/gameplay/RaceStateWaitingForPlayers.gd" id="4_nrwxl"]
+[ext_resource type="Script" path="res://core/gameplay/race_state_start_countdown.gd" id="4_r43nu"]
+[ext_resource type="Script" path="res://core/gameplay/race_setup_state.gd" id="4_yv50v"]
+[ext_resource type="Script" path="res://core/gameplay/race_state_in_progress.gd" id="5_5jlev"]
 [ext_resource type="Script" path="res://core/gameplay/racer_controller.gd" id="6_58nx4"]
+[ext_resource type="Script" path="res://core/gameplay/race_state.gd" id="9_suekg"]
 
 [node name="Race" type="Node"]
 script = ExtResource("1_1qfiq")
 
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("res://core/gameplay/race.tscn")
-spawn_path = NodePath("..")
+[node name="RaceStateContext" type="Node" parent="."]
+script = ExtResource("2_p7ekf")
+initial_state = NodePath("RaceStateSetup")
 
-[node name="RacerController" type="Node" parent="."]
+[node name="RaceStateSetup" type="Node" parent="RaceStateContext"]
+script = ExtResource("4_yv50v")
+
+[node name="RaceStateWaitingForPlayers" type="Node" parent="RaceStateContext"]
+script = ExtResource("4_nrwxl")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="RaceStateContext/RaceStateWaitingForPlayers"]
+_spawnable_scenes = PackedStringArray("res://core/gameplay/race.tscn")
+spawn_path = NodePath("../../..")
+
+[node name="RaceStateStartCountdown" type="Node" parent="RaceStateContext"]
+script = ExtResource("4_r43nu")
+
+[node name="Timer" type="Timer" parent="RaceStateContext/RaceStateStartCountdown"]
+wait_time = 3.0
+one_shot = true
+
+[node name="MarginContainer" type="MarginContainer" parent="RaceStateContext/RaceStateStartCountdown"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_top = 150
+
+[node name="StartingMessage" type="Label" parent="RaceStateContext/RaceStateStartCountdown/MarginContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 40
+text = "Starting in ..."
+horizontal_alignment = 1
+
+[node name="RaceStateInProgress" type="Node" parent="RaceStateContext"]
+script = ExtResource("5_5jlev")
+
+[node name="RaceStateEnding" type="Node" parent="RaceStateContext"]
+script = ExtResource("4_nr0d0")
+
+[node name="Timer" type="Timer" parent="RaceStateContext/RaceStateEnding"]
+wait_time = 4.0
+one_shot = true
+
+[node name="MarginContainer" type="MarginContainer" parent="RaceStateContext/RaceStateEnding"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_top = 150
+
+[node name="EndingMessage" type="Label" parent="RaceStateContext/RaceStateEnding/MarginContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 40
+text = "Ending in ..."
+horizontal_alignment = 1
+
+[node name="RaceStateEnded" type="Node" parent="RaceStateContext"]
+script = ExtResource("9_suekg")
+
+[node name="RacerController" type="Node" parent="RaceStateContext"]
 script = ExtResource("6_58nx4")
 
-[connection signal="rules_changed" from="." to="." method="_on_rules_changed"]
-[connection signal="reposition_requested" from="RacerController" to="." method="_on_racer_controller_reposition_requested"]
+[connection signal="entered" from="RaceStateContext/RaceStateWaitingForPlayers" to="." method="_on_race_state_waiting_for_players_entered"]
+[connection signal="timeout" from="RaceStateContext/RaceStateStartCountdown/Timer" to="RaceStateContext/RaceStateStartCountdown" method="_on_timer_timeout"]
+[connection signal="timeout" from="RaceStateContext/RaceStateEnding/Timer" to="RaceStateContext/RaceStateEnding" method="_on_timer_timeout"]
+[connection signal="entered" from="RaceStateContext/RaceStateEnded" to="." method="_on_race_state_ended_entered"]
+[connection signal="reposition_requested" from="RaceStateContext/RacerController" to="." method="_on_racer_controller_reposition_requested"]
