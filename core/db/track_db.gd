@@ -22,6 +22,8 @@ func _on_directory_watcher_content_changed():
 	var tracks = {}
 	for file in watcher.files:
 		var path = "%s/%s/%s.glb" % [watcher.directory, file, file]
+		if not FileAccess.file_exists(path):
+			continue
 		var uuid = path
 		var car = TrackData.new()
 		car.name = file
