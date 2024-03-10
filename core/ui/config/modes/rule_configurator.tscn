@@ -5,35 +5,35 @@
 [ext_resource type="Script" path="res://core/ui/common/syncable_option_button.gd" id="2_486de"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_q8dv4"]
-properties/0/path = NodePath("VBoxContainer/HBoxContainer/ModeSelector:selected_uuid")
+properties/0/path = NodePath("HBoxContainer/ModeSelector:selected_uuid")
 properties/0/spawn = true
 properties/0/replication_mode = 2
 
-[node name="RuleConfigurator" type="PanelContainer"]
+[node name="RuleConfigurator" type="VBoxContainer"]
+offset_right = 143.0
+offset_bottom = 58.0
 script = ExtResource("1_scn7g")
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
-replication_config = SubResource("SceneReplicationConfig_q8dv4")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="HBoxContainer"]
 layout_mode = 2
 text = "Game mode"
 
-[node name="ModeSelector" type="OptionButton" parent="VBoxContainer/HBoxContainer"]
+[node name="ModeSelector" type="OptionButton" parent="HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 8
 script = ExtResource("2_486de")
 
-[node name="ConfigureButton" type="Button" parent="VBoxContainer"]
+[node name="ConfigureButton" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Configure..."
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_q8dv4")
 
 [node name="Configurator" type="PopupPanel" parent="."]
 unique_name_in_owner = true
@@ -94,8 +94,8 @@ size = Vector2i(530, 500)
 ok_button_text = "Save"
 access = 1
 
-[connection signal="syncable_item_selected" from="VBoxContainer/HBoxContainer/ModeSelector" to="." method="_on_mode_selector_syncable_item_selected"]
-[connection signal="pressed" from="VBoxContainer/ConfigureButton" to="." method="_on_configure_button_pressed"]
+[connection signal="syncable_item_selected" from="HBoxContainer/ModeSelector" to="." method="_on_mode_selector_syncable_item_selected"]
+[connection signal="pressed" from="ConfigureButton" to="." method="_on_configure_button_pressed"]
 [connection signal="popup_hide" from="Configurator" to="." method="_on_configurator_popup_hide"]
 [connection signal="pressed" from="Configurator/VBoxContainer/HBoxContainer/SetButton" to="." method="_on_set_button_pressed"]
 [connection signal="pressed" from="Configurator/VBoxContainer/HBoxContainer/SetButton" to="OnDemandSynchronizer" method="on_demand_sync"]

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cf011ecvi2pr7"]
 
-[ext_resource type="Script" path="res://core/ui/track_picker.gd" id="1_iq34u"]
-[ext_resource type="Script" path="res://core/ui/common/syncable_option_button.gd" id="2_rh82l"]
+[ext_resource type="Script" path="res://core/ui/config/track_picker.gd" id="1_wyeq0"]
+[ext_resource type="Script" path="res://core/ui/common/syncable_option_button.gd" id="2_vo8gj"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_lrg3q"]
 properties/0/path = NodePath("TrackSelection:selected_uuid")
@@ -20,7 +20,7 @@ properties/3/replication_mode = 2
 [node name="TrackPicker" type="VBoxContainer"]
 offset_right = 158.0
 offset_bottom = 58.0
-script = ExtResource("1_iq34u")
+script = ExtResource("1_wyeq0")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
@@ -32,9 +32,10 @@ text = "Selected track"
 [node name="TrackSelection" type="OptionButton" parent="HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-script = ExtResource("2_rh82l")
+script = ExtResource("2_vo8gj")
 
 [node name="ConfigureButton" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Configure..."
 

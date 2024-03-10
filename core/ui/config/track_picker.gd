@@ -5,6 +5,7 @@ class_name TrackPicker
 
 @onready var track_selection: SyncableOptionButton = %TrackSelection
 @onready var configure_panel: PopupPanel = $ConfigurePanel
+@onready var configure_button: Button = %ConfigureButton
 
 signal track_selected
 signal track_not_found
@@ -13,6 +14,16 @@ signal track_not_found
 func _ready():
 	TrackDB.database_updated.connect(self._on_track_database_updated)
 	configure_panel.popup_window = false
+
+
+func disable():
+	configure_button.disabled = true
+	track_selection.disabled = true
+
+
+func enable():
+	configure_button.disabled = false
+	track_selection.disabled = false
 
 
 func _on_track_database_updated():

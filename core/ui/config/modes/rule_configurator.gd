@@ -8,6 +8,7 @@ const rules_extension = ".rules.tres"
 @onready var rule_configurator = null
 @onready var load_dialog: FileDialog = $LoadDialog
 @onready var save_dialog: FileDialog = $SaveDialog
+@onready var configure_button: Button = %ConfigureButton
 
 signal rules_changed
 
@@ -66,7 +67,18 @@ func set_mode(mode_uuid: String):
 	self.apply_config()
 
 
+func disable():
+	mode_selector.disabled = true
+	configure_button.disabled = true
+
+
+func enable():
+	mode_selector.disabled = false
+	configure_button.disabled = false
+
+
 func _ready():
+	configurator.popup_window = false
 	for mode in GameModeDB.get_all_modes():
 		mode_selector.add_syncable_item(mode.mode_display_name(), mode.mode_uuid())
 	self.set_mode(self.get_current_uuid())
