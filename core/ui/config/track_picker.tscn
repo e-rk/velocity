@@ -4,16 +4,16 @@
 [ext_resource type="Script" path="res://core/ui/common/syncable_option_button.gd" id="2_vo8gj"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_lrg3q"]
-properties/0/path = NodePath("TrackSelection:selected_uuid")
+properties/0/path = NodePath("HBoxContainer/TrackSelection:selected_uuid")
 properties/0/spawn = true
 properties/0/replication_mode = 2
-properties/1/path = NodePath("../ConfigurePanel/VBoxContainer/NightButton:button_pressed")
+properties/1/path = NodePath("ConfigurePanel/VBoxContainer/NightButton:button_pressed")
 properties/1/spawn = true
 properties/1/replication_mode = 2
-properties/2/path = NodePath("../ConfigurePanel/VBoxContainer/WeatherButton:button_pressed")
+properties/2/path = NodePath("ConfigurePanel/VBoxContainer/WeatherButton:button_pressed")
 properties/2/spawn = true
 properties/2/replication_mode = 2
-properties/3/path = NodePath("../ConfigurePanel/VBoxContainer/MirrorButton:button_pressed")
+properties/3/path = NodePath("ConfigurePanel/VBoxContainer/MirrorButton:button_pressed")
 properties/3/spawn = true
 properties/3/replication_mode = 2
 
@@ -67,7 +67,6 @@ layout_mode = 2
 text = "Mirrored"
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
-root_path = NodePath("../HBoxContainer")
 replication_config = SubResource("SceneReplicationConfig_lrg3q")
 
 [connection signal="syncable_item_selected" from="HBoxContainer/TrackSelection" to="." method="_on_track_selection_syncable_item_selected"]
