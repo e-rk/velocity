@@ -1,0 +1,49 @@
+[gd_scene load_steps=5 format=3 uid="uid://cfwpo7o5qxn42"]
+
+[ext_resource type="Script" path="res://core/gameplay/player/player.gd" id="1_n5itm"]
+[ext_resource type="Script" path="res://core/gameplay/player/player_input.gd" id="2_7f16e"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_mia2f"]
+properties/0/path = NodePath(".:car_uuid")
+properties/0/spawn = true
+properties/0/replication_mode = 0
+properties/1/path = NodePath(".:initial_transform")
+properties/1/spawn = true
+properties/1/replication_mode = 0
+properties/2/path = NodePath(".:player_name")
+properties/2/spawn = true
+properties/2/replication_mode = 0
+properties/3/path = NodePath(".:disable_steering")
+properties/3/spawn = true
+properties/3/replication_mode = 2
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_q7o5m"]
+properties/0/path = NodePath(".:steering")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:throttle")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:brake")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:gear")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:handbrake")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+
+[node name="Player" type="Node"]
+script = ExtResource("1_n5itm")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_mia2f")
+
+[node name="Input" type="Node" parent="."]
+script = ExtResource("2_7f16e")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="Input"]
+replication_config = SubResource("SceneReplicationConfig_q7o5m")
+
+[connection signal="reposition_requested" from="Input" to="." method="_on_input_reposition_requested"]
