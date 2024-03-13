@@ -20,7 +20,7 @@ func gear_velocity_to_rpm(gear) -> float:
 	return data["manual_velocity_to_rpm_ratio"][gear]
 
 
-func max_gear() -> int:
+func max_gear() -> CarTypes.Gear:
 	return data["manual_number_of_gears"] - 1
 
 
