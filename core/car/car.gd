@@ -23,12 +23,17 @@ extends RigidBody3D
 	get:
 		return brake
 
+@export var gear := CarTypes.Gear.NEUTRAL:
+	set(value):
+		gear = clamp(value, CarTypes.Gear.REVERSE, self.max_gear())
+	get:
+		return gear
+
 @export var handling_model: HandlingModel
 
 const RAYCAST_DISTANCE = 10
 
 var current_rpm := 0.0
-var current_gear := CarTypes.Gear.NEUTRAL
 var current_steering := 0.0
 var linear_acceleration = Vector3.ZERO
 var prev_linear_velocity = Vector3.ZERO
@@ -50,46 +55,8 @@ func dimensions() -> Vector3:
 	return collider.shape.size
 
 
-func shift_up():
-	var next_gear = self.current_gear
-	match self.current_gear:
-		CarTypes.Gear.REVERSE:
-			next_gear = CarTypes.Gear.NEUTRAL
-		CarTypes.Gear.NEUTRAL:
-			next_gear = CarTypes.Gear.GEAR_1
-		CarTypes.Gear.GEAR_1:
-			next_gear = CarTypes.Gear.GEAR_2
-		CarTypes.Gear.GEAR_2:
-			next_gear = CarTypes.Gear.GEAR_3
-		CarTypes.Gear.GEAR_3:
-			next_gear = CarTypes.Gear.GEAR_4
-		CarTypes.Gear.GEAR_4:
-			next_gear = CarTypes.Gear.GEAR_5
-		CarTypes.Gear.GEAR_5:
-			next_gear = CarTypes.Gear.GEAR_6
-	self.current_gear = next_gear
-	prints("Current gear: ", CarTypes.Gear.keys()[self.current_gear])
-
-
-func shift_down():
-	var next_gear = self.current_gear
-	match self.current_gear:
-		CarTypes.Gear.NEUTRAL:
-			next_gear = CarTypes.Gear.REVERSE
-		CarTypes.Gear.GEAR_1:
-			next_gear = CarTypes.Gear.NEUTRAL
-		CarTypes.Gear.GEAR_2:
-			next_gear = CarTypes.Gear.GEAR_1
-		CarTypes.Gear.GEAR_3:
-			next_gear = CarTypes.Gear.GEAR_2
-		CarTypes.Gear.GEAR_4:
-			next_gear = CarTypes.Gear.GEAR_3
-		CarTypes.Gear.GEAR_5:
-			next_gear = CarTypes.Gear.GEAR_4
-		CarTypes.Gear.GEAR_6:
-			next_gear = CarTypes.Gear.GEAR_5
-	self.current_gear = next_gear
-	prints("Current gear: ", CarTypes.Gear.keys()[self.current_gear])
+func max_gear() -> CarTypes.Gear:
+	return self.performance.max_gear()
 
 
 func do_raycast_down(position: Vector3) -> Dictionary:
@@ -173,7 +140,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		"has_contact_with_ground": self.has_contact_with_ground(positional_attributes),
 		"timestep": state.step * 2,
 		"performance": self.performance,
-		"gear": self.current_gear,
+		"gear": self.gear,
 		"rpm": self.current_rpm,
 		"mass": self.mass,
 		"basis": self.basis,
