@@ -3,21 +3,22 @@ extends RaceState
 @onready var race_state_start_countdown = $"../RaceStateStartCountdown"
 @onready var spawner = $MultiplayerSpawner
 
-
-func _ready():
-	spawner.spawn_function = self._spawn_player_internal
+const player_scene = preload("res://core/gameplay/player/player.tscn")
 
 
-func spawn_player(player_config: PlayerConfig):
-	var serialized = player_config.serialize()
-	spawner.spawn(serialized)
+func spawn_player(player_id, player_config: PlayerConfig):
+	var player = player_scene.instantiate()
+	player.car_uuid = player_config.car_uuid
+	player.player_name = player_config.player_name
+	player.initial_transform = context.race_logic.get_spawn_position(player)
+	player.name = str(player_id)
+	player.ready.connect(self._on_player_spawned.bind(player))
+	context.player_container.add_child(player)
 
 
 func start_race():
 	context.set_state(race_state_start_countdown)
 
 
-func _spawn_player_internal(data: Dictionary) -> Node:
-	var player = PlayerConfig.deserialize(data)
-	var ret = context.race_logic.spawn_player(context.track, player)
-	return ret
+func _on_player_spawned(node: Player):
+	context.race_logic.player_spawned(node)

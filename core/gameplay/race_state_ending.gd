@@ -7,7 +7,8 @@ extends RaceState
 
 func enter():
 	timer.start()
-	context.controller.steering_enabled = false
+	for player in context.player_container.get_children():
+		player.disable_steering = true
 	ending_message.show()
 	super()
 

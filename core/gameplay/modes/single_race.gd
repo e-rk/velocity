@@ -5,16 +5,24 @@ extends BaseRaceLogic
 
 @onready var spectator = $PlayerSpectator
 
+signal racer_finished(racer: Player)
 
-func spawn_player(track: RaceTrack, data: PlayerConfig):
-	var car_data = CarDB.get_car_by_uuid(data.car_uuid)
-	var car = load(car_data.path).instantiate()
-	var racer = Racer.new(car)
+var players_spawned := 0
+
+
+func get_spawn_position(_player: Player) -> Transform3D:
+	var spawn_transform = track.get_spawn_transform(self.players_spawned)
+	self.players_spawned += 1
+	return spawn_transform
+
+
+func player_spawned(player: Player):
+	var racer = Racer.new()
+	racer.car = player.car
+	player.add_child(racer)
 	racer.add_to_group(&"Racers")
-	racer.add_to_group(&"SpectatedRacer")
-	racer.add_to_group(&"ControlledRacer")
-	car.global_transform = track.get_spawn_transform(0)
-	return racer
+	if player.is_local():
+		racer.add_to_group(&"SpectatedRacer")
 
 
 func _ready():

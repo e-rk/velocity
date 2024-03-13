@@ -5,28 +5,29 @@ extends RaceState
 
 func enter():
 	context.race_logic.race_finished.connect(self._on_race_finished)
-	context.controller.reposition_requested.connect(self._on_racer_controller_reposition_requested)
+	for player in context.player_container.get_children():
+		player.reposition_requested.connect(
+			self._on_racer_controller_reposition_requested.bind(player)
+		)
 	context.race_logic.process_mode = Node.PROCESS_MODE_INHERIT
 	super()
 
 
 func leave():
 	context.race_logic.race_finished.disconnect(self._on_race_finished)
-	context.controller.reposition_requested.disconnect(
-		self._on_racer_controller_reposition_requested
-	)
+	super()
 
 
 func _on_race_finished():
 	context.set_state(race_state_ending)
 
 
-func _on_racer_controller_reposition_requested(car: Car):
+func _on_racer_controller_reposition_requested(player: Player):
 	if !context.race_logic.reposition_allowed():
 		return
-	car.transform = context.track.get_closest_transform(car.global_position)
-	car.linear_velocity = Vector3.ZERO
-	car.angular_velocity = Vector3.ZERO
+	player.car.transform = context.track.get_closest_transform(player.car.global_position)
+	player.car.linear_velocity = Vector3.ZERO
+	player.car.angular_velocity = Vector3.ZERO
 
 
 func end_race():

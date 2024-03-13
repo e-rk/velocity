@@ -2,7 +2,7 @@ class_name RaceState
 extends State
 
 
-func spawn_player(player_config: PlayerConfig):
+func spawn_player(player_id, player_config: PlayerConfig):
 	pass
 
 

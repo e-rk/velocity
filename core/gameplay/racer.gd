@@ -11,16 +11,10 @@ var laps: int = 0:
 		return laps
 
 var max_laps := 0
-var car: Car
-var racer_name: String = ""
 var current_lap_time := 0.0
 var last_lap_time := 0.0
 var track_progress := 0.80
-
-
-func _init(car: Car):
-	self.car = car
-	self.add_child(car)
+var car: Car
 
 
 func _process(delta: float):

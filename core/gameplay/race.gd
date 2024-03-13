@@ -11,8 +11,12 @@ func end_race():
 	race_state_context.end_race()
 
 
-func spawn_player(player_config: PlayerConfig):
-	race_state_context.spawn_player(player_config)
+func spawn_player(player_id, player_config: PlayerConfig):
+	race_state_context.spawn_player(player_id, player_config)
+
+
+func despawn_player(player_id: int):
+	race_state_context.despawn_player(player_id)
 
 
 func set_config(game_config: GameConfig):

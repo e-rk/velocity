@@ -6,15 +6,11 @@ extends Node
 signal race_finished
 
 
-func spawn_player(track: RaceTrack, data: PlayerConfig):
-	pass
+func get_spawn_position(player: Player) -> Transform3D:
+	return Transform3D.IDENTITY
 
 
-func player_spawned(track: RaceTrack, data: PlayerConfig):
-	pass
-
-
-func setup(track: RaceTrack):
+func player_spawned(player: Player):
 	pass
 
 
