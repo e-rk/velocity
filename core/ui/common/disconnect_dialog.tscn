@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://blnopg2eg5tfb"]
+
+[ext_resource type="Script" path="res://core/ui/common/disconnect_button.gd" id="1_m5q5d"]
+
+[node name="Disconnect" type="Button"]
+disabled = true
+text = "Disconnect"
+script = ExtResource("1_m5q5d")
+
+[node name="DisconnectDialog" type="ConfirmationDialog" parent="."]
+initial_position = 4
+dialog_text = "Leave the lobby?"
+
+[connection signal="pressed" from="." to="." method="_on_pressed"]
+[connection signal="confirmed" from="DisconnectDialog" to="." method="_on_disconnect_dialog_confirmed"]
