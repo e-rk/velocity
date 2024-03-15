@@ -47,8 +47,10 @@ func _set_by_uuid(uuid: String):
 func set_by_uuid(uuid: String):
 	self.selected_uuid = uuid
 
+
 func get_selected_uuid() -> String:
 	return self.selected_uuid
+
 
 func _on_item_selected(idx):
 	var id = self.get_item_id(idx)

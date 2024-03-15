@@ -1,30 +1,58 @@
-[gd_scene load_steps=11 format=3 uid="uid://drxrxxcoribky"]
+[gd_scene load_steps=12 format=3 uid="uid://drxrxxcoribky"]
 
-[ext_resource type="Script" path="res://core/main.gd" id="1_ga4gl"]
-[ext_resource type="PackedScene" uid="uid://b00fb5ox2w4oh" path="res://core/ui/car_picker.tscn" id="2_msbl2"]
-[ext_resource type="PackedScene" uid="uid://cf011ecvi2pr7" path="res://core/ui/track_picker.tscn" id="3_vrrd8"]
-[ext_resource type="Script" path="res://core/ui/disconnect_button.gd" id="4_gm1a6"]
-[ext_resource type="Script" path="res://core/ui/join_button.gd" id="4_gwb6y"]
-[ext_resource type="PackedScene" uid="uid://dyaeadu4s2csp" path="res://core/ui/config/modes/rule_configurator.tscn" id="4_x4htp"]
+[ext_resource type="PackedScene" uid="uid://cobfxotpk11ed" path="res://core/ui/config/player_config.tscn" id="2_bde8t"]
+[ext_resource type="PackedScene" uid="uid://dsfc26eqpq6ki" path="res://core/ui/config/game_config.tscn" id="3_mpyi5"]
 [ext_resource type="PackedScene" uid="uid://b06d2fypc8o5p" path="res://core/ui/join_game_dialog.tscn" id="5_fw77u"]
-[ext_resource type="Script" path="res://core/ui/host_button.gd" id="6_ttran"]
+[ext_resource type="PackedScene" uid="uid://blnopg2eg5tfb" path="res://core/ui/common/disconnect_dialog.tscn" id="6_0dax1"]
 [ext_resource type="PackedScene" uid="uid://dj051yp3mnerg" path="res://core/ui/host_game_dialog.tscn" id="7_stv8w"]
+[ext_resource type="Script" path="res://core/ui/lobby/lobby_state_context.gd" id="9_ea3qp"]
+[ext_resource type="PackedScene" uid="uid://hx8gqlpaxyc1" path="res://core/multiplayer/lobby_status.tscn" id="9_grfk7"]
+[ext_resource type="Script" path="res://core/ui/lobby/lobby_state_disconnected.gd" id="10_h0874"]
+[ext_resource type="Script" path="res://core/ui/lobby/lobby_state_hosting.gd" id="11_pykj5"]
+[ext_resource type="Script" path="res://core/ui/lobby/lobby_state_joined.gd" id="12_hs50p"]
+[ext_resource type="PackedScene" uid="uid://bdjcugue7syvn" path="res://core/multiplayer/player_data_container.tscn" id="14_xn7nn"]
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_h2h8r"]
-properties/0/path = NodePath(".:players")
-properties/0/spawn = true
-properties/0/replication_mode = 2
+[node name="LobbyStateContext" type="Node"]
+script = ExtResource("9_ea3qp")
+initial_state = NodePath("LobbyStateDisconnected")
 
-[node name="Main" type="Control"]
+[node name="LobbyStateDisconnected" type="Node" parent="."]
+script = ExtResource("10_h0874")
+
+[node name="LobbyStateHosting" type="Node" parent="."]
+script = ExtResource("11_pykj5")
+
+[node name="ConfirmStart" type="ConfirmationDialog" parent="LobbyStateHosting"]
+initial_position = 4
+size = Vector2i(450, 100)
+ok_button_text = "Start race"
+dialog_text = "Not all players are ready. Do you want to start anyways?"
+
+[node name="LobbyStateJoined" type="Node" parent="."]
+script = ExtResource("12_hs50p")
+
+[node name="DisconnectedPopup" type="AcceptDialog" parent="LobbyStateJoined"]
+initial_position = 4
+size = Vector2i(220, 100)
+dialog_text = "Disconnected from server."
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://core/gameplay/race.tscn")
+spawn_path = NodePath("..")
+spawn_limit = 1
+
+[node name="PlayerDataContainer" parent="." instance=ExtResource("14_xn7nn")]
+unique_name_in_owner = true
+
+[node name="Interface" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_ga4gl")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="Interface"]
 layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5
@@ -34,30 +62,15 @@ offset_right = 158.0
 offset_bottom = 25.0
 grow_vertical = 2
 
-[node name="CarPicker" parent="VBoxContainer" instance=ExtResource("2_msbl2")]
+[node name="PlayerConfig" parent="Interface/VBoxContainer" instance=ExtResource("2_bde8t")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="TrackPicker" parent="VBoxContainer" instance=ExtResource("3_vrrd8")]
+[node name="GameConfig" parent="Interface/VBoxContainer" instance=ExtResource("3_mpyi5")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
-layout_mode = 2
-text = "Player name"
-
-[node name="PlayerName" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Player"
-
-[node name="RuleConfigurator" parent="VBoxContainer" instance=ExtResource("4_x4htp")]
-layout_mode = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="Interface"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -70,16 +83,19 @@ offset_right = 20.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Button" type="Button" parent="HBoxContainer"]
+[node name="Ready" type="Button" parent="Interface/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 disabled = true
+toggle_mode = true
 text = "Ready"
 
-[node name="StartRace" type="Button" parent="HBoxContainer"]
+[node name="StartRace" type="Button" parent="Interface/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Start race"
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+[node name="HBoxContainer2" type="HBoxContainer" parent="Interface"]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -91,75 +107,74 @@ offset_top = -40.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="Join" type="Button" parent="HBoxContainer2"]
-layout_mode = 2
-text = "Join game..."
-script = ExtResource("4_gwb6y")
-
-[node name="JoinGameDialog" parent="HBoxContainer2/Join" instance=ExtResource("5_fw77u")]
+[node name="JoinDialog" parent="Interface/HBoxContainer2" instance=ExtResource("5_fw77u")]
 unique_name_in_owner = true
-visible = false
+layout_mode = 2
 
-[node name="Host" type="Button" parent="HBoxContainer2"]
+[node name="HostDialog" parent="Interface/HBoxContainer2" instance=ExtResource("7_stv8w")]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Host game..."
-script = ExtResource("6_ttran")
 
-[node name="HostGameDialog" parent="HBoxContainer2/Host" instance=ExtResource("7_stv8w")]
-visible = false
-
-[node name="Disconnect" type="Button" parent="HBoxContainer2"]
+[node name="ShowLobby" type="Button" parent="Interface/HBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 disabled = true
-text = "Disconnect"
-script = ExtResource("4_gm1a6")
+toggle_mode = true
+text = "Show lobby"
 
-[node name="DisconnectDialog" type="ConfirmationDialog" parent="HBoxContainer2/Disconnect"]
-initial_position = 4
-dialog_text = "Leave the lobby?"
+[node name="Disconnect" parent="Interface/HBoxContainer2" instance=ExtResource("6_0dax1")]
+unique_name_in_owner = true
+layout_mode = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="LobbyWindow" type="Window" parent="Interface"]
+unique_name_in_owner = true
+title = "Lobby"
+initial_position = 2
+size = Vector2i(500, 400)
+visible = false
+
+[node name="PanelContainer" type="PanelContainer" parent="Interface/LobbyWindow"]
 custom_minimum_size = Vector2(400, 400)
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
+anchors_preset = 15
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -200.0
-offset_bottom = 200.0
-grow_horizontal = 0
+anchor_bottom = 1.0
+grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="Interface/LobbyWindow/PanelContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Interface/LobbyWindow/PanelContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="Interface/LobbyWindow/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Players"
 horizontal_alignment = 1
 
-[node name="PlayerList" type="ItemList" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="LobbyStatus" parent="Interface/LobbyWindow/PanelContainer/MarginContainer/VBoxContainer" instance=ExtResource("9_grfk7")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
-replication_config = SubResource("SceneReplicationConfig_h2h8r")
-
-[connection signal="car_selected" from="VBoxContainer/CarPicker" to="." method="_on_car_picker_car_selected"]
-[connection signal="track_selected" from="VBoxContainer/TrackPicker" to="." method="_on_track_picker_track_selected"]
-[connection signal="text_changed" from="VBoxContainer/HBoxContainer/PlayerName" to="." method="_on_player_name_text_changed"]
-[connection signal="rules_changed" from="VBoxContainer/RuleConfigurator" to="." method="_on_rule_configurator_rules_changed"]
-[connection signal="pressed" from="HBoxContainer/StartRace" to="." method="_on_start_race_pressed"]
-[connection signal="pressed" from="HBoxContainer2/Join" to="HBoxContainer2/Join" method="_on_pressed"]
-[connection signal="server_selected" from="HBoxContainer2/Join/JoinGameDialog" to="." method="_on_join_game_dialog_server_selected"]
-[connection signal="pressed" from="HBoxContainer2/Host" to="HBoxContainer2/Host" method="_on_pressed"]
-[connection signal="host_mode_set" from="HBoxContainer2/Host/HostGameDialog" to="." method="_on_host_game_dialog_host_mode_set"]
-[connection signal="pressed" from="HBoxContainer2/Disconnect" to="HBoxContainer2/Disconnect" method="_on_pressed"]
-[connection signal="confirmed" from="HBoxContainer2/Disconnect/DisconnectDialog" to="." method="_on_disconnect_dialog_confirmed"]
+[connection signal="start_requested" from="LobbyStateDisconnected" to="." method="_on_game_start_requested"]
+[connection signal="start_requested" from="LobbyStateHosting" to="." method="_on_game_start_requested"]
+[connection signal="confirmed" from="LobbyStateHosting/ConfirmStart" to="LobbyStateHosting" method="_on_confirm_start_confirmed"]
+[connection signal="despawned" from="MultiplayerSpawner" to="." method="_on_race_finished"]
+[connection signal="spawned" from="MultiplayerSpawner" to="." method="_on_race_standby"]
+[connection signal="all_players_standby" from="PlayerDataContainer" to="." method="_on_player_data_container_all_players_standby"]
+[connection signal="local_player_data_created" from="PlayerDataContainer" to="." method="_on_player_data_container_local_player_data_created"]
+[connection signal="local_player_data_created" from="PlayerDataContainer" to="." method="_on_player_data_container_data_created"]
+[connection signal="player_config_changed" from="PlayerDataContainer" to="." method="_on_player_data_container_data_created"]
+[connection signal="player_data_removed" from="PlayerDataContainer" to="." method="_on_player_data_container_player_data_removed"]
+[connection signal="remote_player_data_created" from="PlayerDataContainer" to="." method="_on_player_data_container_data_created"]
+[connection signal="player_config_changed" from="Interface/VBoxContainer/PlayerConfig" to="." method="_on_player_config_player_config_changed"]
+[connection signal="toggled" from="Interface/HBoxContainer/Ready" to="." method="_on_ready_toggled"]
+[connection signal="pressed" from="Interface/HBoxContainer/StartRace" to="." method="start_game"]
+[connection signal="server_selected" from="Interface/HBoxContainer2/JoinDialog" to="." method="join"]
+[connection signal="host_mode_set" from="Interface/HBoxContainer2/HostDialog" to="." method="host"]
+[connection signal="toggled" from="Interface/HBoxContainer2/ShowLobby" to="." method="_on_show_lobby_toggled"]
+[connection signal="disconnect_confirmed" from="Interface/HBoxContainer2/Disconnect" to="." method="disconnect_from_game"]
