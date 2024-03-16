@@ -37,7 +37,7 @@ func traction_powertrain(params: Dictionary, rpm: float) -> float:
 	return torque_output
 
 
-func drag_coefficient(params: Dictionary) -> float:
+func longitudal_drag_coefficient(params: Dictionary) -> float:
 	const COEFF1 = 3.0 / 2.0
 	const COEFF2 = 0.98
 	const COEFF3 = 0.36757159
@@ -58,7 +58,7 @@ func drag(params: Dictionary) -> float:
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var performance = params["performance"]
-	var result = DRAG_INIT * self.drag_coefficient(params)
+	var result = DRAG_INIT * self.longitudal_drag_coefficient(params)
 	var velocity_max_diff = abs(velocity_local.z) - performance.max_velocity()
 	result = result * velocity_local.z ** 3
 	if velocity_max_diff > 0:
