@@ -550,6 +550,12 @@ func process_inputs_cm(params: Dictionary) -> Dictionary:
 		"current_steering": result
 	}
 
+func gravity_cm(params: Dictionary) -> Dictionary:
+	var gravity = params["gravity_vector"]
+	return {
+		"linear_acceleration": gravity
+	}
+
 # Predicates
 
 
