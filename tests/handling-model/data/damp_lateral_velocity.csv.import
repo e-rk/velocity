@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://0p2gv4ektx08"
+
+[deps]
+
+files=["res://tests/handling-model/data/damp_lateral_velocity.result.translation"]
+
+source_file="res://tests/handling-model/data/damp_lateral_velocity.csv"
+dest_files=["res://tests/handling-model/data/damp_lateral_velocity.result.translation"]
+
+[params]
+
+compress=true
+delimiter=0

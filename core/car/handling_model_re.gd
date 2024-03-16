@@ -507,6 +507,29 @@ func neutral_gear_deceleration_cm(params: Dictionary) -> Dictionary:
 		"angular_acceleration": angular_acceleration,
 	}
 
+func damp_lateral_velocity_cm(params: Dictionary) -> Dictionary:
+	const LOW_VELOCITY_DAMP = 0.9
+	const LOW_VELOCITY_THRESHOLD = 1.0
+	const MEDIUM_VELOCITY_DAMP = 0.99
+	const HIGH_VELOCITY_THRESHOLD = 2.0
+	const HIGH_VELOCITY_DAMP = 0.99
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var lateral_velocity = abs(velocity_local.x)
+	var alpha = (lateral_velocity - 1) * 0.09 + 0.9
+	var beta = clamp(alpha, LOW_VELOCITY_DAMP, MEDIUM_VELOCITY_DAMP)
+	var d
+	if lateral_velocity < LOW_VELOCITY_THRESHOLD:
+		d = LOW_VELOCITY_DAMP
+	elif lateral_velocity > HIGH_VELOCITY_THRESHOLD:
+		d = MEDIUM_VELOCITY_DAMP
+	else:
+		d = beta
+	var accel_x = (d - 1) * velocity_local.x * 32
+	return {
+		"linear_acceleration": basis * Vector3(accel_x, 0, 0)
+	}
+
 # Predicates
 
 
