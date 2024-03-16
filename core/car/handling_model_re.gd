@@ -493,6 +493,19 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var forces = vector_rotate_y(f, -steering)
 	return forces
 
+func neutral_gear_deceleration_cm(params: Dictionary) -> Dictionary:
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var factor = 0.998
+	if abs(velocity_local.z) < 20.0:
+		factor = 0.99
+	factor = (factor - 1)
+	var linear_acceleration = factor * params["linear_velocity"] * 32
+	var angular_acceleration = factor * params["angular_velocity"] * 32
+	return {
+		"linear_acceleration": linear_acceleration,
+		"angular_acceleration": angular_acceleration,
+	}
 
 # Predicates
 

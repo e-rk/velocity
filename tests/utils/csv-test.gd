@@ -40,6 +40,12 @@ func local_linear_velocity(data: Dictionary) -> Vector3:
 	var vz = float(data.get("local_linear_velocity_z", "0.0"))
 	return Vector3(vx, vy, vz)
 
+func global_linear_velocity(data: Dictionary) -> Vector3:
+	var vx = float(data.get("global_linear_velocity_x", "0.0"))
+	var vy = float(data.get("global_linear_velocity_y", "0.0"))
+	var vz = float(data.get("global_linear_velocity_z", "0.0"))
+	return Vector3(vx, vy, vz)
+
 func global_angular_velocity(data: Dictionary) -> Vector3:
 	var wx = float(data.get("global_angular_velocity_x", "0.0"))
 	var wy = float(data.get("global_angular_velocity_y", "0.0"))
@@ -122,3 +128,10 @@ func road_surface(data: Dictionary) -> int:
 
 func weather(data: Dictionary) -> int:
 	return int(data["weather"])
+
+func basis_to_road(data: Dictionary) -> Basis:
+	return Basis(
+		Vector3(float(data["road_basis_right_x"]), float(data["road_basis_right_y"]), float(data["road_basis_right_z"])),
+		Vector3(float(data["road_basis_normal_x"]), float(data["road_basis_normal_y"]), float(data["road_basis_normal_z"])),
+		Vector3(float(data["road_basis_forward_x"]), float(data["road_basis_forward_y"]), float(data["road_basis_forward_z"])),
+	)
