@@ -556,8 +556,47 @@ func gravity_cm(params: Dictionary) -> Dictionary:
 		"linear_acceleration": gravity
 	}
 
+func near_stop_deceleration(params: Dictionary) -> Dictionary:
+	const VELOCITY_THRESHOLD_REVERSE = 4.0
+	const VELOCITY_THRESHOLD_FORWARD = 5.0
+	const DAMP_FACTOR = 0.8
+	var gear = params["gear"]
+	var basis = params["basis_to_road"]
+	var linear_velocity = params["linear_velocity"]
+	var angular_velocity = params["angular_velocity"]
+	var linear_acceleration = Vector3.ZERO
+	var angular_acceleration = Vector3.ZERO
+	var threshold = VELOCITY_THRESHOLD_FORWARD
+	if gear == CarTypes.Gear.REVERSE:
+		threshold = VELOCITY_THRESHOLD_REVERSE
+	var velocity_local = basis.inverse() * linear_velocity
+	if abs(velocity_local.z) < threshold:
+		var damp = DAMP_FACTOR - 1
+		linear_acceleration = damp * linear_velocity * 32
+		angular_acceleration = damp * angular_velocity * 32
+	return {
+		"linear_acceleration": linear_acceleration,
+		"angular_acceleration": angular_acceleration,
+	}
+
+var should_come_to_stop = predicate_all([
+	throttle_in_range_uint8(0, 32),
+	brake_in_range_uint8(0, 32),
+	neg(is_gear_neutral),
+])
+
+var near_stop_deceleration_cm = enable_if(should_come_to_stop, integrate(self.near_stop_deceleration))
+
+
 # Predicates
 
+func predicate_all(func_array: Array) -> Callable:
+	return func(params: Dictionary) -> bool:
+		return func_array.all(func(x): return x.call(params))
+
+func predicate_any(func_array: Array) -> Callable:
+	return func(params: Dictionary) -> bool:
+		return func_array.any(func(x): return x.call(params))
 
 func is_gear_neutral(params: Dictionary) -> bool:
 	return params["gear"] == CarTypes.Gear.NEUTRAL
@@ -565,3 +604,22 @@ func is_gear_neutral(params: Dictionary) -> bool:
 
 func is_gear_reverse(params: Dictionary) -> bool:
 	return params["gear"] == CarTypes.Gear.REVERSE
+
+func is_airborne(params: Dictionary) -> bool:
+	return params["has_contact_with_ground"] == false
+
+func throttle_in_range(lower: float, upper: float) -> Callable:
+	return func(params: Dictionary) -> bool:
+		var throttle = params["throttle_input"]
+		return lower <= throttle and throttle <= upper
+
+func brake_in_range(lower: float, upper: float) -> Callable:
+	return func(params: Dictionary) -> bool:
+		var throttle = params["brake_input"]
+		return lower <= throttle and throttle <= upper
+
+func throttle_in_range_uint8(lower: int, upper: int) -> Callable:
+	return throttle_in_range(lower / 255, upper / 255)
+
+func brake_in_range_uint8(lower: int, upper: int) -> Callable:
+	return brake_in_range(lower / 255, upper / 255)
