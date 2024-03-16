@@ -530,6 +530,26 @@ func damp_lateral_velocity_cm(params: Dictionary) -> Dictionary:
 		"linear_acceleration": basis * Vector3(accel_x, 0, 0)
 	}
 
+func process_inputs_cm(params: Dictionary) -> Dictionary:
+	var steering = params["current_steering"]
+	var performance = params["performance"]
+	var turn_in_ramp = performance.turn_in_ramp()
+	var turn_out_ramp = performance.turn_out_ramp()
+	var turn_input = params["turn_input"]
+	var steering_target = -128 * turn_input
+	var steering_diff = steering_target - steering
+	var delta
+	if steering_diff < 0 and steering > 0:
+		delta = turn_out_ramp
+	elif steering_diff > 0 and steering < 0:
+		delta = turn_out_ramp
+	else:
+		delta = turn_in_ramp
+	var result = move_toward(steering, steering_target, delta * 32 * params["timestep"])
+	return {
+		"current_steering": result
+	}
+
 # Predicates
 
 
