@@ -236,7 +236,7 @@ func tire_factor(params: Dictionary) -> float:
 func steering_acceleration(
 	params: Dictionary, wheel_data: Dictionary, planar_vector: Vector3
 ) -> float:
-	var grip = wheel_data["lateral_grip"]
+	var grip = wheel_data["grip"]
 	var angle = atan2(planar_vector.x, abs(planar_vector.z))
 	var grip_loss = grip - grip * tire_factor(params)
 	var value = 0
@@ -282,7 +282,7 @@ func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float
 			downforce += 1.0
 		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
 			downforce = downforce * rear_factor + 1.0
-	return downforce
+	return max(downforce, 0)
 
 
 func longitudal_acceleration(
@@ -407,6 +407,46 @@ func wheel_downforce_grip(params: Dictionary, wheel: Dictionary, grip: float) ->
 	var downforce = self.wheel_downforce_factor(params, wheel)
 	return grip * downforce
 
+func model_wheel_grip(params: Dictionary, wheel: Dictionary) -> float:
+	var surface_grip = self.wheel_surface_grip_factor(params, wheel)
+	var base_grip = self.wheel_base_road_grip(params, wheel, surface_grip)
+	var biased_grip = self.wheel_bias_grip(params, wheel, base_grip)
+	# Missing g transfer influence
+	var downforce_grip = self.wheel_downforce_grip(params, wheel, biased_grip)
+	return downforce_grip
+
+func traction(params: Dictionary) -> float:
+	var performance = params["performance"]
+	var throttle = params["throttle_input"]
+	var engine_redline_rpm = performance.engine_redline_rpm()
+	var rpm = rpm_from_wheels(params)
+	var force = self.traction_powertrain(params, rpm) * throttle
+	if rpm >= engine_redline_rpm:
+		return 0
+	return force
+
+func wheel_traction(params: Dictionary, wheel: Dictionary) -> float:
+	var traction = self.traction(params) - self.drag(params)
+	var performance = params["performance"]
+	var front_drive_ratio = performance.front_drive_ratio()
+	var rear_drive_ratio = 1 - front_drive_ratio
+	match wheel["type"]:
+		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+			traction *= front_drive_ratio
+		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+			traction *= rear_drive_ratio
+	var brake = self.brake_force(params, wheel)
+	return traction - brake
+
+func calculate_wheel_data(params: Dictionary, wheel: Dictionary) -> Dictionary:
+	var grip = self.model_wheel_grip(params, wheel)
+	var traction = self.wheel_traction(params, wheel)
+	return {
+		"type": wheel["type"],
+		"grip": grip,
+		"traction": traction,
+	}
+
 
 func road_factor(params: Dictionary) -> float:
 	const road_factors = [
@@ -448,7 +488,7 @@ func wheel_loss_of_grip(params: Dictionary, wheel_data: Dictionary, forces: Vect
 	var rpm = params["rpm"]
 	var engine_redline_rpm = performance.engine_redline_rpm()
 	var force_magnitude = forces.length()
-	var lateral_grip = wheel_data["lateral_grip"]
+	var lateral_grip = wheel_data["grip"]
 	var tire_factor = self.tire_factor(params)
 	var grip_loss = lateral_grip - lateral_grip * tire_factor
 	var is_front = false
