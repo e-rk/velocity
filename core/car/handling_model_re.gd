@@ -676,6 +676,14 @@ func brake_force(params: Dictionary, wheel_data: Dictionary) -> float:
 			brake_deceleration *= rear_brake_ratio
 	return sign(velocity_local.z) * brake_deceleration
 
+func limit_angular_velocity_cm(params: Dictionary) -> Dictionary:
+	const ANGULAR_VELOCITY_LIMIT = 2.4 / TAU
+	var limit = ANGULAR_VELOCITY_LIMIT * Vector3.ONE
+	var angular_velocity = params["angular_velocity"].clamp(-limit, limit)
+	return {
+		"angular_velocity": angular_velocity
+	}
+
 # Predicates
 
 func predicate_all(func_array: Array) -> Callable:
