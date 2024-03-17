@@ -81,7 +81,7 @@ func basis_from_normal(normal: Vector3) -> Basis:
 
 
 func basis_to_road(raycast_result: Dictionary) -> Basis:
-	var result = null
+	var result = self.basis
 	if raycast_result:
 		var normal = raycast_result["normal"]
 		result = basis_from_normal(normal)
@@ -131,6 +131,13 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 	if skip_counter == 0:
 		return
 
+	var wheels = [
+		{"type": CarTypes.Wheel.FRONT_RIGHT, "road_surface": 1},
+		{"type": CarTypes.Wheel.FRONT_LEFT, "road_surface": 1},
+		{"type": CarTypes.Wheel.REAR_RIGHT, "road_surface": 1},
+		{"type": CarTypes.Wheel.REAR_LEFT, "road_surface": 1},
+	]
+
 	var positional_attributes = self.get_current_positional_attributes()
 	var next_positional_attributes = self.get_next_positional_attributes(state.step * 2)
 	var model_params = {
@@ -156,6 +163,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		"has_grip": true,
 		"basis_to_road_next": next_positional_attributes["basis_to_road"],
 		"distance_above_ground": positional_attributes["distance_above_ground"],
+		"wheels": wheels,
 	}
 	var result = handling_model.process(model_params)
 	state.linear_velocity = result["linear_velocity"]

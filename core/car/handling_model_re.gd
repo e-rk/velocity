@@ -844,3 +844,37 @@ func throttle_in_range_uint8(lower: int, upper: int) -> Callable:
 
 func brake_in_range_uint8(lower: int, upper: int) -> Callable:
 	return brake_in_range(lower / 255, upper / 255)
+
+func process(params: Dictionary) -> Dictionary:
+	var basis = Basis.from_euler(Vector3(0, PI, 0))
+	params["basis"] = params["basis"] * basis
+	params["basis_to_road"] = params["basis_to_road"] * basis
+	params["slip_angle"] = self.vehicle_slip_angle_tg(params)
+	var angular_velocity = params["angular_velocity"] / TAU
+	params["angular_velocity"] = angular_velocity
+	var traction_pipeline = make_model_pipeline([
+		rpmdummy,
+		enable_if(should_come_to_stop, integrate(self.near_stop_deceleration_cm)),
+		integrate(self.process_wheels_cm),
+		integrate(turning_circle_cm),
+		integrate(self.damp_lateral_velocity_cm),
+		enable_if(is_gear_neutral, integrate(self.neutral_gear_deceleration_cm)),
+	])
+	var airborne_processing = make_model_pipeline([
+		enable_if(is_airborne, integrate(airborne_drag_cm)),
+		enable_if(neg(is_airborne), integrate(self.gravity_cm)),
+		enable_if(neg(is_airborne), prevent_sinking_cm),
+		enable_if(neg(is_airborne), adjust_to_road_cm),
+	])
+	var model = make_model_pipeline([
+		process_inputs_cm,
+		enable_if(neg(is_airborne), traction_pipeline),
+		airborne_processing,
+		integrate(self.downforce_cm),
+		enable_if(is_airborne, limit_angular_velocity_cm),
+		enable_if(is_airborne, integrate(self.gravity_cm)),
+	])
+	var result = model.call(params)
+	angular_velocity = result["angular_velocity"] * TAU
+	result["angular_velocity"] = angular_velocity
+	return result
