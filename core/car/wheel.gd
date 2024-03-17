@@ -12,9 +12,11 @@ var turn := 0.0:
 
 @export var is_front = false
 
+
 func step_rotation(linear_distance: float):
 	var step = linear_distance / wheel_circumference
 	wheel_basis = wheel_basis.rotated(Vector3.RIGHT, step)
+
 
 func _process(delta):
 	var basis = wheel_basis

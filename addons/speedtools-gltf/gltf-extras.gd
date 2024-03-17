@@ -89,6 +89,7 @@ func remove_metallic_specular(materials: Array[Material]):
 			material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	return OK
 
+
 func process_car_extras(root: Node, data: Dictionary):
 	var synchronizer = CarSynchronizer.new()
 	synchronizer.name = "CarSynchronizer"
