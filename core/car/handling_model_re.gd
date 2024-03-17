@@ -558,6 +558,28 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var forces = vector_rotate_y(f, -steering)
 	return forces
 
+func wheel_longitudal_acceleration(params: Dictionary, acceleration: Vector3) -> Vector3:
+	var performance = params["performance"]
+	acceleration.z /= performance.lateral_grip_multiplier()
+	return acceleration
+
+func process_wheels_cm(params: Dictionary) -> Dictionary:
+	var wheels = params["wheels"]
+	var basis = params["basis_to_road"]
+	var wheel_data = wheels.map(func(x): return self.calculate_wheel_data(params, x))
+	var linear_acceleration = Vector3.ZERO
+	var angular_acceleration = Vector3.ZERO
+	if wheel_data.any(func(x): return 0 < x["grip"]):
+		var vectors = wheel_data.map(func(x): return wheel_force(params, x))
+		var vectors_sloped = vectors.map(func(x): return wheel_slope_vector(params, x))
+		linear_acceleration = wheel_forces_to_linear_acceleration(params, vectors)
+		linear_acceleration = wheel_longitudal_acceleration(params, linear_acceleration)
+		angular_acceleration = self.wheel_forces_to_angular_acceleration(params, vectors)
+	return {
+		"linear_acceleration": basis * linear_acceleration,
+		"angular_acceleration": basis * angular_acceleration,
+	}
+
 func neutral_gear_deceleration_cm(params: Dictionary) -> Dictionary:
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
