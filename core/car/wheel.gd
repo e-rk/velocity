@@ -1,5 +1,5 @@
 @tool
-extends Node3D
+extends MeshInstance3D
 class_name CarWheel
 
 const wheel_circumference = 2 * PI * 0.2
