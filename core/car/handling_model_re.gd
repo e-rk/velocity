@@ -775,6 +775,20 @@ func adjust_to_road_cm(params: Dictionary) -> Dictionary:
 		"angular_velocity": angular_velocity,
 	}
 
+func prevent_sinking_cm(params: Dictionary) -> Dictionary:
+	var basis_current = params["basis_to_road"]
+	var basis_next = params["basis_to_road_next"]
+	var interpolated = basis_current.slerp(basis_next, 0.5)
+	var distance_above_ground = params["distance_above_ground"]
+	var velocity_local = interpolated.inverse() * params["linear_velocity"]
+	var normal = interpolated.y
+	if distance_above_ground < 0.8:
+		if velocity_local.y < 0.0:
+			velocity_local.y = 0
+	return {
+		"linear_velocity": interpolated * velocity_local,
+	}
+
 # Predicates
 
 func predicate_all(func_array: Array) -> Callable:
