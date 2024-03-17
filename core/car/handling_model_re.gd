@@ -728,6 +728,16 @@ func limit_angular_velocity_cm(params: Dictionary) -> Dictionary:
 		"angular_velocity": angular_velocity
 	}
 
+func downforce_cm(params: Dictionary) -> Dictionary:
+	var basis = params["basis"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var downforce_mult = params["performance"].downforce_mult()
+	var downforce_accel = -downforce_mult * velocity_local.z * 32
+	var result = Vector3(0, downforce_accel, 0)
+	return {
+		"linear_acceleration": basis * result
+	}
+
 # Predicates
 
 func predicate_all(func_array: Array) -> Callable:
