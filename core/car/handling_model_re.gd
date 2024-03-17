@@ -738,6 +738,43 @@ func downforce_cm(params: Dictionary) -> Dictionary:
 		"linear_acceleration": basis * result
 	}
 
+func adjust_to_road_cm(params: Dictionary) -> Dictionary:
+	#const LIMIT = 0.97222
+	const LIMIT = 0.6
+	var basis_current = params["basis_to_road"]
+	var basis_next = params["basis_to_road_next"]
+	var interpolated = basis_current.slerp(basis_next, 0.5)
+	var basis_inv = params["basis"].inverse()
+	var normal = interpolated.y
+	var angular_velocity = params["angular_velocity"]
+	var orientation = self.orientation_to_ground(params)
+	var signs = normal.sign()
+	var vec1 = signs * basis_inv.x - normal.x * Vector3.ONE
+	var vec2 = normal.z * Vector3.ONE - signs * basis_inv.z
+	var idx = 0
+	var should_adjust = false
+	var absv = abs(orientation)
+	if LIMIT < absv.x or LIMIT < absv.y or LIMIT < absv.z:
+		if LIMIT < abs(orientation.y):
+			idx = 1
+		elif LIMIT < abs(orientation.x):
+			idx = 0
+		elif LIMIT < abs(orientation.z):
+			idx = 2
+		if 0.02 < abs(vec1[idx]) or 0.02 < abs(vec2[idx]):
+			should_adjust = true
+		if should_adjust:
+			var v1 = clamp(vec1[idx], -0.5, 0.5)
+			var v2 = clamp(vec2[idx], -0.5, 0.5)
+			angular_velocity.z = v1
+			angular_velocity.x = v2
+		else:
+			angular_velocity.z = 0.0
+			angular_velocity.x = 0.0
+	return {
+		"angular_velocity": angular_velocity,
+	}
+
 # Predicates
 
 func predicate_all(func_array: Array) -> Callable:
