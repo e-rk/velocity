@@ -168,15 +168,12 @@ func steering_angle(params: Dictionary) -> float:
 	return result
 
 
-func turning_circle(params: Dictionary) -> Vector3:
+func turning_circle(params: Dictionary, local_angular_velocity: Vector3, velocity_local: Vector3) -> Vector3:
 	var performance = params["performance"]
-	var basis = params["basis_to_road"]
 	var steering = params["current_steering"]
 	var throttle = params["throttle_input"]
 	var brake = params["brake_input"]
 	var gear = params["gear"]
-	var local_angular_velocity = basis.inverse() * params["angular_velocity"]
-	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var slip_angle = self.vehicle_slip_angle(params)
 	var turning_radius = performance.turning_circle_radius()
 	var result = local_angular_velocity
@@ -578,6 +575,18 @@ func process_wheels_cm(params: Dictionary) -> Dictionary:
 	return {
 		"linear_acceleration": basis * linear_acceleration,
 		"angular_acceleration": basis * angular_acceleration,
+	}
+
+func turning_circle_cm(params: Dictionary) -> Dictionary:
+	var basis = params["basis_to_road"]
+	var angular_velocity = basis.inverse() * params["angular_velocity"]
+	var linear_velocity = basis.inverse() * params["linear_velocity"]
+	var result = self.turning_circle(params, angular_velocity, linear_velocity)
+	result.y = (result.y - angular_velocity.y) * 32
+	result.z = 0
+	result.x = 0
+	return {
+		"angular_acceleration": result
 	}
 
 func neutral_gear_deceleration_cm(params: Dictionary) -> Dictionary:
