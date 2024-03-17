@@ -789,6 +789,26 @@ func prevent_sinking_cm(params: Dictionary) -> Dictionary:
 		"linear_velocity": interpolated * velocity_local,
 	}
 
+func rpm_from_wheels(params: Dictionary) -> float:
+	var performance = params["performance"]
+	var gear = params["gear"]
+	var throttle = params["throttle_input"]
+	var basis = params["basis"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var velocity_to_rpm = performance.gear_velocity_to_rpm(gear)
+	var rpm = abs(velocity_local.z) * velocity_to_rpm
+	var engine_redline_rpm = performance.engine_redline_rpm()
+	var engine_min_rpm = performance.engine_min_rpm()
+	rpm = clamp(rpm, engine_min_rpm, engine_redline_rpm)
+	var engine_target_rpm = engine_redline_rpm * throttle
+	rpm = clamp(engine_target_rpm, engine_min_rpm, rpm)
+	return rpm
+
+func rpmdummy(params: Dictionary) -> Dictionary:
+	return {
+		"rpm": rpm_from_wheels(params)
+	}
+
 # Predicates
 
 func predicate_all(func_array: Array) -> Callable:
