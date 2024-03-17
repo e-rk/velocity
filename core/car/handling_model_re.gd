@@ -383,6 +383,14 @@ func wheel_surface_grip_factor(params: Dictionary, wheel_data: Dictionary) -> fl
 	return (weather_factor + slope) * road_factor
 
 
+func wheel_base_road_grip(params: Dictionary, wheel: Dictionary, surface_grip: float) -> float:
+	var basis = params["basis_to_road"]
+	var performance = params["performance"]
+	var gravity = basis.inverse() * params["gravity_vector"]
+	var lateral_grip_mult = performance.lateral_grip_multiplier()
+	return -gravity.y * lateral_grip_mult * surface_grip
+
+
 func road_factor(params: Dictionary) -> float:
 	const road_factors = [
 		1.0,
