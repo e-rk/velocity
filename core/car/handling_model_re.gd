@@ -587,6 +587,29 @@ var should_come_to_stop = predicate_all([
 
 var near_stop_deceleration_cm = enable_if(should_come_to_stop, integrate(self.near_stop_deceleration))
 
+func brake_force(params: Dictionary, wheel_data: Dictionary) -> float:
+	var performance = params["performance"]
+	var brake_input = params["brake_input"]
+	var brake_deceleration = brake_input * performance.maximum_braking_deceleration()
+	var wheel_type = wheel_data["type"]
+	var front_brake_ratio = performance.front_brake_bias()
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var brake_maximum = abs(32 * velocity_local.z)
+	var has_spoiler = performance.has_spoiler()
+	var downforce_mult = performance.downforce_mult()
+	brake_deceleration = min(brake_maximum, brake_deceleration)
+	if 0.15 < brake_input and has_spoiler:
+		brake_deceleration += abs(velocity_local.z) * downforce_mult
+	if params["handbrake"]:
+		front_brake_ratio += 0.05
+	var rear_brake_ratio = 1 - front_brake_ratio
+	match wheel_type:
+		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+			brake_deceleration *= front_brake_ratio
+		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+			brake_deceleration *= rear_brake_ratio
+	return sign(velocity_local.z) * brake_deceleration
 
 # Predicates
 

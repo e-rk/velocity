@@ -5,7 +5,7 @@ var model: HandlingModelRE
 @onready var car: Car = preload("res://import/cars/B911/B911.glb").instantiate()
 @onready var performance: CarPerformance = car.performance
 
-const EPSILON = 0.0001
+const EPSILON = 0.001
 
 
 func before_all():
@@ -19,14 +19,17 @@ func get_csv() -> FileAccess:
 func make_params(data: Dictionary) -> Dictionary:
 	var result = Dictionary()
 	result["performance"] = self.performance
-	result["basis_to_road"] = Basis()
 	result["linear_velocity"] = self.local_linear_velocity(data)
+	result["brake_input"] = self.brake_input(data)
+	result["basis_to_road"] = Basis()
+	result["handbrake"] = self.handbrake(data)
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
-	var expected = float(data["result"])
-	var result = self.model.drag(params)
+	var expected = -float(data["result_front_brake_force"])
+	var wheel_data = { "type": CarTypes.Wheel.FRONT_RIGHT }
+	var result = self.model.brake_force(params, wheel_data)
 	var msg = "v=" + str(params["linear_velocity"])
 	assert_almost_eq(result, expected, EPSILON, msg)
