@@ -391,6 +391,23 @@ func wheel_base_road_grip(params: Dictionary, wheel: Dictionary, surface_grip: f
 	return -gravity.y * lateral_grip_mult * surface_grip
 
 
+func wheel_bias_grip(params: Dictionary, wheel: Dictionary, grip: float) -> float:
+	var performance = params["performance"]
+	var front_grip_bias = performance.front_grip_bias()
+	var rear_grip_bias = 1 - front_grip_bias
+	var result = 0
+	match wheel["type"]:
+		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+			result = grip * front_grip_bias
+		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+			result = grip * rear_grip_bias
+	return result
+
+func wheel_downforce_grip(params: Dictionary, wheel: Dictionary, grip: float) -> float:
+	var downforce = self.wheel_downforce_factor(params, wheel)
+	return grip * downforce
+
+
 func road_factor(params: Dictionary) -> float:
 	const road_factors = [
 		1.0,
