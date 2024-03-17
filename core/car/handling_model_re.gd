@@ -589,6 +589,19 @@ func turning_circle_cm(params: Dictionary) -> Dictionary:
 		"angular_acceleration": result
 	}
 
+func airborne_drag_cm(params: Dictionary) -> Dictionary:
+	const COEFFICIENTS = Vector3(0.006, 0.004, 0.002)
+	var basis = params["basis"]
+	var basis_inv = basis.inverse()
+	var basis_right = abs(basis_inv.x)
+	var basis_forward = abs(basis_inv.z)
+	var velocity = params["linear_velocity"]
+	var c = Vector3(COEFFICIENTS.dot(basis_right), 0, COEFFICIENTS.dot(basis_forward))
+	var downforce = -abs(velocity) * velocity * c
+	return {
+		"linear_acceleration": downforce,
+	}
+
 func neutral_gear_deceleration_cm(params: Dictionary) -> Dictionary:
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
