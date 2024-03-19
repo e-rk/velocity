@@ -49,6 +49,7 @@ func _ready():
 	self.set_use_custom_integrator(true)
 	self.mass = self.performance.mass()
 	self.center_of_mass_mode = CENTER_OF_MASS_MODE_CUSTOM
+	self.can_sleep = false
 
 
 func dimensions() -> Vector3:
