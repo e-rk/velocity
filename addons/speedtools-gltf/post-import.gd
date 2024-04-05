@@ -15,12 +15,19 @@ func make_wheel(node: Node):
 		wheel.is_front = true
 	wheel_mesh.free()
 
+func set_wall_collision(node: Node):
+	if node is StaticBody3D and node.name.contains("not_driveable"):
+		print("Collision set to wall")
+		node.collision_layer = Constants.collision_layer_to_mask([Constants.CollisionLayer.TRACK_WALLS])
+		node.collision_mask = Constants.collision_layer_to_mask([Constants.CollisionLayer.TRACK_WALLS])
 
 func _post_import(scene):
 	if scene.get_meta("type") == "track":
 		var new_scene = RaceTrack.new()
 		new_scene.name = scene.name
 		scene.replace_by(new_scene)
+		for child in new_scene.get_children():
+			self.set_wall_collision(child)
 		return new_scene
 	elif scene.get_meta("type") == "car":
 		var new_scene = Car.new()
@@ -30,8 +37,9 @@ func _post_import(scene):
 		performance.data = scene.get_meta("performance")
 		new_scene.performance = performance
 		new_scene.collision_layer = Constants.collision_layer_to_mask([Constants.CollisionLayer.RACERS])
-		new_scene.collision_mask = Constants.collision_layer_to_mask([Constants.CollisionLayer.RACERS])
+		new_scene.collision_mask = Constants.collision_layer_to_mask([Constants.CollisionLayer.RACERS, Constants.CollisionLayer.TRACK_WALLS])
 		new_scene.continuous_cd = true
+		new_scene.physics_material_override = load("res://core/resources/car-physics-material.tres")
 		for node in new_scene.get_children():
 			self.make_wheel(node)
 		scene = new_scene

@@ -68,15 +68,13 @@ func finalize_additive_materials(json: Dictionary, materials: Array[Material]):
 
 func finalize_static_bodies(state: GLTFState, node: Node):
 	var nodes = state.json["nodes"]
-	var i = 0
-	while i < range(0, len(nodes)):
+	for i in range(0, len(nodes)):
 		var json_node = nodes[i]
 		var checked_node = node.get_child(i, false)
 		if !json_node.has("extras"):
 			continue
 		var extras = json_node["extras"]
 		if not extras.has("SPT_surface_type"):
-			prints("No surface type")
 			continue
 		var surface_type = extras["SPT_surface_type"]
 		checked_node.set_meta("surface_type", surface_type)
