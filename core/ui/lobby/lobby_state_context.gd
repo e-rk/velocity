@@ -81,6 +81,7 @@ func _input(event):
 
 
 func _on_race_finished(race):
+	self._set_local_status(Constants.PlayerStatus.IN_LOBBY)
 	self.back_to_menu()
 
 
