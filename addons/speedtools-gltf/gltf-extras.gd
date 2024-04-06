@@ -116,10 +116,6 @@ func process_track_extras(root: Node, data: Dictionary):
 	node.owner = root
 	root.set_meta("type", "track")
 
-func make_track_node(environment_data: Dictionary) -> RaceTrack:
-	var track_node = RaceTrack.new()
-	return track_node
-
 func process_scene_extras(state: GLTFState, root: Node):
 	var main_scene_idx = state.json["scene"]
 	var scene = state.json["scenes"][main_scene_idx]
