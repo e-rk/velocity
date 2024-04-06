@@ -45,6 +45,16 @@ You must own the original game and convert the cars and tracks yourself locally.
 
 The conversion steps above will be automated later on.
 
+# Keyboard bindings
+
+The keyboard bindings are currently non-configurable. Here is the list:
+
+* Arrow keys - steering, acceleration, braking
+* R - reset position
+* A - shift up
+* Z - shift down
+* Esc - end race
+
 # Notice
 
 EA has not endorsed and does not support this project.
