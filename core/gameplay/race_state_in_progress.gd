@@ -9,7 +9,7 @@ func enter():
 		player.reposition_requested.connect(
 			self._on_racer_controller_reposition_requested.bind(player)
 		)
-	context.race_logic.process_mode = Node.PROCESS_MODE_INHERIT
+	context.race_logic.set_physics_process(true)
 	super()
 
 

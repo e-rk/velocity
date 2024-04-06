@@ -12,7 +12,7 @@ func set_config(game_config: GameConfig):
 	var race_logic = rules.get_race_logic()
 	context.race_logic = race_logic
 	context.race_logic.track = track_node
-	context.race_logic.process_mode = Node.PROCESS_MODE_DISABLED
+	context.race_logic.set_physics_process(false)
 	context.add_child(race_logic, true)
 	context.set_state(race_state_waiting_for_players)
 
