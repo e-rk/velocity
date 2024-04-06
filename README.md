@@ -17,6 +17,7 @@ You must own the original game and convert the cars and tracks yourself locally.
 ## Instructions
 
 1. Install [latest Blender][1], [speedtools addon][2] and [latest Godot][3]
+2. Open the project in Godot, close it, and open it again. Otherwise strange things happen.
 2. Import a track with the following options enabled:
 	- Import shading
 	- Import collision
@@ -37,7 +38,7 @@ You must own the original game and convert the cars and tracks yourself locally.
 		- Export attributes
 		- Export extras
 		- Export lights
-6. Open the project in Godot. Godot will begin processing the assets.
+6. Wait for Godot to process the asset. This may take a while.
 7. Run the project
 8. Select a track and a car. Click `Start game` button
 9. Drive around
