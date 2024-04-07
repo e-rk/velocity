@@ -38,7 +38,7 @@ func body(data: Dictionary):
 	var params = self.make_params(data)
 	var expected = float(data["result"])
 	var wheel_data = Dictionary()
-	wheel_data["lateral_grip"] = self.wheel_lateral_grip(data)
+	wheel_data["grip"] = self.wheel_lateral_grip(data)
 	if self.wheel_is_front(data):
 		wheel_data["type"] = CarTypes.Wheel.FRONT_LEFT
 	else:

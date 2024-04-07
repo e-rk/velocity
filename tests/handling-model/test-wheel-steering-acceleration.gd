@@ -32,7 +32,7 @@ func body(data: Dictionary):
 	var expected = float(data["result"])
 	var wheel_data = Dictionary()
 	var wheel_planar_vector = self.wheel_planar_vector(data)
-	wheel_data["lateral_grip"] = self.wheel_lateral_grip(data)
+	wheel_data["grip"] = self.wheel_lateral_grip(data)
 	if self.wheel_is_front(data):
 		wheel_data["type"] = CarTypes.Wheel.FRONT_LEFT
 	else:

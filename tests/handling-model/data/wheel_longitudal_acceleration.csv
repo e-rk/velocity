@@ -1,4 +1,4 @@
-gear,throttle,handbrake,local_linear_velocity_x,local_linear_velocity_z,wheel_traction,wheel_planar_vector_lateral,wheel_planar_vector_longitudal,wheel_is_front,lateral_grip,longitudal_acceleration
+gear,throttle,handbrake,local_linear_velocity_x,local_linear_velocity_z,wheel_traction,wheel_planar_vector_lateral,wheel_planar_vector_longitudal,wheel_is_front,lateral_grip,longitudal_force
 1,0.000000,0,0.000000,0.000000,0.000000,0.000000,-0.000000,1,21.183914,0.000000
 1,0.000000,0,0.000000,0.000000,0.000000,0.000000,-0.000000,1,21.183914,0.000000
 1,0.000000,0,0.000000,0.000000,0.000000,-0.000000,-0.000000,0,21.183914,0.000000

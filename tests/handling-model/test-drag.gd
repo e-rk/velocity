@@ -13,7 +13,7 @@ func before_all():
 
 
 func get_csv() -> FileAccess:
-	return FileAccess.open("res://tests/handling-model/data/braking_force.csv", FileAccess.READ)
+	return FileAccess.open("res://tests/handling-model/data/drag.csv", FileAccess.READ)
 
 
 func make_params(data: Dictionary) -> Dictionary:

@@ -42,7 +42,7 @@ func body(data: Dictionary):
 	var wheel_data = Dictionary()
 	# wheel_data["steering"] = self.wheel_steering(data)
 	wheel_data["traction"] = self.wheel_traction(data)
-	wheel_data["lateral_grip"] = self.wheel_lateral_grip(data)
+	wheel_data["grip"] = self.wheel_lateral_grip(data)
 	if self.wheel_is_front(data):
 		wheel_data["type"] = CarTypes.Wheel.FRONT_LEFT
 	else:
