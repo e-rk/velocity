@@ -120,7 +120,7 @@ func vehicle_slip_angle_tg(params: Dictionary) -> float:
 
 
 func vehicle_slip_angle(params: Dictionary) -> float:
-	return vehicle_slip_angle_tg(params)
+	return params["slip_angle"]
 
 
 func slip_angle_factor(params: Dictionary) -> float:
