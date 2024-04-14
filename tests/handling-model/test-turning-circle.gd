@@ -33,7 +33,7 @@ func make_params(data: Dictionary) -> Dictionary:
 func body(data: Dictionary):
 	var params = self.make_params(data)
 	var expected = float(data["result_local_angular_velocity_y"])
-	var result = self.model.turning_circle(params)
+	var result = self.model.turning_circle(params, params["angular_velocity"], params["linear_velocity"])
 	var msg = (
 		"gear="
 		+ str(params["gear"])
