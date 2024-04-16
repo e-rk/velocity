@@ -28,6 +28,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["inertia_inv"] = self.inertia_inv(data)
 	result["gear"] = self.gear(data)
 	result["has_contact_with_ground"] = !self.is_airborne(data)
+	result["speed_xz"] = self.speed_xz(data)
 	return result
 
 

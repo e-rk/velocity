@@ -135,3 +135,6 @@ func basis_to_road(data: Dictionary) -> Basis:
 		Vector3(float(data["road_basis_normal_x"]), float(data["road_basis_normal_y"]), float(data["road_basis_normal_z"])),
 		Vector3(float(data["road_basis_forward_x"]), float(data["road_basis_forward_y"]), float(data["road_basis_forward_z"])),
 	)
+
+func speed_xz(data: Dictionary) -> float:
+	return float(data["speed_xz"])
