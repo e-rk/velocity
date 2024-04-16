@@ -28,6 +28,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["mass"] = self.mass(data)
 	result["gear"] = self.gear(data)
 	result["has_contact_with_ground"] = !self.is_airborne(data)
+	result["speed_xz"] = self.speed_xz(data)
 	return result
 
 
@@ -47,5 +48,5 @@ func body(data: Dictionary):
 		_:
 			assert(false)
 	var result = self.model.wheel_planar_vector(params, wheel_data)
-	var msg = "gear=" + str(params["gear"]) + " type=" + str(wheel_data["type"])
+	var msg = "v=" + str(params["linear_velocity"]) + " gear=" + str(params["gear"]) + " type=" + str(wheel_data["type"])
 	assert_almost_eq(result, expected, Vector3.ONE * EPSILON, msg)
