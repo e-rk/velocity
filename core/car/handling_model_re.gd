@@ -85,7 +85,7 @@ func angular_velocity_factor(params: Dictionary) -> float:
 		var inertia_inv = params["inertia_inv"]
 		var mass = params["mass"]
 		var gear = params["gear"]
-		var speed_xz = calculate_speed_xz(params)
+		var speed_xz = abs(params["speed_xz"])
 		var velocity_factor = speed_xz * SOME_FACTOR + SOME_OFFSET
 		velocity_factor = clamp(velocity_factor, LOWER_LIMIT, UPPER_LIMIT)
 		var ang_vel = abs(angular_velocity.y)
@@ -873,6 +873,7 @@ func process(params: Dictionary) -> Dictionary:
 	params["basis"] = params["basis"] * basis
 	params["basis_to_road"] = params["basis_to_road"] * basis
 	params["slip_angle"] = self.vehicle_slip_angle_tg(params)
+	params["speed_xz"] = self.calculate_speed_xz(params)
 	var angular_velocity = params["angular_velocity"] / TAU
 	params["angular_velocity"] = angular_velocity
 	var traction_pipeline = make_model_pipeline(
