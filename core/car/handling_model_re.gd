@@ -616,9 +616,10 @@ func airborne_drag_cm(params: Dictionary) -> Dictionary:
 
 func neutral_gear_deceleration_cm(params: Dictionary) -> Dictionary:
 	var basis = params["basis_to_road"]
+	var steering = params["current_steering"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var factor = 0.998
-	if abs(velocity_local.z) < 20.0:
+	if abs(velocity_local.z) < 20.0 or 32.0 < abs(steering):
 		factor = 0.99
 	factor = (factor - 1)
 	var linear_acceleration = factor * params["linear_velocity"] * 32

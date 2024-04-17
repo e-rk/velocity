@@ -24,6 +24,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["angular_velocity"] = self.global_angular_velocity(data)
 	result["timestep"] = 1.0 / 32.0
 	result["gear"] = self.gear(data)
+	result["current_steering"] = self.steering(data)
 	return result
 
 
@@ -32,6 +33,7 @@ func body(data: Dictionary):
 	var expected_linear = Vector3(float(data["result_global_linear_velocity_x"]), float(data["result_global_linear_velocity_y"]), float(data["result_global_linear_velocity_z"]))
 	var expected_angular = Vector3(float(data["result_global_angular_velocity_x"]), float(data["result_global_angular_velocity_y"]), float(data["result_global_angular_velocity_z"]))
 	var result = self.model.integrate(self.model.neutral_gear_deceleration_cm).call(params)
-	var msg = "v=" + str(params["linear_velocity"])
+	var msg = "v=" + str(params["linear_velocity"]) \
+			+ " w=" + str(params["angular_velocity"])
 	assert_almost_eq(result["linear_velocity"], expected_linear, EPSILON * Vector3.ONE, msg)
 	assert_almost_eq(result["angular_velocity"], expected_angular, EPSILON * Vector3.ONE, msg)
