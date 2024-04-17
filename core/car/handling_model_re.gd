@@ -46,7 +46,9 @@ func longitudal_drag_coefficient(params: Dictionary) -> float:
 	var max_velocity = performance.max_velocity()
 	var velocity_to_rpm = performance.gear_velocity_to_rpm(max_gear)
 	var rpm_for_max_speed = velocity_to_rpm * max_velocity
-	var torque_for_max_speed = self.torque_for_rpm(params, rpm_for_max_speed)
+	var rpm_idx = floor(rpm_for_max_speed / 500.0)
+	var torque_curve = performance.torque_curve()
+	var torque_for_max_speed = torque_curve[rpm_idx]
 	var mass = performance.mass()
 	var result = torque_for_max_speed * velocity_to_rpm / (10 * mass)
 	result = COEFF1 * result * COEFF2 / (max_velocity ** 3 * COEFF3)
