@@ -24,7 +24,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["gear"] = self.gear(data)
 	result["linear_velocity"] = self.local_linear_velocity(data)
 	result["basis_to_road"] = Basis()
-	result["angular_velocity"] = self.local_angular_velocity(data)
+	result["angular_velocity"] = self.global_angular_velocity(data)
 	result["current_steering"] = self.steering(data)
 	result["throttle_input"] = self.throttle(data)
 	result["handbrake"] = self.handbrake(data)
@@ -33,6 +33,8 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["has_contact_with_ground"] = !self.is_airborne(data)
 	result["weather"] = 0
 	result["rpm"] = 0  # Missing RPM
+	result["speed_xz"] = self.speed_xz(data)
+	result["slip_angle"] = self.slip_angle(data)
 	return result
 
 
@@ -48,5 +50,8 @@ func body(data: Dictionary):
 	else:
 		wheel_data["type"] = CarTypes.Wheel.REAR_LEFT
 	var result = self.model.wheel_force(params, wheel_data)
-	var msg = "gear=" + str(params["gear"]) + " hb=" + str(params["handbrake"])
+	var msg = "gear=" + str(params["gear"]) \
+			+ " hb=" + str(params["handbrake"]) \
+			+ " v=" + str(params["linear_velocity"]) \
+			+ " w=" + str(params["angular_velocity"])
 	assert_almost_eq(result, expected, Vector3.ONE * EPSILON, msg)
