@@ -5,7 +5,7 @@ var model: HandlingModelRE
 @onready var car: Car = preload("res://import/cars/B911/B911.glb").instantiate()
 @onready var performance: CarPerformance = car.performance
 
-const EPSILON = 0.0001
+const EPSILON = 0.000001
 
 
 func before_all():
@@ -24,6 +24,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["handbrake"] = self.handbrake(data)
 	result["current_steering"] = self.steering(data)
 	result["has_contact_with_ground"] = !self.is_airborne(data)
+	result["slip_angle"] = self.slip_angle(data)
 	return result
 
 
@@ -38,5 +39,9 @@ func body(data: Dictionary):
 		+ str(params["current_steering"])
 		+ " v="
 		+ str(params["linear_velocity"])
+		+ " slip="
+		+ str(params["slip_angle"])
+		+ " cwg="
+		+ str(params["has_contact_with_ground"])
 	)
 	assert_almost_eq(result, expected, EPSILON, msg)

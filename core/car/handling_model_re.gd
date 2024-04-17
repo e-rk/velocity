@@ -132,7 +132,7 @@ func slip_angle_factor(params: Dictionary) -> float:
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var slip_angle = self.vehicle_slip_angle(params)
-	var is_same_dir = (slip_angle * steering) > 0
+	var is_same_dir = (slip_angle * steering) >= 0
 	var result := 1.0
 	if params["handbrake"] == false and is_same_dir:
 		if HIGH_VELOCITY_THRESHOLD < velocity_local.z:
