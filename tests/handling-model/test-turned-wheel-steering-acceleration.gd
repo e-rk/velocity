@@ -25,12 +25,14 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["gear"] = self.gear(data)
 	result["inertia_inv"] = self.inertia_inv(data)
 	result["linear_velocity"] = self.local_linear_velocity(data)
-	result["angular_velocity"] = self.local_angular_velocity(data)
+	result["angular_velocity"] = self.global_angular_velocity(data)
 	result["mass"] = self.mass(data)
 	result["current_steering"] = self.steering(data)
 	result["handbrake"] = self.handbrake(data)
 	result["has_contact_with_ground"] = !self.is_airborne(data)
 	result["weather"] = 0
+	result["slip_angle"] = self.slip_angle(data)
+	result["speed_xz"] = self.speed_xz(data)
 	return result
 
 
@@ -44,5 +46,11 @@ func body(data: Dictionary):
 	else:
 		wheel_data["type"] = CarTypes.Wheel.REAR_LEFT
 	var result = self.model.turned_steering_acceleration(params, wheel_data)
-	var msg = "gear=" + str(params["gear"]) + " hb=" + str(params["handbrake"])
+	var msg = "gear=" + str(params["gear"]) \
+			+ " hb=" + str(params["handbrake"]) \
+			+ " steer=" + str(params["current_steering"]) \
+			+ " slip=" + str(params["slip_angle"]) \
+			+ " xz=" + str(params["speed_xz"]) \
+			+ " v=" + str(params["linear_velocity"]) \
+			+ " w=" + str(params["angular_velocity"])
 	assert_almost_eq(result, expected, EPSILON, msg)
