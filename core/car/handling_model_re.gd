@@ -378,10 +378,12 @@ func wheel_surface_grip_factor(params: Dictionary, wheel_data: Dictionary) -> fl
 		0.8
 	]
 	var road_surface = wheel_data["road_surface"]
-	var slope = clamp(self.orientation_to_ground(params).y, 0.75, 1.0)
-	var road_factor = road_factors[road_surface]
-	var weather_factor = slope * road_factor * self.weather_factor() * 0.25
-	return (weather_factor + slope) * road_factor
+	var ort_to_grnd = self.orientation_to_ground(params)
+	var slope = clamp(ort_to_grnd.y, 0.75, 1.0)
+	var road_factor = (road_factors[road_surface] + 1.0) * 0.5
+	var weather_factor = self.weather_factor()
+	var effective_weather_factor = slope * road_factor * weather_factor * 0.25
+	return (effective_weather_factor + slope) * road_factor
 
 
 func wheel_base_road_grip(params: Dictionary, wheel: Dictionary, surface_grip: float) -> float:
