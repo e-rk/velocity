@@ -138,3 +138,16 @@ func basis_to_road(data: Dictionary) -> Basis:
 
 func speed_xz(data: Dictionary) -> float:
 	return float(data["speed_xz"])
+
+func assert_almost_eq(got, expected, error_interval, text=''):
+	var epsilon = abs(expected) * error_interval  # Poor man's epsilon scaling
+	if epsilon is Vector2:
+		epsilon.x = max(epsilon.x, error_interval.x)
+		epsilon.y = max(epsilon.y, error_interval.y)
+	elif epsilon is Vector3:
+		epsilon.x = max(epsilon.x, error_interval.x)
+		epsilon.y = max(epsilon.y, error_interval.y)
+		epsilon.z = max(epsilon.z, error_interval.z)
+	else:
+		epsilon = max(epsilon, error_interval)
+	super(got, expected, epsilon, text)

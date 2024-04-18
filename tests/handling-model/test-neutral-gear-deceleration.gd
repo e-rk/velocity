@@ -5,7 +5,7 @@ var model: HandlingModelRE
 @onready var car: Car = preload("res://import/cars/B911/B911.glb").instantiate()
 @onready var performance: CarPerformance = car.performance
 
-const EPSILON = 0.0001
+const EPSILON = 0.00001
 
 
 func before_all():
