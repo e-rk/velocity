@@ -293,11 +293,11 @@ func longitudal_acceleration(
 	var traction = wheel_data["traction"]
 	var throttle = params["throttle_input"]
 	var lateral_grip_mult = performance.lateral_grip_multiplier()
-	if 0.0 < traction or 0.0 < wheel_planar_vector.z:
+	if 0.0 <= traction or 0.0 <= wheel_planar_vector.z:
 		if (
 			0.0 < traction
 			and 0.0 < wheel_planar_vector.z
-			and (throttle < 0.25 or params["gear"] == CarTypes.Gear.REVERSE)
+			and (throttle < 0.25 or params["gear"] == CarTypes.Gear.REVERSE or params["gear"] == CarTypes.Gear.NEUTRAL)
 		):
 			traction = min(traction, wheel_planar_vector.z)
 	elif throttle < 0.25 or not is_gear_reverse(params):
