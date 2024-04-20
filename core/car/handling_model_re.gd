@@ -269,15 +269,15 @@ func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var performance = params["performance"]
+	var brake = params["brake_input"]
 	var downforce = performance.downforce_mult()
-	if abs(velocity_local.z) < DOWNFORCE_THRESHOLD_SPEED:
+	if abs(velocity_local.z) <= DOWNFORCE_THRESHOLD_SPEED:
 		return downforce + 1.0
 	# Missing body damage influence on downforce
 	downforce = velocity_local.z * downforce
 	var rear_factor = 1.5
-	# Missing speed condition
-	if !performance.has_spoiler():
-		rear_factor *= 1.75
+	if 0.15 <= brake and performance.has_spoiler():
+		rear_factor = 1.75
 	match wheel_data["type"]:
 		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
 			downforce += 1.0

@@ -23,6 +23,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["performance"] = self.performance
 	result["basis_to_road"] = Basis()
 	result["linear_velocity"] = self.local_linear_velocity(data)
+	result["brake_input"] = self.brake_input(data)
 	return result
 
 
