@@ -523,6 +523,24 @@ func wheel_loss_of_grip(params: Dictionary, wheel_data: Dictionary, forces: Vect
 	return result
 
 
+func update_handbrake_accumulator(params: Dictionary) -> int:
+	var current = params["handbrake_accumulator"]
+	var weather = params["weather"]
+	var handbrake = params["handbrake"]
+	if not handbrake:
+		return 0
+	var increment
+	match weather:
+		CarTypes.Weather.DRY:
+			increment = 1
+		CarTypes.Weather.RAIN:
+			increment = 3
+		CarTypes.Weather.SNOW:
+			increment = 4
+	var next = current + increment
+	return min(next, 384)
+
+
 func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var basis = params["basis_to_road"]
 	var traction = wheel_data["traction"]

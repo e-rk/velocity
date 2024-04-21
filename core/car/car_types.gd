@@ -13,3 +13,5 @@ enum Gear {
 }
 
 enum Wheel { FRONT_RIGHT, FRONT_LEFT, REAR_RIGHT, REAR_LEFT }
+
+enum Weather { DRY, RAIN, SNOW }
