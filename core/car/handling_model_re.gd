@@ -541,6 +541,16 @@ func update_handbrake_accumulator(params: Dictionary) -> int:
 	return min(next, 384)
 
 
+func handbrake_scaling_function(value: float) -> float:
+	const fldl2e = 1.442695040888963
+	var x = fldl2e * (value - 0.5) * -12.56636
+	var fprem = fmod(x, 1)
+	var f2xm1 = 2 ** fprem - 1
+	var fscale = (f2xm1 + 1) * (2 ** (floor(abs(x)) * sign(x)))
+	var result = 1 - 0.8 / (1 + fscale)
+	return result
+
+
 func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var basis = params["basis_to_road"]
 	var traction = wheel_data["traction"]
