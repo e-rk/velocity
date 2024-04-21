@@ -74,6 +74,9 @@ func is_airborne(data: Dictionary) -> bool:
 func handbrake(data: Dictionary) -> bool:
 	return data["handbrake"] != "0"
 
+func handbrake_accumulator(data: Dictionary) -> int:
+	return int(data["handbrake_accumulator"])
+
 func steering(data: Dictionary) -> int:
 	return int(data["turn_angle"])
 
