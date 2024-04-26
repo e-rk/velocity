@@ -5,7 +5,7 @@ var model: HandlingModelRE
 @onready var car: Car = preload("res://import/cars/B911/B911.glb").instantiate()
 @onready var performance: CarPerformance = car.performance
 
-const EPSILON = 0.001
+const EPSILON = 0.0001
 
 
 func before_all():
@@ -19,21 +19,23 @@ func get_csv() -> FileAccess:
 func make_params(data: Dictionary) -> Dictionary:
 	var result = Dictionary()
 	result["performance"] = self.performance
-	result["basis_to_road"] = Basis()
+	result["basis_to_road"] = self.basis_to_road(data)
 	result["gear"] = self.gear(data)
-	result["linear_velocity"] = self.local_linear_velocity(data)
+	result["linear_velocity"] = self.global_linear_velocity(data)
 	result["throttle_input"] = self.throttle(data)
 	result["current_steering"] = self.steering(data)
 	result["brake_input"] = self.brake_input(data)
 	result["slip_angle"] = self.slip_angle(data)
-	result["angular_velocity"] = self.local_angular_velocity(data)
+	result["angular_velocity"] = self.global_angular_velocity(data)
+	result["timestep"] = 1.0 / 32.0
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
-	var expected = float(data["result_local_angular_velocity_y"])
-	var result = self.model.turning_circle(params, params["angular_velocity"], params["linear_velocity"])
+	var expected_angular = float(data["result_global_angular_velocity_y"])
+	var expected_linear = Vector3(float(data["result_global_linear_velocity_x"]), float(data["result_global_linear_velocity_y"]), float(data["result_global_linear_velocity_z"]))
+	var result = self.model.integrate(self.model.turning_circle_cm).call(params)
 	var msg = (
 		"gear="
 		+ str(params["gear"])
@@ -50,4 +52,5 @@ func body(data: Dictionary):
 		+ " vel="
 		+ str(params["linear_velocity"])
 	)
-	assert_almost_eq(result.y, expected, EPSILON, msg)
+	assert_almost_eq(result["angular_velocity"].y, expected_angular, EPSILON, msg)
+	assert_almost_eq(result["linear_velocity"], expected_linear, EPSILON * Vector3.ONE, msg)
