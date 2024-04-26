@@ -715,6 +715,18 @@ func gravity_cm(params: Dictionary) -> Dictionary:
 	return {"linear_acceleration": gravity}
 
 
+func prevent_moving_sideways_cm(params: Dictionary) -> Dictionary:
+	var basis = params["basis_to_road"]
+	var throttle = params["throttle_input"]
+	var brake = params["brake_input"]
+	var steering = params["current_steering"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var result = params["linear_velocity"]
+	if 0.5 <= throttle and 0.75 <= brake and 64.0 < abs(steering) and abs(velocity_local.z) <= 5.0:
+		result *= 0
+	return { "linear_velocity": result }
+
+
 func near_stop_deceleration(params: Dictionary) -> Dictionary:
 	const VELOCITY_THRESHOLD_REVERSE = 4.0
 	const VELOCITY_THRESHOLD_FORWARD = 5.0
@@ -923,8 +935,9 @@ func process(params: Dictionary) -> Dictionary:
 			rpmdummy,
 			enable_if(should_come_to_stop, integrate(self.near_stop_deceleration_cm)),
 			integrate(self.process_wheels_cm),
-			integrate(turning_circle_cm),
+			prevent_moving_sideways_cm,
 			integrate(self.damp_lateral_velocity_cm),
+			integrate(turning_circle_cm),
 			enable_if(is_gear_neutral, integrate(self.neutral_gear_deceleration_cm)),
 		]
 	)
