@@ -454,10 +454,12 @@ func wheel_traction(params: Dictionary, wheel: Dictionary) -> float:
 func calculate_wheel_data(params: Dictionary, wheel: Dictionary) -> Dictionary:
 	var grip = self.model_wheel_grip(params, wheel)
 	var traction = self.wheel_traction(params, wheel)
+	var downforce = self.wheel_downforce_factor(params, wheel)
 	return {
 		"type": wheel["type"],
 		"grip": grip,
 		"traction": traction,
+		"downforce": downforce,
 	}
 
 
@@ -554,6 +556,28 @@ func handbrake_scaling_function(value: float) -> float:
 	var fscale = (f2xm1 + 1) * (2 ** (floor(abs(x)) * sign(x)))
 	var result = 1 - 0.8 / (1 + fscale)
 	return result
+
+
+func handbrake_loss_of_grip(params: Dictionary, wheel_data: Dictionary, wheel_planar_vector: Vector3, traction: float) -> Vector3:
+	var grip = wheel_data["grip"]
+	var downforce = wheel_data["downforce"]
+	var xz_speed = (wheel_planar_vector * Vector3(1, 0, 1)).length()
+	var weather = params["weather"]
+	var handbrake_accumulator = params["handbrake_accumulator"]
+	var grip_times_downforce = grip * downforce
+	var grip_loss = grip_times_downforce - grip_times_downforce * tire_factor(params)
+	var factor = 0.75
+	if grip_loss < xz_speed:
+		factor = abs(grip_loss / xz_speed)
+	var handbrake_factor = 1.0
+	if 0 < handbrake_accumulator:
+		handbrake_factor = self.handbrake_scaling_function(handbrake_accumulator / 384.0) * 0.75
+	var lateral_force = handbrake_factor * wheel_planar_vector.x * factor
+	var longitudal_force = traction * factor
+	if is_gear_neutral(params):
+		lateral_force *= 0.05
+		longitudal_force *= 0.05
+	return Vector3(lateral_force, 0, longitudal_force)
 
 
 func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:

@@ -103,6 +103,9 @@ func wheel_is_front(data: Dictionary) -> float:
 func wheel_downforce(data: Dictionary, wheel_idx: int) -> float:
 	return float(data["wheel_" + str(wheel_idx) + "_downforce_factor"])
 
+func wheel_downforce2(data: Dictionary) -> float:
+	return float(data["wheel_downforce"])
+
 func wheel_lateral_grip(data: Dictionary) -> float:
 	return float(data["lateral_grip"])
 
