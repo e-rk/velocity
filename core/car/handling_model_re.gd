@@ -67,21 +67,247 @@ func drag(params: Dictionary) -> float:
 		result += (velocity_max_diff ** 2) * 0.01
 	return result
 
-func traction_model(params: Dictionary) -> Dictionary:
+func limit_to_gear_when_velocity_is_low(params: Dictionary) -> CarTypes.Gear:
 	var performance = params["performance"]
-	var rpm = params["rpm"]
-	var lost_grip = params["handbrake"]
 	var engine_redline_rpm = performance.engine_redline_rpm()
+	var rpm_to_velocity_ratio = performance.gear_velocity_to_rpm(CarTypes.Gear.GEAR_1)
+	var basis = params["basis_to_road"]
+	var gear = params["gear"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	if velocity_local.z < (engine_redline_rpm * rpm_to_velocity_ratio) and CarTypes.Gear.GEAR_3 < gear:
+		return CarTypes.Gear.GEAR_3
+	return gear
+
+func gear_rpm_to_velocity(params: Dictionary, gear: CarTypes.Gear) -> float:
+	var performance = params["performance"]
+	return 1.0 / performance.gear_velocity_to_rpm(gear)
+
+func prepare_traction_model_ctx(params: Dictionary) -> Dictionary:
+	var basis = params["basis_to_road"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var traction_params = {
+		"performance": params["performance"],
+		"rpm": params["rpm"],
+		"lost_grip": params["handbrake"],
+		"throttle": params["throttle_input"],
+		"brake": params["brake_input"],
+		"speed_xz": params["speed_xz"],
+		"local_linear_velocity": velocity_local,
+		"unknown_value": params["unknown_value"],
+		"unknown_value2": params["unknown_value2"],
+		"gear": params["gear"],
+		"has_contact_with_ground": params["has_contact_with_ground"],
+		"gear_shift_counter": params["gear_shift_counter"],
+		"handbrake_accumulator": params["handbrake_accumulator"],
+		"rpm_above_redline": false,
+		"target_rpm": 0
+	}
+	return traction_params
+
+func traction_model_extend(f: Callable) -> Callable:
+	return func(traction_params: Dictionary) -> Dictionary:
+		var value = f.call(traction_params)
+		var result = traction_params
+		if value.has("rpm"):
+			result["rpm"] = value["rpm"]
+		if value.has("handbrake_accumulator"):
+			result["handbrake_accumulator"] = value["handbrake_accumulator"]
+		if value.has("gear"):
+			result["gear"] = value["gear"]
+		if value.has("rpm_above_redline"):
+			result["rpm_above_redline"] = value["rpm_above_redline"]
+		if value.has("target_rpm"):
+			result["target_rpm"] = value["target_rpm"]
+		return result
+
+func traction_model_split(params: Dictionary) -> Dictionary:
+	var traction_params = self.prepare_traction_model_ctx(params)
+	
+	return {}
+
+func traction_model_rpm_above_redline(traction_params: Dictionary) -> Dictionary:
+	var performance = traction_params["performance"]
+	var rpm = traction_params["rpm"]
+	var throttle = traction_params["throttle"]
+	var lost_grip = traction_params["lost_grip"]
+	var engine_redline_rpm = performance.engine_redline_rpm()
+	var engine_min_rpm = performance.engine_min_rpm()
 	var above_redline = false
 	if engine_redline_rpm < rpm:
 		above_redline = true
 	if (4 * engine_redline_rpm / 3) < rpm:
 		lost_grip = true
-	rpm = min(rpm, engine_redline_rpm)
+	rpm = round(min(rpm, engine_redline_rpm))
 	return {
 		"rpm": rpm,
+		"lost_grip": lost_grip,
+		"rpm_above_redline": above_redline,
+	}
+
+func traction_model_target_rpm(traction_params: Dictionary) -> Dictionary:
+	var performance = traction_params["performance"]
+	var throttle = traction_params["throttle"]
+	var engine_redline_rpm = performance.engine_redline_rpm()
+	var engine_min_rpm = performance.engine_min_rpm()
+	var target_rpm = engine_redline_rpm * throttle
+	target_rpm = round(clamp(target_rpm, engine_min_rpm, engine_redline_rpm))
+	return {
+		
+	}
+
+func traction_model(params: Dictionary) -> Dictionary:
+	var performance = params["performance"]
+	var current_rpm = params["rpm"]
+	var lost_grip = params["handbrake"]
+	var throttle = params["throttle_input"]
+	var brake = params["brake_input"]
+	var gear = params["gear"]
+	var speed_xz = params["speed_xz"]
+	var basis = params["basis_to_road"]
+	var unknown_value = params["unknown_value"]
+	var unknown_value_2 = params["unknown_value2"]
+	var velocity_local = basis.inverse() * params["linear_velocity"]
+	var has_contact_with_ground = params["has_contact_with_ground"]
+	var gear_shift_counter = params["gear_shift_counter"]
+	var engine_redline_rpm = performance.engine_redline_rpm()
+	var engine_min_rpm = performance.engine_min_rpm()
+	var drag = self.drag(params)
+	var above_redline = false
+	var handbrake_accumulator = params["handbrake_accumulator"]
+	if engine_redline_rpm < current_rpm:
+		above_redline = true
+	if (4 * engine_redline_rpm / 3) < current_rpm:
+		lost_grip = true
+	current_rpm = round(min(current_rpm, engine_redline_rpm))
+	var target_rpm = engine_redline_rpm * throttle
+	target_rpm = round(clamp(target_rpm, engine_min_rpm, engine_redline_rpm))
+	var traction = 0.0
+	if gear != CarTypes.Gear.NEUTRAL and has_contact_with_ground and not unknown_value:
+		traction = self.traction_powertrain(params, target_rpm)
+		var rpm_from_wheels = self.rpm_from_wheels(params)
+		var rpm_target_wheels_diff = target_rpm - rpm_from_wheels
+		if abs(rpm_target_wheels_diff) < 500 and target_rpm < (engine_redline_rpm - 300):
+			rpm_target_wheels_diff = 0
+		var rpm_diff = current_rpm - rpm_from_wheels
+		var rpm_diff_to_big = (engine_redline_rpm / 6) < rpm_diff and gear_shift_counter == 0 and gear < CarTypes.Gear.GEAR_4
+		var going_in_reverse_dir = CarTypes.Gear.NEUTRAL < gear and speed_xz < -0.3 and (8 / 255.0) < throttle \
+								or CarTypes.Gear.REVERSE == gear and speed_xz > 0.3 and (8 / 255.0) < throttle
+		if rpm_diff_to_big or going_in_reverse_dir:
+			# Missing engine damage
+			var rpm_adjust = 125
+			const adjust_by_gear = [50, 50, 10, 15, 20, 22, 50, 50]
+			if target_rpm >= 2000:
+				rpm_adjust = adjust_by_gear[gear]
+			current_rpm -= min(rpm_adjust, rpm_diff)
+		elif rpm_target_wheels_diff < 0:
+			traction = -traction * performance.gas_off_factor
+			if gear == CarTypes.Gear.REVERSE and 0 < velocity_local.z:
+				traction = -abs(traction)
+			else:
+				traction = abs(traction)
+			var rpm_adjust = round(self.gear_rpm_to_velocity(params, gear) * 8 * 10240.0)
+			current_rpm += min(rpm_adjust, -rpm_diff)
+			if not above_redline:
+				current_rpm = max(target_rpm, current_rpm, engine_min_rpm)
+			else:
+				current_rpm = engine_redline_rpm
+			var velocity_redline = engine_redline_rpm * self.gear_rpm_to_velocity(params, gear) * 1.15
+			if (abs(velocity_local.z) <= velocity_redline) or gear < CarTypes.Gear.GEAR_1:
+				if not lost_grip:
+					handbrake_accumulator = 0
+			else:
+				# Missing engine damage
+				velocity_redline = engine_redline_rpm * self.gear_rpm_to_velocity(params, gear)
+				traction = (velocity_redline / abs(velocity_local.z)) * traction
+				lost_grip = true
+				handbrake_accumulator = self.update_handbrake_accumulator(params)
+		elif rpm_target_wheels_diff == 0:
+			current_rpm = max(rpm_from_wheels, engine_min_rpm)
+			traction = drag
+		else:
+			if rpm_diff <= 200:
+				if rpm_diff < -300:
+					current_rpm += 40
+				else:
+					current_rpm = max(rpm_from_wheels, engine_min_rpm)
+			else:
+				current_rpm -= 40
+			current_rpm = clamp(target_rpm, engine_min_rpm, current_rpm)
+			var slip_factor = abs(self.vehicle_slip_angle(params)) * 0.6 + 1.0
+			slip_factor = min(slip_factor, 1.5)
+			traction = traction * throttle * slip_factor
+		if current_rpm < engine_min_rpm:
+			var min_torque = self.traction_powertrain(params, engine_min_rpm)
+			current_rpm = engine_min_rpm
+		if has_contact_with_ground:
+			if 0.0 < velocity_local.z:
+				traction = traction - drag
+			else:
+				traction = drag * 2.0 + traction
+		elif 0.0 <= velocity_local.z:
+			traction = -drag * 0.5
+		else:
+			traction = drag
+		return {
+			"rpm": current_rpm,
+			"has_grip": not lost_grip,
+			"handbrake_accumulator": handbrake_accumulator,
+			"force": traction,
+		}
+	if not has_contact_with_ground:
+		target_rpm += performance.shift_blip_in_rpm(CarTypes.Gear.GEAR_1)
+	if current_rpm < target_rpm and gear_shift_counter == 0:
+		current_rpm += 250
+		target_rpm = clamp(target_rpm, current_rpm, engine_min_rpm)
+		current_rpm = target_rpm
+	else:
+		if not unknown_value:
+			if current_rpm < target_rpm:
+				if has_contact_with_ground:
+					if 0.0 < velocity_local.z:
+						traction = traction - drag
+					else:
+						traction = drag * 2.0 + traction
+				elif 0.0 <= velocity_local.z:
+					traction = -drag * 0.5
+				else:
+					traction = drag
+				return {
+					"rpm": current_rpm,
+					"has_grip": not lost_grip,
+					"handbrake_accumulator": handbrake_accumulator,
+					"force": traction,
+				}
+			current_rpm = max(target_rpm, current_rpm, engine_min_rpm)
+		if not unknown_value_2:
+			var rpm_adjust = -50
+			# Missing spoiler type
+			if performance.gear_shift_delay() < 5:
+				rpm_adjust = -75
+			if above_redline:
+				rpm_adjust *= 2
+			current_rpm -= rpm_adjust
+		else:
+			if 0 < throttle:
+				var rpm_adjust = performance.brake_blip_in_rpm()
+				if brake < (65 / 255):
+					rpm_adjust = performance.shift_blip_in_rpm()
+				current_rpm += rpm_adjust
+			current_rpm = clamp(current_rpm, engine_min_rpm, engine_redline_rpm)
+	if has_contact_with_ground:
+		if 0.0 < velocity_local.z:
+			traction = traction - drag
+		else:
+			traction = drag * 2.0 + traction
+	elif 0.0 <= velocity_local.z:
+		traction = -drag * 0.5
+	else:
+		traction = drag
+	return {
+		"rpm": current_rpm,
 		"has_grip": not lost_grip,
-		"force": 0.0,
+		"handbrake_accumulator": handbrake_accumulator,
+		"force": traction,
 	}
 
 func calculate_speed_xz(params: Dictionary) -> float:
@@ -902,7 +1128,7 @@ func rpm_from_wheels(params: Dictionary) -> float:
 	var performance = params["performance"]
 	var gear = params["gear"]
 	var throttle = params["throttle_input"]
-	var basis = params["basis"]
+	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var velocity_to_rpm = performance.gear_velocity_to_rpm(gear)
 	var rpm = abs(velocity_local.z) * velocity_to_rpm
@@ -911,7 +1137,7 @@ func rpm_from_wheels(params: Dictionary) -> float:
 	rpm = clamp(rpm, engine_min_rpm, engine_redline_rpm)
 	var engine_target_rpm = engine_redline_rpm * throttle
 	rpm = clamp(engine_target_rpm, engine_min_rpm, rpm)
-	return rpm
+	return round(rpm)
 
 
 func rpmdummy(params: Dictionary) -> Dictionary:

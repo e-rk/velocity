@@ -28,11 +28,11 @@ func front_drive_ratio() -> float:
 	return data["front_drive_ratio"]
 
 
-func engine_redline_rpm() -> float:
+func engine_redline_rpm() -> int:
 	return data["engine_redline_rpm"]
 
 
-func engine_min_rpm() -> float:
+func engine_min_rpm() -> int:
 	return data["engine_minimum_rpm"]
 
 
@@ -86,3 +86,19 @@ func understeer_gradient() -> float:
 
 func turning_circle_radius() -> float:
 	return data["turning_circle_radius"]
+
+
+func gas_off_factor() -> float:
+	return data["gas_off_factor"]
+
+
+func shift_blip_in_rpm(gear: CarTypes.Gear) -> int:
+	return data["shift_blip_in_rpm"][gear]
+
+
+func brake_blip_in_rpm(gear: CarTypes.Gear) -> int:
+	return data["brake_blip_in_rpm"][gear]
+
+
+func gear_shift_delay() -> int:
+	return data["gear_shift_delay"]
