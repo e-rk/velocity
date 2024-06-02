@@ -35,10 +35,14 @@ const RAYCAST_DISTANCE = 10
 
 var current_rpm := 0.0
 var current_steering := 0.0
+var current_gear := CarTypes.Gear.NEUTRAL
 var linear_acceleration = Vector3.ZERO
 var prev_linear_velocity = Vector3.ZERO
 var prev_angular_velocity = Vector3.ZERO
 var skip_counter = 0
+var handbrake_accumulator = 0
+var gear_shift_counter = 0
+var shifted_down = false
 
 @onready var collider: CollisionShape3D = $Collider
 
@@ -148,7 +152,8 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		"has_contact_with_ground": self.has_contact_with_ground(positional_attributes),
 		"timestep": state.step * 2,
 		"performance": self.performance,
-		"gear": self.gear,
+		"gear": self.current_gear,
+		"next_gear": self.gear,
 		"rpm": self.current_rpm,
 		"mass": self.mass,
 		"basis": self.basis,
@@ -165,12 +170,20 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		"basis_to_road_next": next_positional_attributes["basis_to_road"],
 		"distance_above_ground": positional_attributes["distance_above_ground"],
 		"wheels": wheels,
+		"handbrake_accumulator": self.handbrake_accumulator,
+		"force": 0.0,
+		"gear_shift_counter": self.gear_shift_counter,
+		"shifted_down": self.shifted_down,
 	}
 	var result = handling_model.process(model_params)
 	state.linear_velocity = result["linear_velocity"]
 	state.angular_velocity = result["angular_velocity"]
 	self.current_steering = result["current_steering"]
 	self.current_rpm = result["rpm"]
+	self.handbrake_accumulator = result["handbrake_accumulator"]
+	self.gear_shift_counter = result["gear_shift_counter"]
+	self.shifted_down = result["shifted_down"]
+	self.current_gear = result["gear"]
 
 	self.linear_acceleration = (state.linear_velocity - prev_linear_velocity) / (state.step * 2)
 	prev_linear_velocity = state.linear_velocity

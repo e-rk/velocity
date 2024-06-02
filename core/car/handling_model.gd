@@ -9,6 +9,10 @@ func extract(params: Dictionary) -> Dictionary:
 		"rpm": params["rpm"],
 		"current_steering": params["current_steering"],
 		"has_grip": params["has_grip"],
+		"handbrake_accumulator": params["handbrake_accumulator"],
+		"force": params["force"],
+		"gear_shift_counter": params["gear_shift_counter"],
+		"shifted_down": params["shifted_down"],
 	}
 
 func extend(f: Callable) -> Callable:
@@ -27,6 +31,14 @@ func extend(f: Callable) -> Callable:
 			result["current_steering"] = value["current_steering"]
 		if value.has("has_grip"):
 			result["has_grip"] = value["has_grip"]
+		if value.has("handbrake_accumulator"):
+			result["handbrake_accumulator"] = value["handbrake_accumulator"]
+		if value.has("force"):
+			result["force"] = value["force"]
+		if value.has("gear_shift_counter"):
+			result["gear_shift_counter"] = value["gear_shift_counter"]
+		if value.has("shifted_down"):
+			result["shifted_down"] = value["shifted_down"]
 		return result
 
 func integrate(f: Callable) -> Callable:
@@ -49,6 +61,12 @@ func enable_if(predicate: Callable, f: Callable) -> Callable:
 			return f.call(params)
 		return extract(params)
 
+func either(predicate: Callable, true_f: Callable, false_f: Callable) -> Callable:
+	return func(params: Dictionary) -> Dictionary:
+		if predicate.call(params):
+			return true_f.call(params)
+		return false_f.call(params)
+
 func neg(predicate: Callable) -> Callable:
 	return func(params: Dictionary) -> bool:
 		return not predicate.call(params)
@@ -56,17 +74,20 @@ func neg(predicate: Callable) -> Callable:
 func compose(f: Callable, g: Callable) -> Callable:
 	return func(params: Dictionary) -> Dictionary:
 		var result = extend(g).call(params)
-		return extract(extend(f).call(result))
+		return extract.call(extend(f).call(result))
 
-func make_model_pipeline(func_array: Array) -> Callable:
+func make_pipeline(composer: Callable, func_array: Array) -> Callable:
 	var last_idx = func_array.size() - 1
 	var i = last_idx - 1
 	var f = func_array[last_idx]
 	while i >= 0:
 		var g = func_array[i]
-		f = compose(f, g)
+		f = composer.call(f, g)
 		i -= 1
 	return f
+
+func make_model_pipeline(func_array: Array) -> Callable:
+	return make_pipeline(compose, func_array)
 
 func process(params: Dictionary) -> Dictionary:
 	return extract(params)

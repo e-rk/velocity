@@ -25,7 +25,7 @@ func test_csv():
 			break
 		self.body(line)
 
-func rpm(data: Dictionary) -> float:
+func rpm(data: Dictionary) -> int:
 	return float(data["rpm"])
 
 func torque(data: Dictionary) -> float:
