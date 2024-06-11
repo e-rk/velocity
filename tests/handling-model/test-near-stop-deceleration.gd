@@ -29,6 +29,11 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["rpm"] = 0.0
 	result["current_steering"] = 0.0
 	result["has_grip"] = true
+	result["handbrake_accumulator"] = 0
+	result["force"] = 0.0
+	result["gear_shift_counter"] = 0
+	result["shifted_down"] = false
+	result["has_contact_with_ground"] = not self.is_airborne(data)
 	return result
 
 
