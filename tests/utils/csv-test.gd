@@ -145,6 +145,9 @@ func basis_to_road(data: Dictionary) -> Basis:
 func speed_xz(data: Dictionary) -> float:
 	return float(data["speed_xz"])
 
+func g_transfer(data: Dictionary) -> float:
+	return float(data["g_transfer"])
+
 func assert_almost_eq(got, expected, error_interval, text=''):
 	var epsilon = abs(expected) * error_interval  # Poor man's epsilon scaling
 	if epsilon is Vector2:

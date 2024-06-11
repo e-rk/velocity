@@ -583,6 +583,24 @@ func turned_steering_acceleration(params: Dictionary, wheel_data: Dictionary) ->
 	return steering_acceleration(params, wheel_data, planar_vector)
 
 
+func g_transfer_damp(params: Dictionary) -> float:
+	var factor = params["g_transfer"]
+	var weather = params["weather"]
+	var unknown_value = params["unknown_bool"]
+	if factor < 0.0:
+		factor *= 0.75
+		match weather:
+			[CarTypes.Weather.RAIN, CarTypes.Weather.SNOW]:
+				factor *= 1.1
+	else:
+		if unknown_value:
+			factor *= 0.5
+		match weather:
+			[CarTypes.Weather.RAIN, CarTypes.Weather.SNOW]:
+				factor *= 0.9
+	return factor
+
+
 func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float:
 	const DOWNFORCE_THRESHOLD_SPEED = 10.0
 	var basis = params["basis_to_road"]
