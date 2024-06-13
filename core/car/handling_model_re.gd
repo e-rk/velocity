@@ -750,9 +750,16 @@ func wheel_bias_grip(params: Dictionary, wheel: Dictionary, grip: float) -> floa
 	return result
 
 
-func wheel_downforce_grip(params: Dictionary, wheel: Dictionary, grip: float) -> float:
+func wheel_downforce_grip(params: Dictionary, wheel: Dictionary, base_grip: float, grip: float) -> float:
 	var downforce = self.wheel_downforce_factor(params, wheel)
-	return grip * downforce
+	var g_transfer = self.g_transfer_damp(params)
+	var result = 0.0
+	match wheel["type"]:
+		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+			result = (grip - g_transfer) * downforce
+		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+			result = (base_grip - grip + g_transfer) * downforce
+	return result
 
 
 func model_wheel_grip(params: Dictionary, wheel: Dictionary) -> float:
@@ -760,7 +767,7 @@ func model_wheel_grip(params: Dictionary, wheel: Dictionary) -> float:
 	var base_grip = self.wheel_base_road_grip(params, wheel, surface_grip)
 	var biased_grip = self.wheel_bias_grip(params, wheel, base_grip)
 	# Missing g transfer influence
-	var downforce_grip = self.wheel_downforce_grip(params, wheel, biased_grip)
+	var downforce_grip = self.wheel_downforce_grip(params, wheel, base_grip, biased_grip)
 	return downforce_grip
 
 
@@ -984,9 +991,18 @@ func wheel_longitudal_acceleration(params: Dictionary, acceleration: Vector3) ->
 	return acceleration
 
 
+func calculate_g_transfer(params: Dictionary, linear_acceleration: Vector3) -> float:
+	var performance = params["performance"]
+	var basis = params["basis_to_road"]
+	var gravity = basis.inverse() * params["gravity_vector"]
+	var g_transfer = linear_acceleration.z * performance.g_transfer_factor() - gravity.z * 0.1
+	return g_transfer
+
+
 func process_wheels_cm(params: Dictionary) -> Dictionary:
 	var wheels = params["wheels"]
 	var basis = params["basis_to_road"]
+	var g_transfer = params["g_transfer"]
 	var wheel_data = wheels.map(func(x): return self.calculate_wheel_data(params, x))
 	var linear_acceleration = Vector3.ZERO
 	var angular_acceleration = Vector3.ZERO
@@ -996,9 +1012,11 @@ func process_wheels_cm(params: Dictionary) -> Dictionary:
 		linear_acceleration = wheel_forces_to_linear_acceleration(params, vectors)
 		linear_acceleration = wheel_longitudal_acceleration(params, linear_acceleration)
 		angular_acceleration = self.wheel_forces_to_angular_acceleration(params, vectors)
+		g_transfer = calculate_g_transfer(params, linear_acceleration)
 	return {
 		"linear_acceleration": basis * linear_acceleration,
 		"angular_acceleration": basis * angular_acceleration,
+		"g_transfer": g_transfer,
 	}
 
 

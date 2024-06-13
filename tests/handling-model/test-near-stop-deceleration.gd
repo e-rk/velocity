@@ -34,6 +34,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["gear_shift_counter"] = 0
 	result["shifted_down"] = false
 	result["has_contact_with_ground"] = not self.is_airborne(data)
+	result["g_transfer"] = 0.0
 	return result
 
 

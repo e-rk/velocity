@@ -13,6 +13,7 @@ func extract(params: Dictionary) -> Dictionary:
 		"force": params["force"],
 		"gear_shift_counter": params["gear_shift_counter"],
 		"shifted_down": params["shifted_down"],
+		"g_transfer": params["g_transfer"],
 	}
 
 func extend(f: Callable) -> Callable:
@@ -39,6 +40,8 @@ func extend(f: Callable) -> Callable:
 			result["gear_shift_counter"] = value["gear_shift_counter"]
 		if value.has("shifted_down"):
 			result["shifted_down"] = value["shifted_down"]
+		if value.has("g_transfer"):
+			result["g_transfer"] = value["g_transfer"]
 		return result
 
 func integrate(f: Callable) -> Callable:

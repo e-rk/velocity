@@ -43,6 +43,7 @@ var skip_counter = 0
 var handbrake_accumulator = 0
 var gear_shift_counter = 0
 var shifted_down = false
+var g_transfer := 0.0
 
 @onready var collider: CollisionShape3D = $Collider
 
@@ -174,6 +175,8 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		"force": 0.0,
 		"gear_shift_counter": self.gear_shift_counter,
 		"shifted_down": self.shifted_down,
+		"g_transfer": self.g_transfer,
+		"unknown_bool": false,
 	}
 	var result = handling_model.process(model_params)
 	state.linear_velocity = result["linear_velocity"]
@@ -184,6 +187,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 	self.gear_shift_counter = result["gear_shift_counter"]
 	self.shifted_down = result["shifted_down"]
 	self.current_gear = result["gear"]
+	self.g_transfer = result["g_transfer"]
 
 	self.linear_acceleration = (state.linear_velocity - prev_linear_velocity) / (state.step * 2)
 	prev_linear_velocity = state.linear_velocity

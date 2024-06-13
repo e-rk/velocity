@@ -51,4 +51,4 @@ func body(data: Dictionary):
 		+ " sv.z="
 		+ str(planar_vector.z)
 	)
-	assert_almost_eq(result, expected, EPSILON, msg)
+	assert_almost_eq(result["traction"], expected, EPSILON, msg)
