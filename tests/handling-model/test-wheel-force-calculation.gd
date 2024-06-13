@@ -32,9 +32,10 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["mass"] = self.mass(data)
 	result["has_contact_with_ground"] = !self.is_airborne(data)
 	result["weather"] = 0
-	result["rpm"] = 0  # Missing RPM
+	result["rpm"] = self.rpm(data)
 	result["speed_xz"] = self.speed_xz(data)
 	result["slip_angle"] = self.slip_angle(data)
+	result["road_surface"] = self.road_surface(data)
 	return result
 
 

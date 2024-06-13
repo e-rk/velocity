@@ -625,11 +625,12 @@ func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float
 
 func longitudal_acceleration(
 	params: Dictionary, wheel_data: Dictionary, wheel_planar_vector: Vector3
-) -> float:
+) -> Dictionary:
 	var performance = params["performance"]
 	var traction = wheel_data["traction"]
 	var throttle = params["throttle_input"]
 	var lateral_grip_mult = performance.lateral_grip_multiplier()
+	var traction_loss = false
 	if 0.0 <= traction or 0.0 <= wheel_planar_vector.z:
 		if (
 			0.0 < traction
@@ -637,10 +638,15 @@ func longitudal_acceleration(
 			and (throttle < 0.25 or params["gear"] == CarTypes.Gear.REVERSE or params["gear"] == CarTypes.Gear.NEUTRAL)
 		):
 			traction = min(traction, wheel_planar_vector.z)
+			traction_loss = true
 	elif throttle < 0.25 or not is_gear_reverse(params):
 		traction = max(traction, wheel_planar_vector.z)
+		traction_loss = true
 	traction = traction * lateral_grip_mult
-	return traction
+	return {
+		"traction": traction,
+		"traction_loss": traction_loss,
+	}
 
 
 func orientation_to_ground(params: Dictionary) -> Vector3:
@@ -922,10 +928,14 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var performance = params["performance"]
 	var current_steering = params["current_steering"]
 	var throttle = params["throttle_input"]
+	var handbrake = params["handbrake"]
+	var grip = wheel_data["grip"]
+	var speed_xz = params["speed_xz"]
 	var lateral_grip_mult = performance.lateral_grip_multiplier()
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var wheel_planar_vector = self.wheel_planar_vector(params, wheel_data)
 	var is_front = false
+	var forces = Vector3.ZERO
 	var steering
 	match wheel_data["type"]:
 		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
@@ -934,29 +944,37 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
 			steering = 0
 	wheel_planar_vector = vector_rotate_y(wheel_planar_vector, -steering)
-	traction = self.longitudal_acceleration(params, wheel_data, wheel_planar_vector)
+	var long_accel = self.longitudal_acceleration(params, wheel_data, wheel_planar_vector)
+	traction = long_accel["traction"]
+	var traction_loss = long_accel["traction_loss"]
 	# Missing handbrake
-	var value = self.turned_steering_acceleration(params, wheel_data)
-	var steering_accel = performance.minimum_steering_acceleration() * 2.0
-	steering_accel = min(abs(value), steering_accel)
-	if (
-		abs(velocity_local.z) < 13.4
-		&& ((throttle < 0.02 && 127 <= abs(current_steering)) or throttle < 0.015)
-	):
-		steering_accel *= 0.25
-	var understeer_gradient = performance.understeer_gradient()
-	var understeer = sign(wheel_planar_vector.x) * min(steering_accel, abs(wheel_planar_vector.x))
-	match wheel_data["type"]:
-		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
-			# missing handbrake
-			understeer = understeer * 0.8 * understeer_gradient
-			pass
-		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
-			understeer = (understeer * 1.4) / understeer_gradient
-			pass
-	var f = Vector3(understeer, 0, traction)
-	f = wheel_loss_of_grip(params, wheel_data, f)
-	var forces = vector_rotate_y(f, -steering)
+	if ((not handbrake or is_front) and (not handbrake or not is_front or not traction_loss or traction <= grip)) or (speed_xz < 2.2351501):
+		if traction_loss and grip < abs(traction) and not handbrake and performance.has_abs():
+			traction = clamp(traction, -grip, grip)
+		var value = self.turned_steering_acceleration(params, wheel_data)
+		var steering_accel = performance.minimum_steering_acceleration() * 2.0
+		steering_accel = min(abs(value), steering_accel)
+		if (
+			abs(velocity_local.z) < 13.4
+			&& ((throttle < 0.02 && 127 <= abs(current_steering)) or throttle < 0.015)
+		):
+			steering_accel *= 0.25
+		var understeer_gradient = performance.understeer_gradient()
+		var understeer = sign(wheel_planar_vector.x) * min(steering_accel, abs(wheel_planar_vector.x))
+		match wheel_data["type"]:
+			CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+				if handbrake and abs(velocity_local.z) < 0.5:
+					understeer = 0.0
+				understeer = understeer * 0.8 * understeer_gradient
+				pass
+			CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+				understeer = (understeer * 1.4) / understeer_gradient
+				pass
+		var f = Vector3(understeer, 0, traction)
+		f = wheel_loss_of_grip(params, wheel_data, f)
+		forces = vector_rotate_y(f, -steering)
+	else:
+		forces = self.handbrake_loss_of_grip(params, wheel_data, wheel_planar_vector, traction)
 	return forces
 
 
