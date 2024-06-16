@@ -35,6 +35,8 @@ const RAYCAST_DISTANCE = 10
 
 var current_rpm := 0.0
 var current_steering := 0.0
+var current_throttle := 0.0
+var current_brake := 0.0
 var current_gear := CarTypes.Gear.NEUTRAL
 var linear_acceleration = Vector3.ZERO
 var prev_linear_velocity = Vector3.ZERO
@@ -161,7 +163,9 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		"basis_to_road": positional_attributes["basis_to_road"],
 		"current_steering": self.current_steering,
 		"throttle_input": self.throttle,
+		"throttle": self.current_throttle,
 		"brake_input": self.brake,
+		"brake": self.current_brake,
 		"turn_input": self.steering,
 		"handbrake": self.handbrake,
 		"inertia_inv": state.inverse_inertia,
@@ -182,13 +186,14 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 	state.linear_velocity = result["linear_velocity"]
 	state.angular_velocity = result["angular_velocity"]
 	self.current_steering = result["current_steering"]
+	self.current_throttle = result["throttle"]
+	self.current_brake = result["brake"]
 	self.current_rpm = result["rpm"]
 	self.handbrake_accumulator = result["handbrake_accumulator"]
 	self.gear_shift_counter = result["gear_shift_counter"]
 	self.shifted_down = result["shifted_down"]
 	self.current_gear = result["gear"]
 	self.g_transfer = result["g_transfer"]
-
 	self.linear_acceleration = (state.linear_velocity - prev_linear_velocity) / (state.step * 2)
 	prev_linear_velocity = state.linear_velocity
 	prev_angular_velocity = state.angular_velocity
