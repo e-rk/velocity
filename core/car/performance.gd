@@ -103,5 +103,14 @@ func brake_blip_in_rpm(gear: CarTypes.Gear) -> int:
 func gear_shift_delay() -> int:
 	return data["gear_shift_delay"]
 
+
 func g_transfer_factor() -> float:
 	return data["g_transfer_factor"]
+
+
+func brake_decreasing_curve(idx: int) -> int:
+	return data["brake_decreasing_curve"][idx]
+
+
+func brake_increasing_curve(idx: int) -> int:
+	return data["brake_increasing_curve"][idx]

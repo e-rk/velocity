@@ -78,8 +78,8 @@ func prepare_traction_model_ctx(params: Dictionary) -> Dictionary:
 		"performance": params["performance"],
 		"rpm": params["rpm"],
 		"lost_grip": params["handbrake"],
-		"throttle": params["throttle_input"],
-		"brake": params["brake_input"],
+		"throttle": params["throttle"],
+		"brake": params["brake"],
 		"speed_xz": params["speed_xz"],
 		"linear_velocity": velocity_local,
 		"shifted_down": params["shifted_down"],
@@ -489,8 +489,8 @@ func turning_circle(
 ) -> Dictionary:
 	var performance = params["performance"]
 	var steering = params["current_steering"]
-	var throttle = params["throttle_input"]
-	var brake = params["brake_input"]
+	var throttle = params["throttle"]
+	var brake = params["brake"]
 	var gear = params["gear"]
 	var slip_angle = self.vehicle_slip_angle(params)
 	var turning_radius = performance.turning_circle_radius()
@@ -606,7 +606,7 @@ func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var performance = params["performance"]
-	var brake = params["brake_input"]
+	var brake = params["brake"]
 	var downforce = performance.downforce_mult()
 	if abs(velocity_local.z) <= DOWNFORCE_THRESHOLD_SPEED:
 		return downforce + 1.0
@@ -628,7 +628,7 @@ func longitudal_acceleration(
 ) -> Dictionary:
 	var performance = params["performance"]
 	var traction = wheel_data["traction"]
-	var throttle = params["throttle_input"]
+	var throttle = params["throttle"]
 	var lateral_grip_mult = performance.lateral_grip_multiplier()
 	var traction_loss = false
 	if 0.0 <= traction or 0.0 <= wheel_planar_vector.z:
@@ -773,7 +773,7 @@ func model_wheel_grip(params: Dictionary, wheel: Dictionary) -> float:
 
 func traction(params: Dictionary) -> float:
 	var performance = params["performance"]
-	var throttle = params["throttle_input"]
+	var throttle = params["throttle"]
 	var engine_redline_rpm = performance.engine_redline_rpm()
 	var rpm = rpm_from_wheels(params)
 	var force = self.traction_powertrain(params, rpm) * throttle
@@ -843,7 +843,7 @@ func road_factor(params: Dictionary) -> float:
 
 func wheel_loss_of_grip(params: Dictionary, wheel_data: Dictionary, forces: Vector3) -> Vector3:
 	var gear = params["gear"]
-	var throttle = params["throttle_input"]
+	var throttle = params["throttle"]
 	var performance = params["performance"]
 	var rpm = params["rpm"]
 	var engine_redline_rpm = performance.engine_redline_rpm()
@@ -934,7 +934,7 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var traction = wheel_data["traction"]
 	var performance = params["performance"]
 	var current_steering = params["current_steering"]
-	var throttle = params["throttle_input"]
+	var throttle = params["throttle"]
 	var handbrake = params["handbrake"]
 	var grip = wheel_data["grip"]
 	var speed_xz = params["speed_xz"]
@@ -1093,7 +1093,7 @@ func process_steering_input_cm(params: Dictionary) -> Dictionary:
 	var turn_in_ramp = performance.turn_in_ramp()
 	var turn_out_ramp = performance.turn_out_ramp()
 	var turn_input = params["turn_input"]
-	var steering_target = -128 * turn_input
+	var steering_target = 128 * turn_input
 	var steering_diff = steering_target - steering
 	var delta
 	if steering_diff < 0 and steering > 0:
@@ -1104,6 +1104,26 @@ func process_steering_input_cm(params: Dictionary) -> Dictionary:
 		delta = turn_in_ramp
 	steering = move_toward(steering, steering_target, delta * 32 * params["timestep"])
 	return {"current_steering": steering}
+
+
+func process_throttle_input_cm(params: Dictionary) -> Dictionary:
+	var throttle = params["throttle"]
+	var input = params["throttle_input"]
+	const delta = 16 / 255.0
+	throttle = move_toward(throttle, input, delta * 32 * params["timestep"])
+	return {"throttle": throttle}
+
+
+func process_brake_input_cm(params: Dictionary) -> Dictionary:
+	var performance = params["performance"]
+	var brake = params["brake"]
+	var input = params["brake_input"]
+	var idx = roundi(brake * 255) >> 5
+	var delta = performance.brake_increasing_curve(idx) / 255.0
+	if input < brake:
+		delta = performance.brake_decreasing_curve(idx) / 255.0
+	brake = move_toward(brake, input, delta * 32 * params["timestep"])
+	return {"brake": brake}
 
 
 func process_gear_input_cm(params: Dictionary) -> Dictionary:
@@ -1130,8 +1150,8 @@ func gravity_cm(params: Dictionary) -> Dictionary:
 
 func prevent_moving_sideways_cm(params: Dictionary) -> Dictionary:
 	var basis = params["basis_to_road"]
-	var throttle = params["throttle_input"]
-	var brake = params["brake_input"]
+	var throttle = params["throttle"]
+	var brake = params["brake"]
 	var steering = params["current_steering"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var result = params["linear_velocity"]
@@ -1180,8 +1200,8 @@ var near_stop_deceleration_cm = enable_if(
 
 func brake_force(params: Dictionary, wheel_data: Dictionary) -> float:
 	var performance = params["performance"]
-	var brake_input = params["brake_input"]
-	var brake_deceleration = brake_input * performance.maximum_braking_deceleration()
+	var brake = params["brake"]
+	var brake_deceleration = brake * performance.maximum_braking_deceleration()
 	var wheel_type = wheel_data["type"]
 	var front_brake_ratio = performance.front_brake_bias()
 	var basis = params["basis_to_road"]
@@ -1190,7 +1210,7 @@ func brake_force(params: Dictionary, wheel_data: Dictionary) -> float:
 	var has_spoiler = performance.has_spoiler()
 	var downforce_mult = performance.downforce_mult()
 	brake_deceleration = min(brake_maximum, brake_deceleration)
-	if 0.15 < brake_input and has_spoiler:
+	if 0.15 < brake and has_spoiler:
 		brake_deceleration += abs(velocity_local.z) * downforce_mult
 	if params["handbrake"]:
 		front_brake_ratio += 0.05
@@ -1272,6 +1292,25 @@ func prevent_sinking_cm(params: Dictionary) -> Dictionary:
 	}
 
 
+func go_airborne(params: Dictionary) -> Dictionary:
+	var basis = params["basis_to_road"]
+	var angular_velocity = params["angular_velocity"]
+	var linear_velocity = params["linear_velocity"]
+	var distance_above_ground = params["distance_above_ground"]
+	var result = basis.inverse() * angular_velocity
+	if 0.0 < basis.y.dot(linear_velocity) and self.went_airborne(params):
+		result *= Vector3(0.15, 1, 1)
+	return {
+		"angular_velocity": basis * result,
+		"has_contact_with_ground": distance_above_ground < 0.6,
+	}
+
+
+func went_airborne(params: Dictionary) -> bool:
+	var has_contact_with_ground = params["has_contact_with_ground"]
+	var distance_above_ground = params["distance_above_ground"]
+	return has_contact_with_ground and 0.6 <= distance_above_ground
+
 # Predicates
 
 func predicate_all(func_array: Array) -> Callable:
@@ -1298,13 +1337,13 @@ func is_airborne(params: Dictionary) -> bool:
 
 func throttle_in_range(lower: float, upper: float) -> Callable:
 	return func(params: Dictionary) -> bool:
-		var throttle = params["throttle_input"]
+		var throttle = params["throttle"]
 		return lower <= throttle and throttle <= upper
 
 
 func brake_in_range(lower: float, upper: float) -> Callable:
 	return func(params: Dictionary) -> bool:
-		var throttle = params["brake_input"]
+		var throttle = params["brake"]
 		return lower <= throttle and throttle <= upper
 
 
@@ -1316,16 +1355,13 @@ func brake_in_range_uint8(lower: int, upper: int) -> Callable:
 	return brake_in_range(lower / 255, upper / 255)
 
 
-func process(params: Dictionary) -> Dictionary:
-	var basis = Basis.from_euler(Vector3(0, PI, 0))
-	params["basis"] = params["basis"] * basis
-	params["basis_to_road"] = params["basis_to_road"] * basis
+func traction_pipeline(params: Dictionary) -> Dictionary:
 	params["slip_angle"] = self.vehicle_slip_angle_tg(params)
 	params["speed_xz"] = self.calculate_speed_xz(params)
-	params["shifted_down"] = false
-	var angular_velocity = params["angular_velocity"] / TAU
-	params["angular_velocity"] = angular_velocity
-	var traction_pipeline = make_model_pipeline(
+	params["unknown_bool"] = false
+	params["force"] = 0.0
+	params["has_grip"] = true
+	var traction = make_model_pipeline(
 		[
 			integrate(self.process_wheels_cm),
 			prevent_moving_sideways_cm,
@@ -1334,6 +1370,27 @@ func process(params: Dictionary) -> Dictionary:
 			enable_if(is_gear_neutral, integrate(self.neutral_gear_deceleration_cm)),
 		]
 	)
+	var pipeline = make_model_pipeline(
+		[
+			process_brake_input_cm,
+			process_throttle_input_cm,
+			process_steering_input_cm,
+			process_gear_input_cm,
+			enable_if(should_come_to_stop, integrate(self.near_stop_deceleration_cm)),
+			traction_model,
+			enable_if(neg(is_airborne), traction),
+		]
+	)
+	return extend(pipeline).call(params)
+
+func process(params: Dictionary) -> Dictionary:
+	var basis = Basis.from_euler(Vector3(0, PI, 0))
+	params["basis"] = params["basis"] * basis
+	params["basis_to_road"] = params["basis_to_road"] * basis
+	var angular_velocity = params["angular_velocity"] / TAU
+	params["angular_velocity"] = angular_velocity
+	params["slip_angle"] = self.vehicle_slip_angle_tg(params)
+	params["speed_xz"] = self.calculate_speed_xz(params)
 	var airborne_processing = make_model_pipeline(
 		[
 			enable_if(is_airborne, integrate(airborne_drag_cm)),
@@ -1344,15 +1401,12 @@ func process(params: Dictionary) -> Dictionary:
 	)
 	var model = make_model_pipeline(
 		[
-			process_steering_input_cm,
-			process_gear_input_cm,
-			enable_if(should_come_to_stop, integrate(self.near_stop_deceleration_cm)),
-			traction_model,
-			enable_if(neg(is_airborne), traction_pipeline),
+			traction_pipeline,
 			airborne_processing,
 			integrate(self.downforce_cm),
 			enable_if(is_airborne, limit_angular_velocity_cm),
 			enable_if(is_airborne, integrate(self.gravity_cm)),
+			go_airborne,
 		]
 	)
 	var result = model.call(params)

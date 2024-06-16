@@ -22,10 +22,10 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["gear"] = self.gear(data)
 	result["linear_velocity"] = self.local_linear_velocity(data)
 	result["handbrake"] = self.handbrake(data)
-	result["throttle_input"] = self.throttle(data)
+	result["throttle"] = self.throttle(data)
 	result["weather"] = self.weather(data)
 	result["slip_angle"] = self.slip_angle(data)
-	result["brake_input"] = self.brake_input(data)
+	result["brake"] = self.brake(data)
 	result["shifted_down"] = data["unknown_engine_value"] != "0"
 	result["gear_shift_counter"] = (int(data["unknown_engine_value2"]) >> 0x10)
 	result["has_contact_with_ground"] = not self.is_airborne(data)
@@ -42,8 +42,8 @@ func body(data: Dictionary):
 	var result = self.model.traction_model(params)
 	var msg = "rpm=" + str(params["rpm"]) \
 			+ " gear=" + str(params["gear"]) \
-			+ " thr=" + str(params["throttle_input"]) \
-			+ " brk=" + str(params["brake_input"]) \
+			+ " thr=" + str(params["throttle"]) \
+			+ " brk=" + str(params["brake"]) \
 			+ " air=" + str(not params["has_contact_with_ground"]) \
 			+ " v.z=" + str(params["linear_velocity"].z) \
 			+ " sd=" + str(params["shifted_down"]) \

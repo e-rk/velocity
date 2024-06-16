@@ -21,7 +21,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["rpm"] = self.rpm(data)
 	result["linear_velocity"] = self.local_linear_velocity(data)
 	result["throttle"] = self.throttle(data)
-	result["brake"] = self.brake_input(data)
+	result["brake"] = self.brake(data)
 	result["shifted_down"] = data["unknown_engine_value"] != "0"
 	result["gear_shift_counter"] = (int(data["unknown_engine_value2"]) >> 0x10)
 	result["target_rpm"] = int(data["target_rpm"])

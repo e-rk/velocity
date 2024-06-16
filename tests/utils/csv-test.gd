@@ -34,6 +34,9 @@ func torque(data: Dictionary) -> float:
 func gear(data: Dictionary) -> int:
 	return int(data["gear"])
 
+func next_gear(data: Dictionary) -> int:
+	return int(data["next_gear"])
+
 func local_linear_velocity(data: Dictionary) -> Vector3:
 	var vx = float(data.get("local_linear_velocity_x", "0.0"))
 	var vy = float(data.get("local_linear_velocity_y", "0.0"))
@@ -50,6 +53,18 @@ func global_angular_velocity(data: Dictionary) -> Vector3:
 	var wx = float(data.get("global_angular_velocity_x", "0.0"))
 	var wy = float(data.get("global_angular_velocity_y", "0.0"))
 	var wz = float(data.get("global_angular_velocity_z", "0.0"))
+	return Vector3(wx, wy, wz)
+
+func result_global_linear_velocity(data: Dictionary) -> Vector3:
+	var vx = float(data.get("result_global_linear_velocity_x", "0.0"))
+	var vy = float(data.get("result_global_linear_velocity_y", "0.0"))
+	var vz = float(data.get("result_global_linear_velocity_z", "0.0"))
+	return Vector3(vx, vy, vz)
+
+func result_global_angular_velocity(data: Dictionary) -> Vector3:
+	var wx = float(data.get("result_global_angular_velocity_x", "0.0"))
+	var wy = float(data.get("result_global_angular_velocity_y", "0.0"))
+	var wz = float(data.get("result_global_angular_velocity_z", "0.0"))
 	return Vector3(wx, wy, wz)
 
 func local_angular_velocity(data: Dictionary) -> Vector3:
@@ -78,13 +93,22 @@ func handbrake_accumulator(data: Dictionary) -> int:
 	return int(data["handbrake_accumulator"])
 
 func steering(data: Dictionary) -> int:
-	return int(data["turn_angle"])
+	return int(data["current_steering"])
+
+func steering_input(data: Dictionary) -> int:
+	return int(data["steering_input"])
 
 func throttle(data: Dictionary) -> float:
 	return float(data["throttle"])
 
-func brake_input(data: Dictionary) -> float:
+func throttle_input(data: Dictionary) -> float:
+	return int(data["throttle_input"]) / 255.0
+
+func brake(data: Dictionary) -> float:
 	return float(data["brake"])
+
+func brake_input(data: Dictionary) -> float:
+	return int(data["brake_input"]) / 255.0
 
 func slip_angle(data: Dictionary) -> float:
 	return float(data["slip_angle"])
@@ -102,6 +126,9 @@ func wheel_is_front(data: Dictionary) -> float:
 
 func wheel_downforce(data: Dictionary, wheel_idx: int) -> float:
 	return float(data["wheel_" + str(wheel_idx) + "_downforce_factor"])
+
+func wheel_road_surface(data: Dictionary, wheel_idx: int) -> int:
+	return int(data["wheel_" + str(wheel_idx) + "_surface_type"]) & 0x1f
 
 func wheel_downforce2(data: Dictionary) -> float:
 	return float(data["wheel_downforce"])
@@ -140,6 +167,13 @@ func basis_to_road(data: Dictionary) -> Basis:
 		Vector3(float(data["road_basis_right_x"]), float(data["road_basis_right_y"]), float(data["road_basis_right_z"])),
 		Vector3(float(data["road_basis_normal_x"]), float(data["road_basis_normal_y"]), float(data["road_basis_normal_z"])),
 		Vector3(float(data["road_basis_forward_x"]), float(data["road_basis_forward_y"]), float(data["road_basis_forward_z"])),
+	)
+
+func basis(data: Dictionary) -> Basis:
+	return Basis(
+		Vector3(float(data["basis_right_x"]), float(data["basis_right_y"]), float(data["basis_right_z"])),
+		Vector3(float(data["basis_normal_x"]), float(data["basis_normal_y"]), float(data["basis_normal_z"])),
+		Vector3(float(data["basis_forward_x"]), float(data["basis_forward_y"]), float(data["basis_forward_z"])),
 	)
 
 func speed_xz(data: Dictionary) -> float:

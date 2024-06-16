@@ -24,7 +24,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["basis"] = Basis()
 	result["gear"] = self.gear(data)
 	result["linear_velocity"] = self.local_linear_velocity(data)
-	result["throttle_input"] = self.throttle(data)
+	result["throttle"] = self.throttle(data)
 	result["rpm"] = int(data["rpm"])
 	result["road_surface"] = self.road_surface(data)
 	result["weather"] = self.weather(data)

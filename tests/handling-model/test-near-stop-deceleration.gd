@@ -24,8 +24,8 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["angular_velocity"] = self.global_angular_velocity(data)
 	result["timestep"] = 1.0 / 32.0
 	result["gear"] = self.gear(data)
-	result["throttle_input"] = self.throttle(data)
-	result["brake_input"] = self.brake_input(data)
+	result["throttle"] = self.throttle(data)
+	result["brake"] = self.brake(data)
 	result["rpm"] = 0.0
 	result["current_steering"] = 0.0
 	result["has_grip"] = true
