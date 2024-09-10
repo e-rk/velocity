@@ -27,4 +27,3 @@ func body(data: Dictionary):
 	var result = self.model.traction_model_limit_gear_when_low_velocity(params)
 	var msg = "v.z=" + str(params["linear_velocity"])
 	assert_eq(result["gear"], result_gear, msg)
-

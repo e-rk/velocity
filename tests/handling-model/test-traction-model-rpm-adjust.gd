@@ -41,4 +41,3 @@ func body(data: Dictionary):
 			+ " sd=" + str(params["shifted_down"]) \
 			+ " sc=" + str(params["gear_shift_counter"])
 	assert_eq(result["rpm"], expected_rpm, msg)
-

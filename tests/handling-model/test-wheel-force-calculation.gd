@@ -26,7 +26,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["basis_to_road"] = Basis()
 	result["angular_velocity"] = self.global_angular_velocity(data)
 	result["current_steering"] = self.steering(data)
-	result["throttle_input"] = self.throttle(data)
+	result["throttle"] = self.throttle(data)
 	result["handbrake"] = self.handbrake(data)
 	result["inertia_inv"] = self.inertia_inv(data)
 	result["mass"] = self.mass(data)

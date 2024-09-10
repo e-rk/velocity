@@ -26,4 +26,3 @@ func body(data: Dictionary):
 	var result = self.model.traction_model_target_rpm(params)
 	var msg = "thr=" + str(params["throttle"])
 	assert_eq(result["target_rpm"], expected_target_rpm, "rpm: " + msg)
-

@@ -51,4 +51,3 @@ func body(data: Dictionary):
 	assert_almost_eq(result["force"], expected_force, EPSILON, "force: " + msg)
 	assert_eq(result["handbrake"], expected_handbrake, "hb: " + msg)
 	assert_eq(result["rpm"], expected_rpm, "rpm: " + msg)
-

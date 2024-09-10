@@ -33,4 +33,3 @@ func body(data: Dictionary):
 	assert_eq(result["lost_grip"], expected_lost_grip, "lost_grip: " + msg)
 	assert_eq(result["rpm"], expected_rpm, "rpm: " + msg)
 	assert_eq(result["rpm_above_redline"], expected_rpm_above_redline, "rar: " + msg)
-

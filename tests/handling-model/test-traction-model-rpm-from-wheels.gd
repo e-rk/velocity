@@ -29,4 +29,3 @@ func body(data: Dictionary):
 			+ " gear=" + str(params["gear"]) \
 			+ " res=" + str(result)
 	assert_eq(round(result), expected_rpm, msg)
-

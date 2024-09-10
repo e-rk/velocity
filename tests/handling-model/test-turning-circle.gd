@@ -22,9 +22,9 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["basis_to_road"] = self.basis_to_road(data)
 	result["gear"] = self.gear(data)
 	result["linear_velocity"] = self.global_linear_velocity(data)
-	result["throttle_input"] = self.throttle(data)
+	result["throttle"] = self.throttle(data)
 	result["current_steering"] = self.steering(data)
-	result["brake_input"] = self.brake_input(data)
+	result["brake"] = self.brake(data)
 	result["slip_angle"] = self.slip_angle(data)
 	result["angular_velocity"] = self.global_angular_velocity(data)
 	result["timestep"] = 1.0 / 32.0
@@ -40,11 +40,11 @@ func body(data: Dictionary):
 		"gear="
 		+ str(params["gear"])
 		+ " thr="
-		+ str(params["throttle_input"])
+		+ str(params["throttle"])
 		+ " steer="
 		+ str(params["current_steering"])
 		+ " brake="
-		+ str(params["brake_input"])
+		+ str(params["brake"])
 		+ " slip="
 		+ str(params["slip_angle"])
 		+ " angvel="

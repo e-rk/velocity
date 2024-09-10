@@ -1,4 +1,4 @@
-airborne_counter,local_linear_velocity_x,local_linear_velocity_y,slip_angle,local_linear_velocity_z,turn_angle,handbrake,result
+airborne_counter,local_linear_velocity_x,local_linear_velocity_y,slip_angle,local_linear_velocity_z,current_steering,handbrake,result
 0,0.000000,0.000000,0.000000,0.000000,0,0,0.000000
 0,0.000000,0.000000,0.000000,0.000000,0,0,0.000000
 0,0.000000,0.000000,0.000000,0.000000,0,0,0.000000

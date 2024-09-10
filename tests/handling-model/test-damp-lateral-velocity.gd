@@ -32,4 +32,3 @@ func body(data: Dictionary):
 	var result = self.model.integrate(self.model.damp_lateral_velocity_cm).call(params)
 	var msg = "v=" + str(params["linear_velocity"])
 	assert_almost_eq(result["linear_velocity"], expected, EPSILON * Vector3.ONE, msg)
-

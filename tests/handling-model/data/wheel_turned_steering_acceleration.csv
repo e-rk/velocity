@@ -1,4 +1,4 @@
-lateral_grip,wheel_is_front,gear,global_angular_velocity_y,local_linear_velocity_x,local_linear_velocity_y,local_linear_velocity_z,mass,inertia_inv_y,turn_angle,airborne_counter,handbrake,slip_angle,speed_xz,result
+lateral_grip,wheel_is_front,gear,global_angular_velocity_y,local_linear_velocity_x,local_linear_velocity_y,local_linear_velocity_z,mass,inertia_inv_y,current_steering,airborne_counter,handbrake,slip_angle,speed_xz,result
 21.183914,1,1,0.000000,0.000000,0.000000,0.000000,1275.000000,0.000383,0,0,0,0.000000,0.000000,0.000000
 21.183914,1,1,0.000000,0.000000,0.000000,0.000000,1275.000000,0.000383,0,0,0,0.000000,0.000000,0.000000
 21.183914,0,1,0.000000,0.000000,0.000000,0.000000,1275.000000,0.000383,0,0,0,0.000000,0.000000,-0.000000
