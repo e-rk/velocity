@@ -25,7 +25,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["linear_velocity"] = self.global_linear_velocity(data)
 	result["current_steering"] = self.steering(data)
 	result["throttle"] = self.throttle(data)
-	result["brake"] = self.brake_input(data)
+	result["brake"] = self.brake(data)
 	return result
 
 
@@ -33,4 +33,5 @@ func body(data: Dictionary):
 	var params = self.make_params(data)
 	var expected = Vector3(float(data["result_global_linear_velocity_x"]), float(data["result_global_linear_velocity_y"]), float(data["result_global_linear_velocity_z"]))
 	var result = self.model.prevent_moving_sideways_cm(params)
-	assert_almost_eq(result["linear_velocity"], expected, EPSILON * Vector3.ONE)
+	var msg = "thr=" + str(params["throttle"]) + " brk=" + str(params["brake"]) + " str=" + str(params["current_steering"]) + " v=" + str(params["linear_velocity"])
+	assert_almost_eq(result["linear_velocity"], expected, EPSILON * Vector3.ONE, msg)
