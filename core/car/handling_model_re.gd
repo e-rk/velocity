@@ -1186,8 +1186,8 @@ func near_stop_deceleration(params: Dictionary) -> Dictionary:
 
 var should_come_to_stop = predicate_all(
 	[
-		throttle_in_range_uint8(0, 32),
-		brake_in_range_uint8(0, 32),
+		throttle_in_range_uint8(0, 31),
+		brake_in_range_uint8(0, 31),
 		neg(is_gear_neutral),
 		neg(is_airborne),
 	]
@@ -1348,11 +1348,11 @@ func brake_in_range(lower: float, upper: float) -> Callable:
 
 
 func throttle_in_range_uint8(lower: int, upper: int) -> Callable:
-	return throttle_in_range(lower / 255, upper / 255)
+	return throttle_in_range(lower / 255.0, upper / 255.0)
 
 
 func brake_in_range_uint8(lower: int, upper: int) -> Callable:
-	return brake_in_range(lower / 255, upper / 255)
+	return brake_in_range(lower / 255.0, upper / 255.0)
 
 
 func traction_pipeline(params: Dictionary) -> Dictionary:
