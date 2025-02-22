@@ -45,7 +45,15 @@ func body(data: Dictionary):
 		wheel_data["type"] = CarTypes.Wheel.FRONT_LEFT
 	else:
 		wheel_data["type"] = CarTypes.Wheel.REAR_LEFT
-	var result = self.model.turned_steering_acceleration(params, wheel_data)
+	var steering
+	match wheel_data["type"]:
+		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
+			steering = self.model.steering_angle(params)["steering"]
+		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
+			steering = 0.0
+	var planar_vector = self.model.wheel_planar_vector(params, wheel_data)
+	planar_vector = self.model.vector_rotate_y(planar_vector, -steering)
+	var result = self.model.turned_steering_acceleration(params, wheel_data, planar_vector)
 	var msg = "gear=" + str(params["gear"]) \
 			+ " hb=" + str(params["handbrake"]) \
 			+ " steer=" + str(params["current_steering"]) \

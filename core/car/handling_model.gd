@@ -51,6 +51,8 @@ func extend(f: Callable) -> Callable:
 			result["brake"] = value["brake"]
 		if value.has("has_contact_with_ground"):
 			result["has_contact_with_ground"] = value["has_contact_with_ground"]
+		if value.has("steering"):
+			result["steering"] = value["steering"]
 		return result
 
 func integrate(f: Callable) -> Callable:

@@ -44,4 +44,4 @@ func body(data: Dictionary):
 		+ " cwg="
 		+ str(params["has_contact_with_ground"])
 	)
-	assert_almost_eq(result, expected, EPSILON, msg)
+	assert_almost_eq(result["steering"], expected, EPSILON, msg)

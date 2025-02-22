@@ -464,9 +464,9 @@ func slip_angle_factor(params: Dictionary) -> float:
 	return result
 
 
-func steering_angle(params: Dictionary) -> float:
+func steering_angle(params: Dictionary) -> Dictionary:
 	if !params["has_contact_with_ground"]:
-		return 0.0
+		return {"steering" : 0.0}
 	var result = 0
 	var steering = params["current_steering"]
 	var basis = params["basis_to_road"]
@@ -481,7 +481,9 @@ func steering_angle(params: Dictionary) -> float:
 		steering = steering / velocity_factor
 	result = steering_acceleration * 1.5 * 0.00277777777 * steering * 0.0078125
 	result = clamp(result, -1.0, 1.0)
-	return result
+	return {
+		"steering": result
+	}
 
 
 func turning_circle(
@@ -571,15 +573,7 @@ func vector_rotate_y(v: Vector3, angle: float) -> Vector3:
 	return v.rotated(Vector3.UP, angle * TAU)
 
 
-func turned_steering_acceleration(params: Dictionary, wheel_data: Dictionary) -> float:
-	var steering
-	match wheel_data["type"]:
-		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
-			steering = steering_angle(params)
-		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
-			steering = 0
-	var planar_vector = self.wheel_planar_vector(params, wheel_data)
-	planar_vector = vector_rotate_y(planar_vector, -steering)
+func turned_steering_acceleration(params: Dictionary, wheel_data: Dictionary, planar_vector: Vector3) -> float:
 	return steering_acceleration(params, wheel_data, planar_vector)
 
 
@@ -946,19 +940,18 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var steering
 	match wheel_data["type"]:
 		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
-			steering = self.steering_angle(params)
 			is_front = true
+			steering = params["steering"]
 		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
-			steering = 0
+			steering = 0.0
 	wheel_planar_vector = vector_rotate_y(wheel_planar_vector, -steering)
 	var long_accel = self.longitudal_acceleration(params, wheel_data, wheel_planar_vector)
 	traction = long_accel["traction"]
 	var traction_loss = long_accel["traction_loss"]
-	# Missing handbrake
-	if ((not handbrake or is_front) and (not handbrake or not is_front or not traction_loss or traction <= grip)) or (speed_xz < 2.2351501):
+	if ((not handbrake or is_front) and (not handbrake or not is_front or not traction_loss or abs(traction) <= grip)) or (speed_xz < 2.2351501):
 		if traction_loss and grip < abs(traction) and not handbrake and performance.has_abs():
 			traction = clamp(traction, -grip, grip)
-		var value = self.turned_steering_acceleration(params, wheel_data)
+		var value = self.turned_steering_acceleration(params, wheel_data, wheel_planar_vector)
 		var steering_accel = performance.minimum_steering_acceleration() * 2.0
 		steering_accel = min(abs(value), steering_accel)
 		if (
@@ -1376,6 +1369,7 @@ func traction_pipeline(params: Dictionary) -> Dictionary:
 			process_throttle_input_cm,
 			process_steering_input_cm,
 			process_gear_input_cm,
+			steering_angle,
 			enable_if(should_come_to_stop, integrate(self.near_stop_deceleration_cm)),
 			traction_model,
 			enable_if(neg(is_airborne), traction),

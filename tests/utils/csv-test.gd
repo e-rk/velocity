@@ -144,6 +144,9 @@ func wheel_force(data: Dictionary, prefix="") -> Vector3:
 func wheel_traction(data: Dictionary) -> float:
 	return float(data["wheel_traction"])
 
+func wheel_steering(data: Dictionary) -> float:
+	return float(data["wheel_steering"])
+
 func road_basis_normal_y(data: Dictionary) -> Vector3:
 	var nx = float(data.get("road_basis_normal_x", "0.0"))
 	var ny = float(data.get("road_basis_normal_y", "0.0"))
