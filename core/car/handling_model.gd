@@ -8,7 +8,7 @@ func extract(params: Dictionary) -> Dictionary:
 		"gear": params["gear"],
 		"rpm": params["rpm"],
 		"current_steering": params["current_steering"],
-		"has_grip": params["has_grip"],
+		"lost_grip": params["lost_grip"],
 		"handbrake_accumulator": params["handbrake_accumulator"],
 		"force": params["force"],
 		"gear_shift_counter": params["gear_shift_counter"],
@@ -33,8 +33,8 @@ func extend(f: Callable) -> Callable:
 			result["rpm"] = value["rpm"]
 		if value.has("current_steering"):
 			result["current_steering"] = value["current_steering"]
-		if value.has("has_grip"):
-			result["has_grip"] = value["has_grip"]
+		if value.has("lost_grip"):
+			result["lost_grip"] = value["lost_grip"]
 		if value.has("handbrake_accumulator"):
 			result["handbrake_accumulator"] = value["handbrake_accumulator"]
 		if value.has("force"):
