@@ -22,7 +22,7 @@ func extract(params: Dictionary) -> Dictionary:
 func extend(f: Callable) -> Callable:
 	return func(params: Dictionary) -> Dictionary:
 		var value = f.call(params)
-		var result = params
+		var result = params.duplicate(true)
 		if value.has("linear_velocity"):
 			result["linear_velocity"] = value["linear_velocity"]
 		if value.has("angular_velocity"):
@@ -105,4 +105,3 @@ func make_model_pipeline(func_array: Array) -> Callable:
 
 func process(params: Dictionary) -> Dictionary:
 	return extract(params)
-

@@ -99,7 +99,7 @@ func prepare_traction_model_ctx(params: Dictionary) -> Dictionary:
 func traction_model_extend(f: Callable) -> Callable:
 	return func(traction_params: Dictionary) -> Dictionary:
 		var value = f.call(traction_params)
-		var result = traction_params
+		var result = traction_params.duplicate(true)
 		if value.has("rpm"):
 			result["rpm"] = value["rpm"]
 		if value.has("handbrake_accumulator"):

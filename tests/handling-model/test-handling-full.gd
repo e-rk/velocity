@@ -47,7 +47,7 @@ func make_params(data: Dictionary) -> Dictionary:
 	result["timestep"] = 1 / 32.0
 	result["handbrake_accumulator"] = self.handbrake_accumulator(data)
 	result["gear_shift_counter"] = (int(data["unknown_engine_value2"]) >> 0x10)
-	result["shifted_down"] = false
+	result["shifted_down"] = data["unknown_engine_value"] != "0"
 	result["wheels"] = [
 		{"type": CarTypes.Wheel.FRONT_RIGHT, "road_surface": self.wheel_road_surface(data, 0)},
 		{"type": CarTypes.Wheel.FRONT_LEFT, "road_surface": self.wheel_road_surface(data, 1)},
@@ -74,10 +74,11 @@ func body(data: Dictionary):
 	var ttt = result["brake"]
 	var msg = "gear=" + str(params["gear"]) \
 			+ " hb=" + str(params["handbrake"]) \
+			+ " rpm=" + str(params["rpm"]) \
 			+ " v=" + str(params["linear_velocity"]) \
 			+ " w=" + str(params["angular_velocity"]) \
 			+ " bi=" + str(params["brake_input"])
-	#assert_eq(result["rpm"], expected_rpm, msg)
+	assert_almost_eq(result["rpm"], expected_rpm, 1, msg)
 	#assert_eq(result["handbrake"], expected_handbrake, msg)
 	assert_eq(result["gear"], expected_gear, msg)
 	assert_almost_eq(result["linear_velocity"], expected_velocity, Vector3.ONE * 0.01, msg)
