@@ -15,7 +15,6 @@ func get_csv_line_dict(file, header):
 	if len(line) == 1:
 		return null
 	for i in line.size():
-		current_line += 1
 		result[header[i]] = line[i]
 	return result
 
@@ -23,6 +22,7 @@ func test_csv():
 	var csv = self.get_csv()
 	var header = csv.get_csv_line()
 	while not csv.eof_reached():
+		current_line += 1
 		var line = self.get_csv_line_dict(csv, header)
 		if line == null:
 			break
@@ -39,6 +39,12 @@ func gear(data: Dictionary) -> int:
 
 func next_gear(data: Dictionary) -> int:
 	return int(data["next_gear"])
+
+func vector3(prefix: String, data: Dictionary) -> Vector3:
+	var x = float(data.get(prefix + "_x", "0.0"))
+	var y = float(data.get(prefix + "_y", "0.0"))
+	var z = float(data.get(prefix + "_z", "0.0"))
+	return Vector3(x, y, z)
 
 func local_linear_velocity(data: Dictionary) -> Vector3:
 	var vx = float(data.get("local_linear_velocity_x", "0.0"))

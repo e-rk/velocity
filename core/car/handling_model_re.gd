@@ -1219,11 +1219,15 @@ func brake_force(params: Dictionary, wheel_data: Dictionary) -> float:
 	return sign(velocity_local.z) * brake_deceleration
 
 
+func limit_angular_velocity(angular_velocity: Vector3, limit: float) -> Vector3:
+	var vec_limit = limit * Vector3.ONE
+	return angular_velocity.clamp(-vec_limit, vec_limit)
+
+
 func limit_angular_velocity_cm(params: Dictionary) -> Dictionary:
 	const ANGULAR_VELOCITY_LIMIT = 2.4 / TAU
-	var limit = ANGULAR_VELOCITY_LIMIT * Vector3.ONE
-	var angular_velocity = params["angular_velocity"].clamp(-limit, limit)
-	return {"angular_velocity": angular_velocity}
+	var result = self.limit_angular_velocity(params["angular_velocity"], ANGULAR_VELOCITY_LIMIT)
+	return {"angular_velocity": result}
 
 
 func downforce_cm(params: Dictionary) -> Dictionary:
@@ -1379,6 +1383,108 @@ func traction_pipeline(params: Dictionary) -> Dictionary:
 		]
 	)
 	return extend(pipeline).call(params)
+
+
+func apply_collision_velocities(params: Dictionary, momentum: Vector3, radius: Vector3, mass_ratio: float, friction: float):
+	var mass = params["mass"]
+	var mass_inv = 1.0 / mass
+	var linear_velocity = params["linear_velocity"]
+	var angular_velocity = params["angular_velocity"]
+	var basis = params["basis"]
+	var basis_inv = basis.inverse()
+	var inertia_inv = params["inertia_inv"]
+	var inertia = inertia_inv.inverse()
+	var result_linear_velocity = linear_velocity
+	var result_angular_velocity = angular_velocity
+	if mass < momentum.length():
+		momentum *= friction
+	momentum *= mass_ratio
+	var radius_norm = radius.normalized()
+	var momentum_radius_dot = -radius_norm.dot(momentum)
+	if 0.0 < momentum_radius_dot:
+		var vel_correction = -momentum_radius_dot * radius_norm * mass_inv
+		result_linear_velocity = linear_velocity + vel_correction
+	if not is_zero_approx(radius.length()):
+		var arm = basis_inv * radius
+		var momentum_local = basis_inv * momentum
+		var angular_momentum = arm.cross(momentum_local)
+		var arm_2 = arm * arm
+		var radvalues = Vector3(
+			arm_2.z + arm_2.y,
+			arm_2.x + arm_2.z,
+			arm_2.x + arm_2.y
+		)
+		var shifted_inertia = radvalues * mass + inertia
+		var corr_angular_velocity = angular_momentum / shifted_inertia
+		result_angular_velocity = angular_velocity + (basis * corr_angular_velocity) / TAU
+	result_angular_velocity = limit_angular_velocity(result_angular_velocity, 1.8)
+	return {
+		"linear_velocity": result_linear_velocity,
+		"angular_velocity": result_angular_velocity,
+	}
+
+
+func kinetic_energy(params: Dictionary) -> float:
+	var angular_velocity = params["angular_velocity"]
+	var linear_velocity = params["linear_velocity"]
+	var inerta_inv = params["inertia_inv"]
+	var mass = params["mass"]
+	var inertia = inerta_inv.inverse()
+	var rotational = (angular_velocity.length() ** 2) * inertia.length() / 2.0
+	var linear = (linear_velocity.length() ** 2) * mass / 2.0
+	return rotational + linear
+
+
+func calculate_impact(params: Dictionary, body_point: Vector3, impact_point: Vector3, normal: Vector3, friction: float) -> Dictionary:
+	var current_position = params["position"]
+	var angular_velocity = params["angular_velocity"]
+	var linear_velocity = params["linear_velocity"]
+	var car_friction = params["friction"]
+	var mass = params["mass"]
+	var result_position = current_position
+	var diff = body_point - impact_point
+	var dot = diff.dot(normal)
+	if dot < 0:
+		var correction = -dot * normal
+		result_position += correction
+		current_position = result_position
+	var body_point_to_origin = body_point - current_position
+	var angular_velocity_tau = angular_velocity * TAU
+	var tangential_velocity = angular_velocity_tau.cross(body_point_to_origin)
+	var body_point_linear_velocity = tangential_velocity + linear_velocity
+	var momentum_at_body_point = body_point_linear_velocity * mass
+	var momentum_dot = momentum_at_body_point.dot(normal)
+	var result_linear_velocity = linear_velocity
+	var result_angular_velocity = angular_velocity
+	if momentum_dot < 0.0:
+		var projected_momentum = -momentum_dot * normal
+		var energy_before = self.kinetic_energy(params)
+		var combined_friction = car_friction * friction
+		var collision_vels = self.apply_collision_velocities(params, projected_momentum, body_point_to_origin, 1.0, combined_friction)
+		result_linear_velocity = collision_vels["linear_velocity"]
+		result_angular_velocity = collision_vels["angular_velocity"]
+		params["linear_velocity"] = result_linear_velocity
+		params["angular_velocity"] = result_angular_velocity
+		var energy_after = self.kinetic_energy(params)
+		if energy_before < energy_after:
+			var energy_ratio = sqrt(energy_before / energy_after)
+			result_linear_velocity *= energy_ratio
+			result_angular_velocity *= energy_ratio
+	return {
+		"position": result_position,
+		"linear_velocity": result_linear_velocity,
+		"angular_velocity": result_angular_velocity,
+	}
+
+
+func process_collision(params: Dictionary, body_point: Vector3, impact_point: Vector3, normal: Vector3, friction: float) -> Dictionary:
+	var angular_velocity = params["angular_velocity"] / TAU
+	params["angular_velocity"] = angular_velocity
+	var result = calculate_impact(params, body_point, impact_point, normal, friction)
+	angular_velocity = result["angular_velocity"] * TAU
+	result["angular_velocity"] = angular_velocity
+	return result
+
 
 func process(params: Dictionary) -> Dictionary:
 	var angular_velocity = params["angular_velocity"] / TAU
