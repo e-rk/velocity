@@ -56,7 +56,7 @@ extends RigidBody3D
 		self._set_car_color(value)
 	get:
 		return color
-		
+
 @export var palette: Array[CarColorSet]
 
 @export var car_textures: Array[CarTexture] = []
@@ -96,6 +96,7 @@ var brake_light_energy : float = 0.0
 @onready var road_raycast_down: RayCast3D = $RoadRaycasts/Down
 @onready var road_raycast_up: RayCast3D = $RoadRaycasts/Up
 @onready var synchronizer: CarSynchronizer = $CarSynchronizer
+@onready var wall_prober: RayCast3D = $WallProber
 
 
 func _ready():
@@ -177,12 +178,12 @@ func get_positional_attributes(position: Vector3) -> Dictionary:
 	}
 
 
-func get_current_positional_attributes() -> Dictionary:
-	return self.get_positional_attributes(self.global_position)
+func get_current_positional_attributes(state: PhysicsDirectBodyState3D) -> Dictionary:
+	return self.get_positional_attributes(state.transform.origin)
 
 
-func get_next_positional_attributes(timestep: float) -> Dictionary:
-	var next_position = self.global_position + timestep * self.linear_velocity
+func get_next_positional_attributes(state: PhysicsDirectBodyState3D, timestep: float) -> Dictionary:
+	var next_position = state.transform.origin + timestep * state.linear_velocity
 	return self.get_positional_attributes(next_position)
 
 
@@ -190,11 +191,11 @@ func check_contact_with_ground(positional_attributes: Dictionary) -> bool:
 	return positional_attributes["distance_above_ground"] < 0.6
 
 
-func keep_height_above_ground(positional_attributes: Dictionary):
+func keep_height_above_ground(state: PhysicsDirectBodyState3D, positional_attributes: Dictionary):
 	if check_contact_with_ground(positional_attributes):
-		var pos = self.global_position
+		var pos = state.transform.origin
 		pos.y = pos.y - positional_attributes["distance_above_ground"] + 0.5  # 0.6
-		self.global_position = pos
+		state.transform.origin = pos
 
 
 func enable_sync(enable: bool) -> void:
@@ -223,6 +224,80 @@ func _process(delta: float):
 		self.rpm_meter.value = remap(self.current_rpm, self.performance.engine_min_rpm(), self.performance.engine_redline_rpm(), 0.0, 1.0)
 	if self.mph_meter:
 		self.mph_meter.value = remap(self.linear_velocity.length(), 0, self.performance.max_velocity(), 0.0, 1.0)
+	#var box_pos = self.wall_collider.global_position
+	#DebugDraw3D.draw_box(box_pos, wall_collider.quaternion, wall_collider.shape.size, Color(0.893, 0.0, 0.15, 1.0), true)
+	#for i in self.wall_collider.get_collision_count():
+		#var point = self.wall_collider.get_collision_point(i)
+		#var normal = self.wall_collider.get_collision_normal(i)
+		#DebugDraw3D.draw_arrow(point, point + normal * 3, Color(1, 1, 1), 1, 1, 2)
+
+
+func _min_dot(collision_point: Vector3, normal: Vector3, point_a: Vector3, point_b: Vector3) -> bool:
+	var dot_a = normal.dot(point_a - collision_point)
+	var dot_b = normal.dot(point_b - collision_point)
+	return dot_a < dot_b
+
+
+func _collision(state: PhysicsDirectBodyState3D):
+	var next_position = state.transform.origin + state.linear_velocity * state.step * 2
+	var next_rotation = state.angular_velocity * state.step * 2
+	var basis = Basis.from_euler(next_rotation)
+	var rotated = basis * state.transform.basis
+	var next_transform = Transform3D(rotated, next_position)
+	#self.wall_prober.transform = next_transform
+
+	var shape_size = self.collider.shape.size
+	shape_size /= 2.0
+	var points_to_check = [
+		Vector3(shape_size.x, 0.0, shape_size.z),
+		Vector3(-shape_size.x, 0.0, shape_size.z),
+		Vector3(-shape_size.x, 0.0, -shape_size.z),
+		Vector3(shape_size.x, 0.0, -shape_size.z),
+		Vector3(shape_size.x, 0.0, 0.0),
+		Vector3(-shape_size.x, 0.0, 0.0),
+		Vector3(0.0, 0.0, shape_size.z),
+		Vector3(0.0, 0.0, -shape_size.z),
+	]
+	var points_current = points_to_check.map(func(x): return state.transform * x)
+	var points_next = points_to_check.map(func(x): return next_transform * x)
+
+	var linear_velocity = state.linear_velocity
+	var angular_velocity = state.angular_velocity
+	var position = state.transform.origin
+
+	for point in points_next:
+		self.wall_prober.target_position = next_transform.inverse() * point
+		self.wall_prober.force_raycast_update()
+
+		if self.wall_prober.is_colliding():
+			var collision_point = self.wall_prober.get_collision_point()
+			var collision_normal = self.wall_prober.get_collision_normal()
+			points_current.sort_custom(func(x, y): return _min_dot(collision_point, collision_normal, x, y))
+			var min_point = points_current[0]
+			var params = {
+				"position": position,
+				"angular_velocity": angular_velocity,
+				"linear_velocity": linear_velocity,
+				"friction": self.physics_material_override.friction,
+				"mass": self.mass,
+				"inertia_inv": state.inverse_inertia,
+				"basis": state.transform.basis,
+			}
+			var collision_result = self.handling_model.process_collision(
+				params,
+				min_point,
+				collision_point,
+				collision_normal,
+				1.0,
+			)
+			position = collision_result["position"]
+			linear_velocity = collision_result["linear_velocity"]
+			angular_velocity = collision_result["angular_velocity"]
+	return {
+		"position": position,
+		"linear_velocity": linear_velocity,
+		"angular_velocity": angular_velocity
+	}
 
 
 func _integrate_forces(state: PhysicsDirectBodyState3D):
@@ -236,9 +311,13 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		{"type": CarTypes.Wheel.REAR_RIGHT, "road_surface": 1},
 		{"type": CarTypes.Wheel.REAR_LEFT, "road_surface": 1},
 	]
+	var collision_result = self._collision(state)
+	state.linear_velocity = collision_result["linear_velocity"]
+	state.angular_velocity = collision_result["angular_velocity"]
+	state.transform.origin = collision_result["position"]
 
-	var positional_attributes = self.get_current_positional_attributes()
-	var next_positional_attributes = self.get_next_positional_attributes(state.step * 2)
+	var positional_attributes = self.get_current_positional_attributes(state)
+	var next_positional_attributes = self.get_next_positional_attributes(state, state.step * 2)
 	var model_params = {
 		"linear_velocity": state.linear_velocity,
 		"angular_velocity": state.angular_velocity,
@@ -250,7 +329,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		"next_gear": self.gear,
 		"rpm": self.current_rpm,
 		"mass": self.mass,
-		"basis": self.basis,
+		"basis": state.transform.basis,
 		"basis_to_road": positional_attributes["basis_to_road"],
 		"current_steering": self.current_steering,
 		"throttle_input": self.throttle,
@@ -289,7 +368,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 	self.linear_acceleration = (state.linear_velocity - prev_linear_velocity) / (state.step * 2)
 	prev_linear_velocity = state.linear_velocity
 	prev_angular_velocity = state.angular_velocity
-	self.keep_height_above_ground(positional_attributes)
+	self.keep_height_above_ground(state, positional_attributes)
 
 	self._enable_lights(self.brake_lights, self.current_brake > 0)
 	self._enable_lights(self.tail_lights, self.current_brake > 0 || self.lights_on)
