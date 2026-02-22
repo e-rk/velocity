@@ -37,7 +37,7 @@ func update_police_ui(police: PursuitPolice):
 func _update_ui(spectated_player: Player):
 	var player_data = spectated_player.get_meta(&"pursuit_info")
 	if player_data is PursuitRacer:
-		ui.set_laps(player_data.laps, self.race_laps)
+		ui.set_laps(min(player_data.laps, race_laps), self.race_laps)
 		lap_timer.show()
 		lap_timer.set_current_time(player_data.current_lap_time())
 		lap_timer.set_last_time(player_data.get_best_lap_time())
