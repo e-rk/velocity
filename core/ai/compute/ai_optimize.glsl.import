@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bekemjthtwi2p"
+path="res://.godot/imported/ai_optimize.glsl-7bb7d6c9c7446ab0bbfb81af43f91359.res"
+
+[deps]
+
+source_file="res://core/ai/compute/ai_optimize.glsl"
+dest_files=["res://.godot/imported/ai_optimize.glsl-7bb7d6c9c7446ab0bbfb81af43f91359.res"]
+
+[params]
+

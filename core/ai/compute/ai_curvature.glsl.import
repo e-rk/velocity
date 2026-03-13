@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b7t1tkr83bkis"
+path="res://.godot/imported/ai_curvature.glsl-7af0b563629cf7b28af67285c1d7e78a.res"
+
+[deps]
+
+source_file="res://core/ai/compute/ai_curvature.glsl"
+dest_files=["res://.godot/imported/ai_curvature.glsl-7af0b563629cf7b28af67285c1d7e78a.res"]
+
+[params]
+
