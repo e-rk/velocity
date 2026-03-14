@@ -1,15 +1,46 @@
 @tool
 extends GLTFDocumentExtension
 
-func create_waypoints(waypoints: Array):
+func make_vector(data: Array) -> Vector3:
+	return Vector3(data[0], data[1], data[2])
+
+func make_basis(data: Dictionary) -> Basis:
+	var z = make_vector(data["forward"])
+	var y = make_vector(data["normal"])
+	var x = make_vector(data["right"])
+	return Basis(x, y, z)
+
+func create_waypoints(waypoints: Array, root: Node):
 	var node = Waypoints.new()
 	node.name = "Waypoints"
 	var curve = Curve3D.new()
+	var nav_path = NavPath.new()
+	var vecs = PackedVector3Array()
+	var offsets = PackedFloat32Array()
+	var orientations: Array[Basis]
 	curve.up_vector_enabled = false
+	curve.closed = true
 	for waypoint in waypoints:
-		var v = Vector3(waypoint[0], waypoint[1], waypoint[2])
+		var location = waypoint["position"]
+		var orientation = waypoint["orientation"]
+		var left_wall = waypoint["left_wall"]
+		var right_wall = waypoint["right_wall"]
+		var v = Vector3(location[0], location[1], location[2])
+		var o = make_basis(orientation)
 		curve.add_point(v)
+		var forward_offset = Vector3(waypoint["forward_offset"], 0, 0)
+		vecs.append(v)
+		orientations.append(o)
+		offsets.append(waypoint["forward_offset"])
+	nav_path.points = vecs
+	nav_path.orientations = orientations
+	nav_path.racing_line_offset = offsets
 	node.waypoints = curve
+	root.add_child(node, true)
+	node.owner = root
+	node.add_child(nav_path, true)
+	nav_path.owner = root
+	nav_path.name = "NavPath"
 	return node
 
 func scale_light_energy(node: Node):
@@ -201,9 +232,7 @@ func process_track_extras(state: GLTFState, root: Node, data: Dictionary):
 	var node = self.create_environment(state, data["environment"])
 	root.add_child(node)
 	node.owner = root
-	node = self.create_waypoints(data["waypoints"])
-	root.add_child(node, true)
-	node.owner = root
+	node = self.create_waypoints(data["waypoints"], root)
 	root.set_meta("type", "track")
 	var json_materials = state.json["materials"]
 	var json_images = state.json["images"]

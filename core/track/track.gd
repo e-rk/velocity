@@ -2,6 +2,8 @@ class_name RaceTrack
 extends Node3D
 
 @onready var waypoints: Waypoints = $Waypoints
+@onready var nav_path: NavPath = $Waypoints/NavPath
+
 
 func _ready() -> void:
 	for child in self.get_children():
