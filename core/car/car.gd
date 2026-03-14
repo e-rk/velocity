@@ -61,6 +61,12 @@ extends RigidBody3D
 
 @export var car_textures: Array[CarTexture] = []
 
+@export var spectated: bool = true:
+	set(value):
+		if value != spectated:
+			self._set_spectated(value)
+		spectated = value
+
 
 var current_rpm := 0.0
 var current_steering := 0.0
@@ -122,6 +128,7 @@ func _ready():
 		self.brake_light_energy = 2 * tail_light_energy
 	if not self.interior_wheel:
 		self.interior_wheel = self.find_child("*Steering*")
+
 
 func _enable_lights(lights: Array, visible: bool):
 	for light in lights:
@@ -206,6 +213,20 @@ func is_siren_active() -> bool:
 	if self.siren_lights:
 		return self.siren_lights[0].visible
 	return false
+
+
+func _set_spectated(value: bool):
+	var interior_mask = Constants.visual_layer_to_mask([Constants.VisualLayer.PLAYER_INTERIOR])
+	var exterior_mask = Constants.visual_layer_to_mask([Constants.VisualLayer.PLAYER])
+	if not value:
+		interior_mask = 0
+		exterior_mask = Constants.visual_layer_to_mask([Constants.VisualLayer.OPPONENTS])
+	for child in self.get_children():
+		var extras = child.get_meta("extras", {})
+		if extras and extras.get("SPT_interior", false):
+			child.layers = interior_mask
+		elif child is MeshInstance3D:
+			child.layers = exterior_mask
 
 
 func _process(delta: float):

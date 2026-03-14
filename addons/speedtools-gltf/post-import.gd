@@ -29,6 +29,7 @@ func make_meter(node: Node) -> CarMeter:
 	meter.mesh = meter_mesh.mesh
 	meter_mesh.replace_by(meter)
 	meter.transform = meter_mesh.transform
+	meter.set_meta(&"extras", meter_mesh.get_meta(&"extras"))
 	meter_mesh.free()
 	return meter
 
