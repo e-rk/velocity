@@ -6,7 +6,7 @@ extends SubViewportContainer
 		self._on_car_changed()
 	get:
 		return car
-		
+
 @export var color_set: CarColorSet:
 	set(value):
 		color_set = value
@@ -29,7 +29,7 @@ func _set_car(scene: PackedScene):
 func _physics_process(delta: float) -> void:
 	if self.car_instance:
 		self.car_instance.rotate(Vector3.UP, spin_angular_velocity * delta)
-		
+
 func _on_car_changed():
 	var rotation = Vector3()
 	if car:

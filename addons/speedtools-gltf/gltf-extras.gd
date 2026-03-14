@@ -56,7 +56,7 @@ func scale_light_energy(node: Node):
 
 func dict_to_color(value: Dictionary) -> Color:
 	return Color(value["red"], value["green"], value["blue"])
-	
+
 func dict_hsl_to_color(value: Dictionary) -> Color:
 	return Color.from_hsv(value["hue"] / 255.0, value["saturation"] / 255.0, value["value"] / 255.0)
 
@@ -185,7 +185,7 @@ func process_car_extras(root: Node, data: Dictionary):
 	var dimensions = data["dimensions"]
 	var color_set: Array[CarColorSet]
 	color_set.assign(data["colors"].map(self.dict_to_palette))
-	
+
 	root.set_meta("dimensions", Vector3(dimensions[0], dimensions[1], dimensions[2]))
 	root.set_meta("performance", data["performance"])
 	root.set_meta("type", "car")

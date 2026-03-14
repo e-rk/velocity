@@ -88,7 +88,7 @@ func apply_car_material(root: Node):
 	for child in root.get_children():
 		if child is MeshInstance3D:
 			meshes.append(child.mesh)
-			
+
 	for mesh in meshes:
 		for surf in mesh.get_surface_count():
 			matset[mesh.surface_get_material(surf)] = null
