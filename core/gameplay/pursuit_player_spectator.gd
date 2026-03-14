@@ -15,7 +15,7 @@ func show_busted_meter(racer: PursuitRacer):
 
 func position_player_info(racer: PursuitRacer):
 	var player = racer.player
-	var car = player.car 
+	var car = player.car
 	var camera = get_viewport().get_camera_3d()
 	var unprojected = camera.unproject_position(car.global_position + 1.3 * Vector3.UP * car.dimensions().y)
 	unprojected -= racer.racer_info.size / 2
