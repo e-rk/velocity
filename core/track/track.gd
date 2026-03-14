@@ -14,27 +14,12 @@ func _ready() -> void:
 			child.play(action)
 
 
-func get_spawn_transform(idx) -> Transform3D:
-	var points = get_waypoints()
-	var point_idx = idx * 3 + 1
-	var spawn_point = points[-point_idx]
-	return self.get_closest_transform(spawn_point)
-
-
 func get_waypoints() -> Array[Vector3]:
 	return waypoints.get_points()
 
 
-func progress_along_track_normalized(position: Vector3) -> float:
-	return waypoints.offset_normalized(position)
-
-
-func progress_along_track(position: Vector3) -> float:
-	return waypoints.offset(position)
-
-
-func track_length() -> float:
-	return waypoints.length()
+func get_curve() -> Curve3D:
+	return self.waypoints.waypoints
 
 
 func get_closest_transform(position: Vector3) -> Transform3D:
