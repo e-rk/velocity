@@ -209,6 +209,7 @@ func _process_police(delta: float):
 
 
 func _physics_process(delta):
+	super(delta)
 	self._process_racers(delta)
 	self._process_police(delta)
 	self._process_busted(delta)

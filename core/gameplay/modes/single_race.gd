@@ -36,6 +36,7 @@ func start():
 
 
 func _ready():
+	super()
 	var waypoints = self.track.get_waypoints()
 	self.spectator.set_waypoints(waypoints)
 	self.spectator.race_laps = self.rules.num_laps
@@ -49,6 +50,7 @@ func _check_end_conditions(racers):
 
 
 func _physics_process(delta):
+	super(delta)
 	var racers: Array[Racer] = []
 	racers.assign(get_tree().get_nodes_in_group(&"Racers"))
 	for racer in racers:
