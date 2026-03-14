@@ -16,10 +16,12 @@ var previous_global_offset = Vector3.ZERO
 var camera_mode: CameraMode = CameraMode.HELI
 var initial_arm_rotation = Basis.IDENTITY
 var stiffen_camera = false
+var spectated_player: Player
 
 func _ready() -> void:
 	self.set_target_position(Vector3(0.0, 1.8, -5.2))
 	self.initial_arm_rotation = self.camera_arm.basis
+	self._show_next_player.call_deferred()
 
 
 func set_waypoints(waypoints: Array):
@@ -40,10 +42,15 @@ func player_to_minimap_data(spectated_player: Player, node: Node) -> Dictionary:
 	}
 
 
+func _get_players() -> Array[Player]:
+	var players: Array[Player]
+	players.assign(get_tree().get_nodes_in_group(&"Players"))
+	return players
+
+
 func _collect_minimap_data() -> Array[Dictionary]:
 	var result: Array[Dictionary]
-	var player = get_tree().get_first_node_in_group(&"SpectatedPlayer") as Player
-	result.assign(get_tree().get_nodes_in_group(&"Players").map(func(x): return player_to_minimap_data(player, x)))
+	result.assign(self._get_players().map(func(x): return player_to_minimap_data(spectated_player, x)))
 	return result
 
 
@@ -76,35 +83,39 @@ func interpolate_camera(car: Car) -> Vector3:
 
 
 func rotate_camera(angle: float):
-	var racer = get_tree().get_first_node_in_group(&"SpectatedPlayer")
-	if racer:
+	if spectated_player:
 		var target_basis = self.initial_arm_rotation.rotated(Vector3.UP, angle)
 		self.camera_arm.basis = target_basis
 		self.main_camera.basis = target_basis
 		self.update_camera()
 		self.main_camera.reset_physics_interpolation()
 
+
 func update_camera(immediate: bool = false):
-	var player = get_tree().get_first_node_in_group(&"SpectatedPlayer")
-	if player:
-		self.global_transform = player.car.global_transform
+	if spectated_player:
+		self.global_transform = spectated_player.car.global_transform
 		if self.stiffen_camera or immediate:
 			self.force_update_transform()
 			self.main_camera.position = self.camera_arm.to_global(self.target.position)
 		else:
-			self.main_camera.position = self.interpolate_camera(player.car)
-		self.main_camera.look_at(player.car.position + Vector3(0, 1, 0))
+			self.main_camera.position = self.interpolate_camera(spectated_player.car)
+		self.main_camera.look_at(spectated_player.car.position + Vector3(0, 1, 0))
+
 
 func _show_next_player():
-	var players: Array[Player]
-	var player = get_tree().get_first_node_in_group(&"SpectatedPlayer")
-	players.assign(get_tree().get_nodes_in_group(&"Players"))
-	var index = players.find(player)
-	var next = 0
-	if index >= 0:
-		next = (index + 1) % players.size()
-	player.remove_from_group(&"SpectatedPlayer")
-	players[next].add_to_group(&"SpectatedPlayer")
+	var players := self._get_players()
+	if not spectated_player:
+		var local = players.find_custom(func(x): return x.is_local())
+		spectated_player = players[local]
+	else:
+		var index = players.find(spectated_player)
+		var next = 0
+		if index >= 0:
+			next = (index + 1) % players.size()
+		spectated_player = players[next]
+	for player in players:
+		player.car.spectated = false
+	spectated_player.car.spectated = true
 	self.update_camera()
 
 
@@ -117,23 +128,21 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta):
-	var player = get_tree().get_first_node_in_group(&"SpectatedPlayer") as Player
 	var player_data = self._collect_minimap_data()
-	if player:
-		ui.set_speed(player.car.linear_velocity.length())
-		ui.set_rpm(player.car.current_rpm)
-		ui.set_gear(player.car.gear)
-		ui.set_minimap_center(player.car.global_position)
-		ui.set_minimap_rotation(player.car.global_rotation.y)
+	if spectated_player:
+		ui.set_speed(spectated_player.car.linear_velocity.length())
+		ui.set_rpm(spectated_player.car.current_rpm)
+		ui.set_gear(spectated_player.car.gear)
+		ui.set_minimap_center(spectated_player.car.global_position)
+		ui.set_minimap_rotation(spectated_player.car.global_rotation.y)
 		ui.set_minimap_players(player_data)
-		ui.set_max_gear(player.car.max_gear())
-		self._update_ui(player)
+		ui.set_max_gear(spectated_player.car.max_gear())
+		self._update_ui(spectated_player)
 
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("change_camera"):
-		var player = get_tree().get_first_node_in_group(&"SpectatedPlayer") as Player
-		var interior_camera = player.car.get_interior_camera()
+		var interior_camera = spectated_player.car.get_interior_camera()
 		match camera_mode:
 			CameraMode.HELI when interior_camera:
 				interior_camera.make_current()
