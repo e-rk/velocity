@@ -241,12 +241,6 @@ func _process(delta: float):
 		self.rpm_meter.value = remap(self.current_rpm, self.performance.engine_min_rpm(), self.performance.engine_redline_rpm, 0.0, 1.0)
 	if self.mph_meter:
 		self.mph_meter.value = remap(self.linear_velocity.length(), 0, self.performance.max_velocity(), 0.0, 1.0)
-	#var box_pos = self.wall_collider.global_position
-	#DebugDraw3D.draw_box(box_pos, wall_collider.quaternion, wall_collider.shape.size, Color(0.893, 0.0, 0.15, 1.0), true)
-	#for i in self.wall_collider.get_collision_count():
-		#var point = self.wall_collider.get_collision_point(i)
-		#var normal = self.wall_collider.get_collision_normal(i)
-		#DebugDraw3D.draw_arrow(point, point + normal * 3, Color(1, 1, 1), 1, 1, 2)
 
 
 func _min_dot(collision_point: Vector3, normal: Vector3, point_a: Vector3, point_b: Vector3) -> bool:
@@ -261,7 +255,6 @@ func _collision(state: PhysicsDirectBodyState3D):
 	var basis = Basis.from_euler(next_rotation)
 	var rotated = basis * state.transform.basis
 	var next_transform = Transform3D(rotated, next_position)
-	#self.wall_prober.transform = next_transform
 
 	var shape_size = self.collider.shape.size
 	shape_size /= 2.0
