@@ -180,6 +180,11 @@ func _on_player_data_container_player_data_removed(node: PlayerData):
 
 
 func _on_player_data_container_all_players_standby():
+	for i in game_config.config.num_opponents:
+		var rand = randi_range(0, len(CarDB.cars.values()) - 1)
+		var ai_config = PlayerConfig.new()
+		ai_config.car_uuid = CarDB.cars.values()[rand].uuid
+		self.race.spawn_ai_player(ai_config)
 	for player in self.player_container.get_players():
 		self.race.spawn_player(player.get_player_id(), player.get_config())
 	self.start_race.rpc()
