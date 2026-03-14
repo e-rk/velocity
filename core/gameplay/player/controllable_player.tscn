@@ -27,7 +27,7 @@ properties/6/path = NodePath(".:siren_on")
 properties/6/spawn = true
 properties/6/replication_mode = 1
 
-[node name="Player" unique_id=1957225794 groups=["Players"] instance=ExtResource("1_okbmc")]
+[node name="Player" unique_id=1957225794 groups=["ControllablePlayer", "Players"] instance=ExtResource("1_okbmc")]
 script = ExtResource("1_ro4b5")
 
 [node name="Input" type="Node" parent="." index="1" unique_id=439883202]
