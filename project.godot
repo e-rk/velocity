@@ -155,6 +155,7 @@ show_next_player={
 
 [physics]
 
+3d/run_on_separate_thread=true
 common/physics_ticks_per_second=64
 3d/physics_engine="Jolt Physics"
 jolt_physics_3d/queries/use_enhanced_internal_edge_removal=true
