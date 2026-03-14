@@ -187,14 +187,10 @@ func get_next_positional_attributes(state: PhysicsDirectBodyState3D, timestep: f
 	return self.get_positional_attributes(next_position)
 
 
-func check_contact_with_ground(positional_attributes: Dictionary) -> bool:
-	return positional_attributes["distance_above_ground"] < 0.6
-
-
-func keep_height_above_ground(state: PhysicsDirectBodyState3D, positional_attributes: Dictionary):
-	if check_contact_with_ground(positional_attributes):
+func keep_height_above_ground(state: PhysicsDirectBodyState3D, height_adjust: float):
+	if height_adjust <= 0.0:
 		var pos = state.transform.origin
-		pos.y = pos.y - positional_attributes["distance_above_ground"] + 0.5  # 0.6
+		pos.y = pos.y - height_adjust
 		state.transform.origin = pos
 
 
@@ -351,6 +347,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 		"shifted_down": self.shifted_down,
 		"g_transfer": self.g_transfer,
 		"unknown_bool": false,
+		"dimensions": self.dimensions()
 	}
 	var result = handling_model.process(model_params)
 	state.linear_velocity = result["linear_velocity"]
@@ -368,8 +365,9 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 	self.linear_acceleration = (state.linear_velocity - prev_linear_velocity) / (state.step * 2)
 	prev_linear_velocity = state.linear_velocity
 	prev_angular_velocity = state.angular_velocity
-	self.keep_height_above_ground(state, positional_attributes)
-
+	var height_adjust = self.handling_model.height_above_surface(model_params)
+	if self.has_contact_with_ground:
+		self.keep_height_above_ground(state, height_adjust)
 	self._enable_lights(self.brake_lights, self.current_brake > 0)
 	self._enable_lights(self.tail_lights, self.current_brake > 0 || self.lights_on)
 	self._enable_lights(self.reverse_lights,self.current_gear == CarTypes.Gear.REVERSE)

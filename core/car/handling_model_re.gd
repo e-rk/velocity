@@ -1224,6 +1224,20 @@ func limit_angular_velocity(angular_velocity: Vector3, limit: float) -> Vector3:
 	return angular_velocity.clamp(-vec_limit, vec_limit)
 
 
+func height_above_surface(params: Dictionary) -> float:
+	var dimensions: Vector3 = params["dimensions"]
+	var basis: Basis = params["basis"]
+	var basis_to_road: Basis = params["basis_to_road"]
+	var distance_above_ground: float = params["distance_above_ground"]
+	var projected = Vector3(
+		basis.x.dot(basis_to_road.y),
+		basis.y.dot(basis_to_road.y),
+		basis.z.dot(basis_to_road.y),
+	)
+	var dimensions_projected = -projected.abs() * (dimensions / 2.0)
+	return distance_above_ground + dimensions_projected.x + dimensions_projected.y + dimensions_projected.z
+
+
 func limit_angular_velocity_cm(params: Dictionary) -> Dictionary:
 	const ANGULAR_VELOCITY_LIMIT = 2.4 / TAU
 	var result = self.limit_angular_velocity(params["angular_velocity"], ANGULAR_VELOCITY_LIMIT)
@@ -1281,10 +1295,10 @@ func prevent_sinking_cm(params: Dictionary) -> Dictionary:
 	var basis_current = params["basis_to_road"]
 	var basis_next = params["basis_to_road_next"]
 	var interpolated = basis_current.slerp(basis_next, 0.5)
-	var distance_above_ground = params["distance_above_ground"]
+	var height_adjust = self.height_above_surface(params)
 	var velocity_local = interpolated.inverse() * params["linear_velocity"]
 	var normal = interpolated.y
-	if distance_above_ground < 0.8:
+	if height_adjust < 0.0:
 		if velocity_local.y < 0.0:
 			velocity_local.y = 0
 	return {
@@ -1302,7 +1316,7 @@ func go_airborne(params: Dictionary) -> Dictionary:
 		result *= Vector3(0.15, 1, 1)
 	return {
 		"angular_velocity": basis * result,
-		"has_contact_with_ground": distance_above_ground < 0.6,
+		"has_contact_with_ground": self.height_above_surface(params) < 0.6,
 	}
 
 
