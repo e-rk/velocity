@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://bmr3we8irntfl"]
+
+[ext_resource type="Shader" uid="uid://c6rosoe343mjb" path="res://core/resources/shader/directional_glare.gdshader" id="1_bainn"]
+[ext_resource type="Script" uid="uid://67k2jvaywvmw" path="res://core/resources/directional_glare.gd" id="2_dtp2k"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_q0kxh"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("1_bainn")
+shader_parameter/color = Color(1, 1, 1, 1)
+shader_parameter/intensity = 5.0
+shader_parameter/core_size = 0.06
+shader_parameter/spike_count = 7
+shader_parameter/spike_sharpness = 10.5
+shader_parameter/star_strength = 0.16
+shader_parameter/shrink_amount = 1.8
+shader_parameter/proximity_range = 0.58
+
+[sub_resource type="QuadMesh" id="QuadMesh_jig22"]
+resource_local_to_scene = true
+material = SubResource("ShaderMaterial_q0kxh")
+
+[node name="DirectionalGlare" type="MeshInstance3D" unique_id=1726088547]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 0)
+mesh = SubResource("QuadMesh_jig22")
+script = ExtResource("2_dtp2k")
+size = null

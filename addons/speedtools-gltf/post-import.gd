@@ -177,6 +177,21 @@ func _make_performance(data: Dictionary) -> CarPerformance:
 	return performance
 
 
+func add_glares(node: Node, root: Node):
+	if node is SpotLight3D:
+		self.add_directional_glare(node, root)
+	for child in node.get_children():
+		add_glares(child, root)
+
+
+func add_directional_glare(light: SpotLight3D, root: Node):
+	var glare := preload("res://core/resources/directional_glare.tscn").instantiate()
+	glare.color = light.light_color
+	glare.size = pow(light.light_energy, 1.0/4.0)
+	light.add_child(glare)
+	glare.owner = root
+
+
 func _post_import(scene):
 	if scene.get_meta("type") == "track":
 		var new_scene = RaceTrack.new()
@@ -250,4 +265,5 @@ func _post_import(scene):
 		var dashbaord = scene.find_child("dashboard_lit")
 		if dashbaord is MeshInstance3D:
 			dashbaord.position += -0.001 * Vector3.MODEL_FRONT
+		add_glares(scene, scene)
 	return scene
