@@ -4,10 +4,11 @@ extends RaceState
 @onready var spawner = $MultiplayerSpawner
 
 const player_scene = preload("res://core/gameplay/player/controllable_player.tscn")
+const ai_player_scene = preload("res://core/gameplay/player/ai_player.tscn")
 
 
 func spawn_player(player_id, player_config: PlayerConfig):
-	var player = player_scene.instantiate()
+	var player := player_scene.instantiate()
 	player.car_uuid = player_config.car_uuid
 	player.primary_color = player_config.color_primary
 	player.secondary_color = player_config.color_secondary
@@ -18,6 +19,20 @@ func spawn_player(player_id, player_config: PlayerConfig):
 	player.name = str(player_id)
 	player.ready.connect(self._on_player_spawned.bind(player))
 	context.player_container.add_child(player)
+
+
+func spawn_ai_player(player_config: PlayerConfig):
+	var player := ai_player_scene.instantiate()
+	player.car_uuid = player_config.car_uuid
+	player.primary_color = player_config.color_primary
+	player.secondary_color = player_config.color_secondary
+	player.interior_color = player_config.color_interior
+	player.driver_color = player_config.color_driver
+	player.player_name = player_config.player_name
+	player.initial_transform = context.race_logic.get_spawn_position(player)
+	player.name = "AI"
+	player.ready.connect(self._on_player_spawned.bind(player))
+	context.player_container.add_child(player, true)
 
 
 func start_race():

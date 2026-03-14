@@ -15,6 +15,10 @@ func spawn_player(player_id, player_config: PlayerConfig):
 	race_state_context.spawn_player(player_id, player_config)
 
 
+func spawn_ai_player(player_config: PlayerConfig):
+	race_state_context.spawn_ai_player(player_config)
+
+
 func despawn_player(player_id: int):
 	race_state_context.despawn_player(player_id)
 
