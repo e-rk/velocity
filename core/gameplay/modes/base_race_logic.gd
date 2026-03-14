@@ -5,6 +5,15 @@ extends Node
 
 signal race_finished
 
+var track_set := false
+
+func _ready() -> void:
+	pass
+
+
+func _exit_tree() -> void:
+	OptimizerServer.clear_waypoints()
+
 
 func get_spawn_position(player: Player) -> Transform3D:
 	return Transform3D.IDENTITY
@@ -27,6 +36,10 @@ func reposition_allowed() -> bool:
 
 
 func _physics_process(delta: float) -> void:
+	if not track_set:
+		self.track.nav_path._measure_walls()
+		OptimizerServer.set_waypoints(track.nav_path)
+		track_set = true
 	var players: Array[Player]
 	players.assign(get_tree().get_nodes_in_group(&"Players"))
 	for player in players:
