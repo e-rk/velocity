@@ -21,7 +21,7 @@ func get_car_by_uuid(uuid: String) -> CarData:
 
 
 func _on_directory_watcher_content_changed():
-	var cars = {}
+	var new_cars = {}
 	var files = watcher.files.duplicate()
 	files.sort()
 	for file in files:
@@ -34,6 +34,6 @@ func _on_directory_watcher_content_changed():
 		car.name = file
 		car.path = path
 		car.uuid = uuid
-		cars[uuid] = car
-	self.cars = cars
+		new_cars[uuid] = car
+	self.cars = new_cars
 	self.database_updated.emit()

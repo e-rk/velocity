@@ -23,7 +23,7 @@ const spin_angular_velocity = -2 * PI / 6
 func _ready() -> void:
 	self._on_car_changed.call_deferred()
 
-func _set_car(scene: PackedScene):
+func _set_car(_scene: PackedScene):
 	pass
 
 func _physics_process(delta: float) -> void:

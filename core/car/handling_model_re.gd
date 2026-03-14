@@ -173,10 +173,8 @@ func traction_model(params: Dictionary) -> Dictionary:
 func traction_model_rpm_above_redline(traction_params: Dictionary) -> Dictionary:
 	var performance = traction_params["performance"]
 	var rpm = traction_params["rpm"]
-	var throttle = traction_params["throttle"]
 	var lost_grip = traction_params["lost_grip"]
 	var engine_redline_rpm = performance.engine_redline_rpm
-	var engine_min_rpm = performance.engine_min_rpm()
 	var above_redline = false
 	if engine_redline_rpm < rpm:
 		above_redline = true
@@ -234,18 +232,18 @@ func traction_model_force(traction_params: Dictionary) -> Dictionary:
 	var handbrake_accumulator = traction_params["handbrake_accumulator"]
 	var lost_grip = traction_params["lost_grip"]
 	var slip_angle = traction_params["slip_angle"]
-	var drag = traction_params["drag"]
+	var drag_factor = traction_params["drag"]
 	var engine_redline_rpm = performance.engine_redline_rpm
 	var engine_min_rpm = performance.engine_min_rpm()
 
 	rpm = min(engine_redline_rpm, rpm)
 	var force = self.traction_powertrain(traction_params, rpm)
 
-	var rpm_from_wheels = roundi(abs(self.rpm_from_wheels(traction_params)))
-	var rpm_target_wheels_diff: float = target_rpm - rpm_from_wheels
+	var current_rpm_from_wheels = roundi(abs(self.rpm_from_wheels(traction_params)))
+	var rpm_target_wheels_diff: float = target_rpm - current_rpm_from_wheels
 	if abs(rpm_target_wheels_diff) < 500 and target_rpm < (engine_redline_rpm - 300):
 		rpm_target_wheels_diff = 0
-	var rpm_diff = rpm - rpm_from_wheels
+	var rpm_diff = rpm - current_rpm_from_wheels
 	var rpm_diff_to_big = (engine_redline_rpm / 6) < rpm_diff and gear_shift_counter == 0 and gear < CarTypes.Gear.GEAR_4
 	var going_in_reverse_dir = CarTypes.Gear.NEUTRAL < gear and speed_xz < -0.3 and (8 / 255.0) < throttle \
 							or CarTypes.Gear.REVERSE == gear and speed_xz > 0.3 and (8 / 255.0) < throttle
@@ -280,14 +278,14 @@ func traction_model_force(traction_params: Dictionary) -> Dictionary:
 			lost_grip = true
 			handbrake_accumulator = self.increment_handbrake_accumulator(traction_params)
 	elif rpm_target_wheels_diff == 0:
-		rpm = max(rpm_from_wheels, engine_min_rpm)
-		force = drag
+		rpm = max(current_rpm_from_wheels, engine_min_rpm)
+		force = drag_factor
 	else:
 		if rpm_diff <= 200:
 			if rpm_diff < -300:
 				rpm += 40
 			else:
-				rpm = max(rpm_from_wheels, engine_min_rpm)
+				rpm = max(current_rpm_from_wheels, engine_min_rpm)
 		else:
 			rpm -= 40
 		rpm = max(min(target_rpm, rpm), engine_min_rpm)
@@ -333,7 +331,6 @@ func traction_model_rpm_adjust(traction_params: Dictionary) -> Dictionary:
 	var brake = traction_params["brake"]
 	var above_redline = traction_params["rpm_above_redline"]
 	var shifted_down = traction_params["shifted_down"]
-	var force = traction_params["force"]
 	var gear = traction_params["gear"]
 	var engine_redline_rpm = performance.engine_redline_rpm
 	var engine_min_rpm = performance.engine_min_rpm()
@@ -359,7 +356,7 @@ func traction_model_rpm_adjust(traction_params: Dictionary) -> Dictionary:
 		else:
 			if 0 < throttle:
 				var rpm_adjust = performance.brake_blip_in_rpm[gear]
-				if brake < (65 / 255):
+				if brake < (65.0 / 255.0):
 					rpm_adjust = performance.shift_blip_in_rpm[gear]
 				rpm += rpm_adjust
 			rpm = clamp(rpm, engine_min_rpm, engine_redline_rpm)
@@ -370,17 +367,17 @@ func traction_model_rpm_adjust(traction_params: Dictionary) -> Dictionary:
 func traction_model_postprocess(traction_params: Dictionary) -> Dictionary:
 	var has_contact_with_ground = traction_params["has_contact_with_ground"]
 	var velocity_local = traction_params["linear_velocity"]
-	var drag = traction_params["drag"]
+	var drag_factor = traction_params["drag"]
 	var force = traction_params["force"]
 	if has_contact_with_ground:
 		if 0.0 < velocity_local.z:
-			force = force - drag
+			force = force - drag_factor
 		else:
-			force = drag * 2.0 + force
+			force = drag_factor * 2.0 + force
 	elif 0.0 <= velocity_local.z:
-		force = -drag * 0.5
+		force = -drag_factor * 0.5
 	else:
-		force = drag
+		force = drag_factor
 	return {
 		"force": force,
 	}
@@ -418,12 +415,12 @@ func wheel_planar_vector(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var planar_vector = -0.5 * velocity_local * 32
-	var angular_velocity_factor = self.angular_velocity_factor(params)
+	var angular_velocity_fact = self.angular_velocity_factor(params)
 	match wheel_data["type"]:
 		CarTypes.Wheel.FRONT_RIGHT, CarTypes.Wheel.FRONT_LEFT:
-			planar_vector.x += angular_velocity_factor
+			planar_vector.x += angular_velocity_fact
 		CarTypes.Wheel.REAR_RIGHT, CarTypes.Wheel.REAR_LEFT:
-			planar_vector.x -= angular_velocity_factor
+			planar_vector.x -= angular_velocity_fact
 	planar_vector.y = 0
 	return planar_vector
 
@@ -475,14 +472,14 @@ func steering_angle(params: Dictionary) -> Dictionary:
 	var basis = params["basis_to_road"]
 	var performance = params["performance"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
-	var slip_angle_factor = self.slip_angle_factor(params)
-	var steering_acceleration = performance.minimum_steering_acceleration
-	steering *= slip_angle_factor
+	var slip_angle_fact = self.slip_angle_factor(params)
+	var steering_accel = performance.minimum_steering_acceleration
+	steering *= slip_angle_fact
 	if 40.0 < abs(velocity_local.z):
 		var velocity_factor = 0.015 * abs(velocity_local.z)
 		velocity_factor = clamp(velocity_factor, 1, 1.5)
 		steering = steering / velocity_factor
-	result = steering_acceleration * 1.5 * 0.00277777777 * steering * 0.0078125
+	result = steering_accel * 1.5 * 0.00277777777 * steering * 0.0078125
 	result = clamp(result, -1.0, 1.0)
 	return {
 		"steering": result
@@ -501,7 +498,6 @@ func turning_circle(
 	var turning_radius = performance.turning_circle_radius
 	var result_angular_velocity = local_angular_velocity
 	var result_linear_velocity = params["linear_velocity"]
-	var radius = performance.turning_circle_radius
 	if throttle < 0.5 or brake < 0.75 or abs(steering) <= 64 or 5 < abs(velocity_local.z):
 		if abs(steering) < 4 and gear == CarTypes.Gear.REVERSE:
 			result_angular_velocity.y *= 0.95
@@ -621,23 +617,23 @@ func wheel_downforce_factor(params: Dictionary, wheel_data: Dictionary) -> float
 
 
 func longitudal_acceleration(
-	params: Dictionary, wheel_data: Dictionary, wheel_planar_vector: Vector3
+	params: Dictionary, wheel_data: Dictionary, wheel_vector: Vector3
 ) -> Dictionary:
 	var performance = params["performance"]
 	var traction = wheel_data["traction"]
 	var throttle = params["throttle"]
 	var lateral_grip_mult = performance.lateral_grip_multiplier()
 	var traction_loss = false
-	if 0.0 <= traction or 0.0 <= wheel_planar_vector.z:
+	if 0.0 <= traction or 0.0 <= wheel_vector.z:
 		if (
 			0.0 < traction
-			and 0.0 < wheel_planar_vector.z
+			and 0.0 < wheel_vector.z
 			and (throttle < 0.25 or params["gear"] == CarTypes.Gear.REVERSE or params["gear"] == CarTypes.Gear.NEUTRAL)
 		):
-			traction = min(traction, wheel_planar_vector.z)
+			traction = min(traction, wheel_vector.z)
 			traction_loss = true
 	elif throttle < 0.25 or not is_gear_reverse(params):
-		traction = max(traction, wheel_planar_vector.z)
+		traction = max(traction, wheel_vector.z)
 		traction_loss = true
 	traction = traction * lateral_grip_mult
 	return {
@@ -685,8 +681,8 @@ func wheel_forces_to_angular_acceleration(params: Dictionary, forces: Array) -> 
 
 func weather_factor() -> float:
 	const SUNNY = 1.0
-	const RAIN = 0.9
-	const SNOW = 0.8
+	const _RAIN = 0.9
+	const _SNOW = 0.8
 	return SUNNY
 
 
@@ -720,13 +716,13 @@ func wheel_surface_grip_factor(params: Dictionary, wheel_data: Dictionary) -> fl
 	var road_surface = wheel_data["road_surface"]
 	var ort_to_grnd = self.orientation_to_ground(params)
 	var slope = clamp(ort_to_grnd.y, 0.75, 1.0)
-	var road_factor = (road_factors[road_surface] + 1.0) * 0.5
-	var weather_factor = self.weather_factor()
-	var effective_weather_factor = slope * road_factor * weather_factor * 0.25
-	return (effective_weather_factor + slope) * road_factor
+	var wheel_road_factor = (road_factors[road_surface] + 1.0) * 0.5
+	var wheel_weather_factor = self.weather_factor()
+	var effective_weather_factor = slope * wheel_road_factor * wheel_weather_factor * 0.25
+	return (effective_weather_factor + slope) * wheel_road_factor
 
 
-func wheel_base_road_grip(params: Dictionary, wheel: Dictionary, surface_grip: float) -> float:
+func wheel_base_road_grip(params: Dictionary, _wheel: Dictionary, surface_grip: float) -> float:
 	var basis = params["basis_to_road"]
 	var performance = params["performance"]
 	var gravity = basis.inverse() * params["gravity_vector"]
@@ -766,17 +762,6 @@ func model_wheel_grip(params: Dictionary, wheel: Dictionary) -> float:
 	# Missing g transfer influence
 	var downforce_grip = self.wheel_downforce_grip(params, wheel, base_grip, biased_grip)
 	return downforce_grip
-
-
-func traction(params: Dictionary) -> float:
-	var performance = params["performance"]
-	var throttle = params["throttle"]
-	var engine_redline_rpm = performance.engine_redline_rpm()
-	var rpm = rpm_from_wheels(params)
-	var force = self.traction_powertrain(params, rpm) * throttle
-	if rpm >= engine_redline_rpm:
-		return 0
-	return force
 
 
 func wheel_traction(params: Dictionary, wheel: Dictionary) -> float:
@@ -846,13 +831,13 @@ func wheel_loss_of_grip(params: Dictionary, wheel_data: Dictionary, forces: Vect
 	var engine_redline_rpm = performance.engine_redline_rpm
 	var force_magnitude = forces.length()
 	var lateral_grip = wheel_data["grip"]
-	var tire_factor = self.tire_factor(params)
-	var grip_loss = lateral_grip - lateral_grip * tire_factor
+	var tire_grip_factor = self.tire_factor(params)
+	var grip_loss = lateral_grip - lateral_grip * tire_grip_factor
 	var is_front = false
 	var result = forces
 	if grip_loss < force_magnitude:
 		var diff = force_magnitude - grip_loss
-		var val = min(diff, grip_loss) * tire_factor
+		var val = min(diff, grip_loss) * tire_grip_factor
 		# Missing other weather conditions
 		var factor = (grip_loss - val) / force_magnitude
 		if force_magnitude <= (grip_loss - val):
@@ -904,11 +889,10 @@ func handbrake_scaling_function(value: float) -> float:
 	return result
 
 
-func handbrake_loss_of_grip(params: Dictionary, wheel_data: Dictionary, wheel_planar_vector: Vector3, traction: float) -> Vector3:
+func handbrake_loss_of_grip(params: Dictionary, wheel_data: Dictionary, wheel_vector: Vector3, traction: float) -> Vector3:
 	var grip = wheel_data["grip"]
 	var downforce = wheel_data["downforce"]
-	var xz_speed = (wheel_planar_vector * Vector3(1, 0, 1)).length()
-	var weather = params["weather"]
+	var xz_speed = (wheel_vector * Vector3(1, 0, 1)).length()
 	var handbrake_accumulator = params["handbrake_accumulator"]
 	var grip_times_downforce = grip * downforce
 	var grip_loss = grip_times_downforce - grip_times_downforce * tire_factor(params)
@@ -918,7 +902,7 @@ func handbrake_loss_of_grip(params: Dictionary, wheel_data: Dictionary, wheel_pl
 	var handbrake_factor = 1.0
 	if 0 < handbrake_accumulator:
 		handbrake_factor = self.handbrake_scaling_function(handbrake_accumulator / 384.0) * 0.75
-	var lateral_force = handbrake_factor * wheel_planar_vector.x * factor
+	var lateral_force = handbrake_factor * wheel_vector.x * factor
 	var longitudal_force = traction * factor
 	if is_gear_neutral(params):
 		lateral_force *= 0.05
@@ -935,7 +919,6 @@ func wheel_force(params: Dictionary, wheel_data: Dictionary) -> Vector3:
 	var handbrake = self.get_lost_grip(params)
 	var grip = wheel_data["grip"]
 	var speed_xz = params["speed_xz"]
-	var lateral_grip_mult = performance.lateral_grip_multiplier()
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var wheel_planar_vector = self.wheel_planar_vector(params, wheel_data)
 	var is_front = false
@@ -1066,7 +1049,7 @@ func damp_lateral_velocity_cm(params: Dictionary) -> Dictionary:
 	const LOW_VELOCITY_THRESHOLD = 1.0
 	const MEDIUM_VELOCITY_DAMP = 0.99
 	const HIGH_VELOCITY_THRESHOLD = 2.0
-	const HIGH_VELOCITY_DAMP = 0.99
+	const _HIGH_VELOCITY_DAMP = 0.99
 	var basis = params["basis_to_road"]
 	var velocity_local = basis.inverse() * params["linear_velocity"]
 	var lateral_velocity = abs(velocity_local.x)

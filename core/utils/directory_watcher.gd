@@ -22,19 +22,19 @@ func _ready():
 	self._refresh_contents.call_deferred()
 
 func _refresh_contents():
-	var files: Array[String] = []
+	var new_files: Array[String] = []
 	var dir = DirAccess.open(directory)
 	dir.list_dir_begin()
 	var file_name = dir.get_next()
 	while file_name != "":
 		match mode:
 			WatcherMode.ALL:
-				files.append(file_name)
+				new_files.append(file_name)
 			WatcherMode.DIRECTORIES_ONLY when dir.current_is_dir():
-				files.append(file_name)
+				new_files.append(file_name)
 			WatcherMode.FILES_ONLY when not dir.current_is_dir():
-				files.append(file_name)
+				new_files.append(file_name)
 		file_name = dir.get_next()
-	if self.files != files:
-		self.files = files
+	if self.files != new_files:
+		self.files = new_files
 		self.content_changed.emit()

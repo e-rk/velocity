@@ -56,8 +56,8 @@ func _collect_minimap_data() -> Array[Dictionary]:
 
 func _acceleration_factor(forward_acceleration: float, camera_factor) -> Vector3:
 	var clamped = clampf(forward_acceleration, -3.0, 3.0)
-	var factor = 1.0 - (1.0 - (clamped + 3.0) * 0.16666667) * camera_factor
-	return Vector3(factor, factor ** 2, factor)
+	var acceleration_factor = 1.0 - (1.0 - (clamped + 3.0) * 0.16666667) * camera_factor
+	return Vector3(acceleration_factor, acceleration_factor ** 2, acceleration_factor)
 
 
 func _interpolation_factor() -> float:
@@ -119,15 +119,15 @@ func _show_next_player():
 	self.update_camera()
 
 
-func _update_ui(player: Player):
+func _update_ui(_player: Player):
 	pass
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	self.update_camera()
 
 
-func _process(delta):
+func _process(_delta):
 	var player_data = self._collect_minimap_data()
 	if spectated_player:
 		ui.set_speed(spectated_player.car.linear_velocity.length())

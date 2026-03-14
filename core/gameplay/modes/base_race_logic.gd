@@ -15,15 +15,15 @@ func _exit_tree() -> void:
 	OptimizerServer.clear_waypoints()
 
 
-func get_spawn_position(player: Player) -> Transform3D:
+func get_spawn_position(_player: Player) -> Transform3D:
 	return Transform3D.IDENTITY
 
 
-func player_spawned(player: Player):
+func player_spawned(_player: Player):
 	pass
 
 
-func ai_player_spawned(player: AIPlayer):
+func ai_player_spawned(_player: AIPlayer):
 	pass
 
 
@@ -35,7 +35,7 @@ func reposition_allowed() -> bool:
 	return true
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	if not track_set:
 		self.track.nav_path._measure_walls()
 		OptimizerServer.set_waypoints(track.nav_path)

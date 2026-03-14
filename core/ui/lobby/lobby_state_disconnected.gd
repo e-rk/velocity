@@ -63,11 +63,11 @@ func disconnect_from_game():
 	pass
 
 
-func peer_connected(id: int):
+func peer_connected(_id: int):
 	assert(false, "Peer connected in disconnected state")
 
 
-func peer_disconnected(id: int):
+func peer_disconnected(_id: int):
 	assert(false, "Peer disconnected in disconnected state")
 
 

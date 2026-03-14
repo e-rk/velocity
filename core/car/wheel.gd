@@ -18,8 +18,8 @@ func step_rotation(linear_distance: float):
 	wheel_basis = wheel_basis.rotated(Vector3.RIGHT, step)
 
 
-func _process(delta):
-	var basis = wheel_basis
+func _process(_delta):
+	var current_basis = wheel_basis
 	if self.is_front:
-		basis = wheel_basis.rotated(Vector3.UP, turn)
-	self.basis = basis
+		current_basis = wheel_basis.rotated(Vector3.UP, turn)
+	self.basis = current_basis

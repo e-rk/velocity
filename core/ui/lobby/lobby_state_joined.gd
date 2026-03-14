@@ -30,7 +30,7 @@ func hosting():
 	assert(false, "Started hosting in invalid state")
 
 
-func join(address: String, port: int):
+func join(_address: String, _port: int):
 	pass
 
 
@@ -39,11 +39,11 @@ func disconnect_from_game():
 	context.set_state(context.lobby_state_disconnected)
 
 
-func peer_connected(id: int):
+func peer_connected(_id: int):
 	pass
 
 
-func peer_disconnected(id: int):
+func peer_disconnected(_id: int):
 	pass
 
 

@@ -19,7 +19,7 @@ func get_track_by_uuid(uuid: String) -> TrackData:
 
 
 func _on_directory_watcher_content_changed():
-	var tracks = {}
+	var new_tracks = {}
 	var files = watcher.files.duplicate()
 	files.sort()
 	for file in files:
@@ -28,10 +28,10 @@ func _on_directory_watcher_content_changed():
 			continue
 		path = path.trim_suffix(".import")
 		var uuid = path
-		var car = TrackData.new()
-		car.name = file
-		car.path = path
-		car.uuid = uuid
-		tracks[uuid] = car
-	self.tracks = tracks
+		var track = TrackData.new()
+		track.name = file
+		track.path = path
+		track.uuid = uuid
+		new_tracks[uuid] = track
+	self.tracks = new_tracks
 	self.database_updated.emit()

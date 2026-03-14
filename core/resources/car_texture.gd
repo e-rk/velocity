@@ -18,9 +18,9 @@ class_name CarTexture
 var work_image: Image
 
 
-static func create_from_base_image(image: Image) -> CarTexture:
+static func create_from_base_image(img: Image) -> CarTexture:
 	var texture = CarTexture.new()
-	texture.base_image = image
+	texture.base_image = img
 	return texture
 
 

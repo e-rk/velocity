@@ -130,9 +130,9 @@ func _ready():
 		self.interior_wheel = self.find_child("*Steering*")
 
 
-func _enable_lights(lights: Array, visible: bool):
+func _enable_lights(lights: Array, show_lights: bool):
 	for light in lights:
-		light.visible = visible
+		light.visible = show_lights
 
 
 func _set_car_color(color: CarColorSet):
@@ -151,12 +151,12 @@ func max_gear() -> CarTypes.Gear:
 	return self.performance.max_gear()
 
 
-func _do_road_raycasts(position: Vector3) -> Dictionary:
-	self.road_raycasts.global_position = position
+func _do_road_raycasts(raycast_position: Vector3) -> Dictionary:
+	self.road_raycasts.global_position = raycast_position
 	self.road_raycasts.force_update_transform()
 	self.road_raycast_down.force_raycast_update()
 	self.road_raycast_up.force_raycast_update()
-	var collision_position = Vector3(position.x, -INF, position.z)
+	var collision_position = Vector3(raycast_position.x, -INF, raycast_position.z)
 	var normal = Vector3.UP
 	if self.road_raycast_down.is_colliding():
 		collision_position = self.road_raycast_down.get_collision_point()
@@ -252,8 +252,8 @@ func _min_dot(collision_point: Vector3, normal: Vector3, point_a: Vector3, point
 func _collision(state: PhysicsDirectBodyState3D):
 	var next_position = state.transform.origin + state.linear_velocity * state.step * 2
 	var next_rotation = state.angular_velocity * state.step * 2
-	var basis = Basis.from_euler(next_rotation)
-	var rotated = basis * state.transform.basis
+	var next_basis = Basis.from_euler(next_rotation)
+	var rotated = next_basis * state.transform.basis
 	var next_transform = Transform3D(rotated, next_position)
 
 	var shape_size = self.collider.shape.size
@@ -271,9 +271,9 @@ func _collision(state: PhysicsDirectBodyState3D):
 	var points_current = points_to_check.map(func(x): return state.transform * x)
 	var points_next = points_to_check.map(func(x): return next_transform * x)
 
-	var linear_velocity = state.linear_velocity
-	var angular_velocity = state.angular_velocity
-	var position = state.transform.origin
+	var current_linear_velocity = state.linear_velocity
+	var current_angular_velocity = state.angular_velocity
+	var current_position = state.transform.origin
 
 	for point in points_next:
 		self.wall_prober.target_position = next_transform.inverse() * point
@@ -285,9 +285,9 @@ func _collision(state: PhysicsDirectBodyState3D):
 			points_current.sort_custom(func(x, y): return _min_dot(collision_point, collision_normal, x, y))
 			var min_point = points_current[0]
 			var params = {
-				"position": position,
-				"angular_velocity": angular_velocity,
-				"linear_velocity": linear_velocity,
+				"position": current_position,
+				"angular_velocity": current_angular_velocity,
+				"linear_velocity": current_linear_velocity,
 				"friction": self.physics_material_override.friction,
 				"mass": self.mass,
 				"inertia_inv": state.inverse_inertia,
@@ -300,13 +300,13 @@ func _collision(state: PhysicsDirectBodyState3D):
 				collision_normal,
 				1.0,
 			)
-			position = collision_result["position"]
-			linear_velocity = collision_result["linear_velocity"]
-			angular_velocity = collision_result["angular_velocity"]
+			current_position = collision_result["position"]
+			current_linear_velocity = collision_result["linear_velocity"]
+			current_angular_velocity = collision_result["angular_velocity"]
 	return {
-		"position": position,
-		"linear_velocity": linear_velocity,
-		"angular_velocity": angular_velocity
+		"position": current_position,
+		"linear_velocity": current_linear_velocity,
+		"angular_velocity": current_angular_velocity
 	}
 
 

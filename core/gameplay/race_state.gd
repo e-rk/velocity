@@ -2,19 +2,19 @@ class_name RaceState
 extends State
 
 
-func spawn_player(player_id, player_config: PlayerConfig):
+func spawn_player(_player_id: int, _player_config: PlayerConfig):
 	pass
 
 
-func spawn_ai_player(player_config: PlayerConfig):
+func spawn_ai_player(_player_config: PlayerConfig):
 	pass
 
 
-func despawn_player(player_id):
+func despawn_player(_player_id):
 	pass
 
 
-func set_config(game_config: GameConfig):
+func set_config(_game_config: GameConfig):
 	pass
 
 

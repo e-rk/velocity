@@ -79,7 +79,7 @@ func track_distance(a: Player, b: Player) -> int:
 	return distance_modulo(a_offset, b_offset, track_length)
 
 
-func get_distance(offset: int, x: Racer, y: Racer) -> int:
+func get_distance(offset: float, x: Racer, y: Racer) -> int:
 	var track_length = round(self.track.nav_path.get_track_length())
 	var x_offset = round(x.player.position_along_track)
 	var y_offset = round(y.player.position_along_track)
@@ -144,7 +144,7 @@ func _process_pursuit(police: PursuitPolice, delta: float):
 		police.state = PursuitPolice.PoliceState.STOPPING
 
 
-func _process_stop(police: PursuitPolice, delta: float):
+func _process_stop(police: PursuitPolice, _delta: float):
 	var target = self.get_node(police.target) as PursuitRacer
 	if not target:
 		police.state = PursuitPolice.PoliceState.IDLE
@@ -157,7 +157,7 @@ func _process_stop(police: PursuitPolice, delta: float):
 		target.busted_timestamp = Time.get_ticks_msec()
 
 
-func _process_busted(delta: float):
+func _process_busted(_delta: float):
 	var racers: Array[PursuitRacer]
 	racers.assign(get_tree().get_nodes_in_group(&"PursuitRacers"))
 	var police: Array[PursuitPolice]
@@ -185,7 +185,7 @@ func _process_busted(delta: float):
 		racer.tickets += 1
 
 
-func _process_racers(delta: float):
+func _process_racers(_delta: float):
 	var racers: Array[Racer]
 	racers.assign(get_tree().get_nodes_in_group(&"PursuitRacers"))
 	for racer in racers:

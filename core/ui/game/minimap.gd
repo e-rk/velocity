@@ -58,7 +58,6 @@ func _draw():
 	var factor = calculate_normalization_factor(centered_points)
 	var normalized_points = normalize_points(centered_points)
 	var scaled_points = scale_points(normalized_points, draw_scale)
-	var prev = scaled_points[0]
 	scaled_points.append(scaled_points[0])
 	draw_polyline(PackedVector2Array(scaled_points), Color.WHITE, -1.0)
 

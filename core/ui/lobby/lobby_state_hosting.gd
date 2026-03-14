@@ -28,7 +28,7 @@ func hosting():
 	assert(false, "Started hosting in invalid state")
 
 
-func join(address: String, port: int):
+func join(_address: String, _port: int):
 	pass
 
 

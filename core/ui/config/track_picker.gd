@@ -8,7 +8,6 @@ class_name TrackPicker
 @onready var configure_button: Button = %ConfigureButton
 
 signal track_selected
-signal track_not_found
 
 
 func _ready():

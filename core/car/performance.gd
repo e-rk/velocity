@@ -40,7 +40,7 @@ func gear_velocity_to_rpm(gear) -> float:
 
 
 func max_gear() -> CarTypes.Gear:
-	return manual_number_of_gears - 1
+	return ((manual_number_of_gears as int) - 1) as CarTypes.Gear
 
 
 func engine_min_rpm() -> int:

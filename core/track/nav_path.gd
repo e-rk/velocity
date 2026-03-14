@@ -132,9 +132,8 @@ func advance_by_distance(idx: int, distance: float) -> int:
 	return current_idx
 
 
-func advance_by_distance_smooth(offset: float, global_position: Vector3, distance: float) -> Vector3:
+func advance_by_distance_smooth(offset: float, _global_position: Vector3, distance: float) -> Vector3:
 	var idx := floori(offset)
-	var idx_next := _next_idx(idx, 1)
 	var t := offset - idx
 	var advanced_idx = advance_by_distance(idx, distance)
 	var next_idx = _next_idx(advanced_idx, 1)
