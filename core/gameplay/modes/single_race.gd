@@ -11,9 +11,15 @@ var players_spawned := 0
 
 
 func get_spawn_position(_player: Player) -> Transform3D:
-	var spawn_transform = track.get_spawn_transform(self.players_spawned)
+	const SPAWN_DISTANCE := 10.0
+	const LATERAL_OFFSET := 2.0
+	var distance := -self.players_spawned * SPAWN_DISTANCE
+	var direction := 1.0 if self.players_spawned % 2 == 0 else -1.0
+	var position := self.track.nav_path.advance_by_distance_smooth(0.0, self.track.nav_path.points[0], distance)
+	var orientation := self.track.nav_path.orientations[0]
+	var shifted := position + orientation * Vector3(direction * LATERAL_OFFSET, 0, 0)
 	self.players_spawned += 1
-	return spawn_transform
+	return Transform3D(orientation, shifted)
 
 
 func player_spawned(player: Player):
@@ -54,7 +60,7 @@ func _physics_process(delta):
 	var racers: Array[Racer] = []
 	racers.assign(get_tree().get_nodes_in_group(&"Racers"))
 	for racer in racers:
-		var progress = self.track.progress_along_track_normalized(racer.player.car.global_position)
+		var progress = racer.player.position_along_track / self.track.nav_path.get_track_length()
 		var prev_progress = racer.track_progress
 		if prev_progress > 0.9 and progress < 0.1:
 			racer.laps += 1

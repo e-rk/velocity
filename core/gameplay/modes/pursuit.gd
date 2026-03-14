@@ -15,9 +15,15 @@ const POLICE_BUST_STEP = 80
 
 
 func get_spawn_position(_player: Player) -> Transform3D:
-	var spawn_transform = track.get_spawn_transform(self.players_spawned)
+	const SPAWN_DISTANCE := 10.0
+	const LATERAL_OFFSET := 2.0
+	var distance := -self.players_spawned * SPAWN_DISTANCE
+	var direction := 1.0 if self.players_spawned % 2 == 0 else -1.0
+	var position := self.track.nav_path.advance_by_distance_smooth(0.0, self.track.nav_path.points[0], distance)
+	var orientation := self.track.nav_path.orientations[0]
+	var shifted := position + orientation * Vector3(direction * LATERAL_OFFSET, 0, 0)
 	self.players_spawned += 1
-	return spawn_transform
+	return Transform3D(orientation, shifted)
 
 
 func player_spawned(player: Player):
@@ -66,24 +72,23 @@ func distance_modulo(a: int, b: int, n: int) -> int:
 	return min(ab, n - ab)
 
 
-func track_distance(a: Vector3, b: Vector3) -> int:
-	var track_length = round(self.track.track_length())
-	var a_offset = round(self.track.progress_along_track(a))
-	var b_offset = round(self.track.progress_along_track(b))
+func track_distance(a: Player, b: Player) -> int:
+	var track_length = round(self.track.nav_path.get_track_length())
+	var a_offset = round(a.position_along_track)
+	var b_offset = round(b.position_along_track)
 	return distance_modulo(a_offset, b_offset, track_length)
 
 
 func get_distance(offset: int, x: Racer, y: Racer) -> int:
-	var track_length = round(self.track.track_length())
-	var x_offset = round(self.track.progress_along_track(x.car.global_position))
-	var y_offset = round(self.track.progress_along_track(y.car.global_position))
+	var track_length = round(self.track.nav_path.get_track_length())
+	var x_offset = round(x.player.position_along_track)
+	var y_offset = round(y.player.position_along_track)
 	var x_result = distance_modulo(offset, x_offset, track_length)
 	var y_result = distance_modulo(offset, y_offset, track_length)
 	return x_result < y_result
 
 
-func _get_closest_racer(position: Vector3, candidates: Array[PursuitRacer]) -> Racer:
-	var offset = round(self.track.progress_along_track(position))
+func _get_closest_racer(offset: float, candidates: Array[PursuitRacer]) -> Racer:
 	candidates.sort_custom(func(x, y): return get_distance(offset, x, y))
 	if not candidates:
 		return null
@@ -91,7 +96,7 @@ func _get_closest_racer(position: Vector3, candidates: Array[PursuitRacer]) -> R
 
 
 func is_valid_target(police: PursuitPolice, target: PursuitRacer) -> bool:
-	var distance = self.track_distance(police.player.car.global_position, target.player.car.global_position)
+	var distance = self.track_distance(police.player, target.player)
 	var distance_criteria = distance <= self.POLICE_TARGET_ACQUIRE_DISTANCE
 	return distance_criteria
 
@@ -103,7 +108,7 @@ func _assign_target(police: PursuitPolice):
 	var candidates: Array[PursuitRacer]
 	candidates.assign(get_tree().get_nodes_in_group(&"PursuitRacers"))
 	candidates = candidates.filter(func(x): return x.tickets < self.rules.num_tickets)
-	var closest_racer = self._get_closest_racer(police.player.car.global_position, candidates)
+	var closest_racer = self._get_closest_racer(police.player.position_along_track, candidates)
 	if closest_racer and self.is_valid_target(police, closest_racer):
 		police.target = closest_racer.get_path()
 		police.state = PursuitPolice.PoliceState.IN_PURSUIT
@@ -127,7 +132,7 @@ func _process_pursuit(police: PursuitPolice, delta: float):
 	var score = self._bust_score(police.player.car, target.player.car)
 	var new_score: float = move_toward(target.bust_score, score, delta * self.POLICE_BUST_STEP)
 	target.bust_score = new_score
-	var distance = self.track_distance(police.player.car.global_position, target.player.car.global_position)
+	var distance = self.track_distance(police.player, target.player)
 	if not police.player.car.is_siren_active() or distance >= self.POLICE_TARGET_LOSE_DISTANCE:
 		police.target = NodePath()
 		target.bust_score = 0.0
@@ -184,7 +189,7 @@ func _process_racers(delta: float):
 	var racers: Array[Racer]
 	racers.assign(get_tree().get_nodes_in_group(&"PursuitRacers"))
 	for racer in racers:
-		var progress = self.track.progress_along_track_normalized(racer.player.car.global_position)
+		var progress = racer.player.position_along_track / self.track.nav_path.get_track_length()
 		var prev_progress = racer.track_progress
 		if prev_progress > 0.9 and progress < 0.1:
 			racer.laps += 1
