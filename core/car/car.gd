@@ -221,7 +221,7 @@ func _process(delta: float):
 	if self.interior_wheel:
 		self.interior_wheel.rotation = remap(self.current_steering, -128.0, 128.0, deg_to_rad(90), deg_to_rad(-90)) * Vector3.MODEL_FRONT
 	if self.rpm_meter:
-		self.rpm_meter.value = remap(self.current_rpm, self.performance.engine_min_rpm(), self.performance.engine_redline_rpm(), 0.0, 1.0)
+		self.rpm_meter.value = remap(self.current_rpm, self.performance.engine_min_rpm(), self.performance.engine_redline_rpm, 0.0, 1.0)
 	if self.mph_meter:
 		self.mph_meter.value = remap(self.linear_velocity.length(), 0, self.performance.max_velocity(), 0.0, 1.0)
 	#var box_pos = self.wall_collider.global_position

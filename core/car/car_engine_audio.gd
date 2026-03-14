@@ -18,7 +18,7 @@ func _ready() -> void:
 func get_idx() -> int:
 	var rpm = car.current_rpm
 	var performance = car.performance
-	var engine_redline_rpm = performance.engine_redline_rpm()
+	var engine_redline_rpm = performance.engine_redline_rpm
 	var engine_min_rpm = performance.engine_min_rpm()
 	var div = ((engine_redline_rpm / 2) + engine_redline_rpm) * 100
 	var factor = 0x73

@@ -143,6 +143,39 @@ func _process_car_texture(car: Car):
 	car.car_textures = car_textures
 
 
+func _make_performance(data: Dictionary) -> CarPerformance:
+	var performance = CarPerformance.new()
+	performance.mass = data["mass"]
+	performance.torque_curve = data["torque_curve"]
+	performance.manual_gear_efficiency = data["manual_gear_efficiency"]
+	performance.manual_velocity_to_rpm_ratio = data["manual_velocity_to_rpm_ratio"]
+	performance.manual_number_of_gears = data["manual_number_of_gears"]
+	performance.front_drive_ratio = data["front_drive_ratio"]
+	performance.engine_redline_rpm = data["engine_redline_rpm"]
+	performance.engine_minimum_rpm = data["engine_minimum_rpm"]
+	performance.aerodynamic_downforce_multiplier = data["aerodynamic_downforce_multiplier"]
+	performance.maximum_velocity = data["maximum_velocity"]
+	performance.spoiler_function_type = data["spoiler_function_type"]
+	performance.turn_in_ramp = data["turn_in_ramp"]
+	performance.turn_out_ramp = data["turn_out_ramp"]
+	performance.minimum_steering_acceleration = data["minimum_steering_acceleration"]
+	performance.maximum_braking_deceleration = data["maximum_braking_deceleration"]
+	performance.front_bias_brake_ratio = data["front_bias_brake_ratio"]
+	performance.lateral_acceleration_grip_multiplier = data["lateral_acceleration_grip_multiplier"]
+	performance.front_grip_bias = data["front_grip_bias"]
+	performance.has_abs = data["has_abs"]
+	performance.understeer_gradient = data["understeer_gradient"]
+	performance.turning_circle_radius = data["turning_circle_radius"]
+	performance.gas_off_factor = data["gas_off_factor"]
+	performance.shift_blip_in_rpm = data["shift_blip_in_rpm"]
+	performance.brake_blip_in_rpm = data["brake_blip_in_rpm"]
+	performance.gear_shift_delay = data["gear_shift_delay"]
+	performance.g_transfer_factor = data["g_transfer_factor"]
+	performance.brake_decreasing_curve = data["brake_decreasing_curve"]
+	performance.brake_increasing_curve = data["brake_increasing_curve"]
+	return performance
+
+
 func _post_import(scene):
 	if scene.get_meta("type") == "track":
 		var new_scene = RaceTrack.new()
@@ -182,9 +215,8 @@ func _post_import(scene):
 		new_scene.palette = colors
 		new_scene.name = scene.name
 		scene.replace_by(new_scene)
-		var performance = CarPerformance.new()
-		performance.data = scene.get_meta("performance")
-		new_scene.mass = performance.mass()
+		var performance = self._make_performance(scene.get_meta("performance"))
+		new_scene.mass = performance.mass
 		new_scene.performance = performance
 		for node in new_scene.get_children():
 			if node is GeometryInstance3D:
