@@ -27,6 +27,7 @@ buses/default_bus_layout="uid://bn2naccrcif5a"
 CarDB="*res://core/db/car_db.tscn"
 TrackDB="*res://core/db/track_db.tscn"
 GameModeDB="*res://core/db/mode_db.gd"
+OptimizerServer="*uid://by6ile3p5mh5y"
 
 [editor_plugins]
 
