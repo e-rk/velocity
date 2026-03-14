@@ -1,21 +1,20 @@
-[gd_scene format=3 uid="uid://cfwpo7o5qxn42"]
+[gd_scene format=3 uid="uid://yx0vatrxo640"]
 
-[ext_resource type="Script" uid="uid://3gf0nectxbjp" path="res://core/gameplay/player/player.gd" id="1_n5itm"]
-[ext_resource type="Script" uid="uid://2ekyng230e8r" path="res://core/gameplay/player/player_input.gd" id="2_7f16e"]
+[ext_resource type="Script" uid="uid://dtwn1k2bh8lu6" path="res://core/gameplay/player/player.gd" id="1_n5itm"]
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_mia2f"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_0w35f"]
 properties/0/path = NodePath(".:car_uuid")
 properties/0/spawn = true
 properties/0/replication_mode = 0
-properties/1/path = NodePath(".:initial_transform")
+properties/1/path = NodePath(".:player_name")
 properties/1/spawn = true
 properties/1/replication_mode = 0
-properties/2/path = NodePath(".:player_name")
+properties/2/path = NodePath(".:initial_transform")
 properties/2/spawn = true
 properties/2/replication_mode = 0
 properties/3/path = NodePath(".:disable_steering")
 properties/3/spawn = true
-properties/3/replication_mode = 2
+properties/3/replication_mode = 0
 properties/4/path = NodePath(".:primary_color")
 properties/4/spawn = true
 properties/4/replication_mode = 0
@@ -28,41 +27,16 @@ properties/6/replication_mode = 0
 properties/7/path = NodePath(".:driver_color")
 properties/7/spawn = true
 properties/7/replication_mode = 0
+properties/8/path = NodePath(".:position_along_track")
+properties/8/spawn = true
+properties/8/replication_mode = 2
+properties/9/path = NodePath(".:current_node_idx")
+properties/9/spawn = true
+properties/9/replication_mode = 2
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_q7o5m"]
-properties/0/path = NodePath(".:steering")
-properties/0/spawn = true
-properties/0/replication_mode = 1
-properties/1/path = NodePath(".:throttle")
-properties/1/spawn = true
-properties/1/replication_mode = 1
-properties/2/path = NodePath(".:brake")
-properties/2/spawn = true
-properties/2/replication_mode = 1
-properties/3/path = NodePath(".:gear")
-properties/3/spawn = true
-properties/3/replication_mode = 1
-properties/4/path = NodePath(".:handbrake")
-properties/4/spawn = true
-properties/4/replication_mode = 1
-properties/5/path = NodePath(".:lights_on")
-properties/5/spawn = true
-properties/5/replication_mode = 1
-properties/6/path = NodePath(".:siren_on")
-properties/6/spawn = true
-properties/6/replication_mode = 1
-
-[node name="Player" type="Node" unique_id=437232436 groups=["Players"]]
+[node name="Player" type="Node" unique_id=1957225794]
 script = ExtResource("1_n5itm")
 disable_steering = true
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1998114169]
-replication_config = SubResource("SceneReplicationConfig_mia2f")
-
-[node name="Input" type="Node" parent="." unique_id=515408403]
-script = ExtResource("2_7f16e")
-
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="Input" unique_id=864015620]
-replication_config = SubResource("SceneReplicationConfig_q7o5m")
-
-[connection signal="reposition_requested" from="Input" to="." method="_on_input_reposition_requested"]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=2092444555]
+replication_config = SubResource("SceneReplicationConfig_0w35f")

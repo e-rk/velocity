@@ -3,7 +3,7 @@ extends RaceState
 @onready var race_state_start_countdown = $"../RaceStateStartCountdown"
 @onready var spawner = $MultiplayerSpawner
 
-const player_scene = preload("res://core/gameplay/player/player.tscn")
+const player_scene = preload("res://core/gameplay/player/controllable_player.tscn")
 
 
 func spawn_player(player_id, player_config: PlayerConfig):

@@ -9,19 +9,16 @@ extends Node
 @export var secondary_color: Color
 @export var interior_color: Color
 @export var driver_color: Color
+@export var position_along_track: float = 0.0
+@export var current_node_idx: float = 0.0
 
 signal reposition_requested
 
-@onready var input = $Input
-
 var car: Car = null
-var authority = false
-var previous_gear: int = 0
+var player_avoidance_data := OptimizerServer.ObstacleData.new()
 
 
 func _ready():
-	assert(self.name.is_valid_int())
-	self.authority = self.name.to_int()
 	var color_set = CarColorSet.from_colors(primary_color, secondary_color, driver_color, interior_color)
 	var car = CarDB.get_car_by_uuid(self.car_uuid)
 	self.car = load(car.path).instantiate()
@@ -29,30 +26,22 @@ func _ready():
 	self.add_child(self.car)
 	self.car.owner = self
 	self.car.color = color_set
+	self._update_static_player_avoidance()
 
 
 func is_local() -> bool:
-	return self.authority == multiplayer.get_unique_id()
+	return false
 
 
-func _physics_process(_delta):
-	var input_gear = self.input.gear
-	if not self.disable_steering:
-		car.brake = input.brake
-		car.steering = input.steering
-		car.handbrake = input.handbrake
-		if self.previous_gear != input_gear:
-			# Gear change by difference to avoid duplicated states.
-			car.gear += (input_gear - previous_gear)
-	else:
-		car.brake = 1.0
-		car.handbrake = false
-		car.gear = CarTypes.Gear.NEUTRAL
-		car.steering = 0.0
-	self.previous_gear = input_gear
-	car.throttle = input.throttle
-	car.lights_on = input.lights_on
-	car.siren_on = input.siren_on
+func is_ai() -> bool:
+	return false
 
-func _on_input_reposition_requested():
-	self.reposition_requested.emit()
+
+func _update_static_player_avoidance():
+	player_avoidance_data.dimensions = car.dimensions()
+
+
+func _update_dynamic_player_avoidance():
+	player_avoidance_data.position = car.global_position
+	player_avoidance_data.velocity = car.linear_velocity
+	player_avoidance_data.offset = current_node_idx
