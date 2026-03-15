@@ -181,10 +181,13 @@ func _load_stream(entry: Dictionary) -> Array[EngineSample]:
 	return result
 
 
-func process_car_extras(root: Node, data: Dictionary):
+func process_car_extras(state: GLTFState, root: Node, data: Dictionary):
 	var dimensions = data["dimensions"]
 	var color_set: Array[CarColorSet]
 	color_set.assign(data["colors"].map(self.dict_to_palette))
+	var color_list = CarColorList.from_list(color_set)
+	var color_list_path = "%s/%s_color_list.res" % [state.base_path, state.filename]
+	ResourceSaver.save(color_list, color_list_path)
 
 	root.set_meta("dimensions", Vector3(dimensions[0], dimensions[1], dimensions[2]))
 	root.set_meta("performance", data["performance"])
@@ -276,7 +279,7 @@ func process_scene_extras(state: GLTFState, root: Node):
 		return null
 	var extras = scene["extras"]
 	if extras.has("SPT_car"):
-		process_car_extras(root, extras["SPT_car"])
+		process_car_extras(state, root, extras["SPT_car"])
 	if extras.has("SPT_track"):
 		process_track_extras(state, root, extras["SPT_track"])
 

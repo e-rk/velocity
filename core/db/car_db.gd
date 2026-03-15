@@ -12,6 +12,7 @@ class CarData:
 	var name: String
 	var path: String
 	var uuid: String
+	var color_list: String
 
 
 func get_car_by_uuid(uuid: String) -> CarData:
@@ -26,6 +27,7 @@ func _on_directory_watcher_content_changed():
 	files.sort()
 	for file in files:
 		var path = "%s/%s/%s.glb.import" % [watcher.directory, file, file]
+		var color_list_path = "%s/%s/%s_color_list.res" % [watcher.directory, file, file]
 		if not FileAccess.file_exists(path):
 			continue
 		path = path.trim_suffix(".import")
@@ -34,6 +36,7 @@ func _on_directory_watcher_content_changed():
 		car.name = file
 		car.path = path
 		car.uuid = uuid
+		car.color_list = color_list_path
 		new_cars[uuid] = car
 	self.cars = new_cars
 	self.database_updated.emit()
