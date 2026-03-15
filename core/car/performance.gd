@@ -2,7 +2,7 @@ extends Resource
 class_name CarPerformance
 
 @export var mass: float
-@export var torque_curve: Array
+@export var torque_curve: Array[float]
 @export var manual_gear_efficiency: Array
 @export var manual_velocity_to_rpm_ratio: Array
 @export var manual_number_of_gears: CarTypes.Gear
@@ -23,12 +23,12 @@ class_name CarPerformance
 @export var understeer_gradient: float
 @export var turning_circle_radius: float
 @export var gas_off_factor: float
-@export var shift_blip_in_rpm: Array
-@export var brake_blip_in_rpm: Array
+@export var shift_blip_in_rpm: Array[int]
+@export var brake_blip_in_rpm: Array[int]
 @export var gear_shift_delay: int
 @export var g_transfer_factor: float
-@export var brake_decreasing_curve: Array
-@export var brake_increasing_curve: Array
+@export var brake_decreasing_curve: Array[float]
+@export var brake_increasing_curve: Array[float]
 
 
 func gear_efficiency(gear) -> float:
