@@ -5,6 +5,7 @@ extends Node3D
 @onready var reflection: ReflectionProbe = $ReflectionProbe
 @onready var main_camera: Camera3D = $MainCamera
 @onready var target: Marker3D = $CameraArm/CameraTarget
+@onready var change_player_timer: Timer = $ChangePlayerTimer
 
 enum CameraMode {
 	HELI,
@@ -21,7 +22,7 @@ var spectated_player: Player
 func _ready() -> void:
 	self.set_target_position(Vector3(0.0, 1.8, -5.2))
 	self.initial_arm_rotation = self.camera_arm.basis
-	self._show_next_player.call_deferred()
+	self.change_player_timer.start()
 
 
 func set_waypoints(waypoints: Array):
@@ -106,6 +107,9 @@ func _show_next_player():
 	var players := self._get_players()
 	if not spectated_player:
 		var local = players.find_custom(func(x): return x.is_local())
+		if local == -1:
+			self.change_player_timer.start()
+			return
 		spectated_player = players[local]
 	else:
 		var index = players.find(spectated_player)
@@ -167,4 +171,9 @@ func _input(event: InputEvent) -> void:
 				self.rotate_camera(0)
 				break
 	if event.is_action_pressed("show_next_player"):
+		self._show_next_player()
+
+
+func _on_change_player_timer_timeout() -> void:
+	if not spectated_player:
 		self._show_next_player()

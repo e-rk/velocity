@@ -57,5 +57,12 @@ collision_mask = 7
 
 [node name="CameraTarget" type="Marker3D" parent="CameraArm" unique_id=1297170021]
 
+[node name="ChangePlayerTimer" type="Timer" parent="." unique_id=85583756]
+process_callback = 0
+wait_time = 0.15
+one_shot = true
+
+[connection signal="timeout" from="ChangePlayerTimer" to="." method="_on_change_player_timer_timeout"]
+
 [editable path="PlayerUI"]
 [editable path="PlayerUI/HSplitContainer/RearViewMirror"]
