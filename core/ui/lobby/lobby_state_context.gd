@@ -180,12 +180,22 @@ func _on_player_data_container_player_data_removed(node: PlayerData):
 	self.lobby_status.remove_player_data(node)
 
 
+func _make_ai_player() -> PlayerConfig:
+	var rand := randi_range(0, len(CarDB.cars.values()) - 1)
+	var car_data = CarDB.cars.values()[rand]
+	var color_list = load(car_data.color_list) as CarColorList
+	var ai_config = PlayerConfig.new()
+	ai_config.car_uuid = car_data.uuid
+	if color_list.colors.size() > 0:
+		var rand_color := randi_range(0, color_list.colors.size() - 1)
+		ai_config.set_color_set(color_list.colors[rand_color])
+	return ai_config
+
+
 func _on_player_data_container_all_players_standby():
 	for i in game_config.config.num_opponents:
-		var rand = randi_range(0, len(CarDB.cars.values()) - 1)
-		var ai_config = PlayerConfig.new()
-		ai_config.car_uuid = CarDB.cars.values()[rand].uuid
-		self.race.spawn_ai_player(ai_config)
+		var player_config = self._make_ai_player()
+		self.race.spawn_ai_player(player_config)
 	for player in self.player_container.get_players():
 		self.race.spawn_player(player.get_player_id(), player.get_config())
 	self.start_race.rpc()
