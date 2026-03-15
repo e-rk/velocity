@@ -28,7 +28,6 @@ CarDB="*res://core/db/car_db.tscn"
 TrackDB="*res://core/db/track_db.tscn"
 GameModeDB="*res://core/db/mode_db.gd"
 OptimizerServer="*uid://by6ile3p5mh5y"
-AiDebug="*uid://da7uo8xn83qwh"
 
 [editor_plugins]
 
