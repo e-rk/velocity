@@ -9,7 +9,7 @@
 [ext_resource type="Script" uid="uid://7xecqbluivsn" path="res://core/ai/behavior/ai_behavior_algo_racing.gd" id="7_tmfnq"]
 [ext_resource type="Script" uid="uid://etx7h01ulnoo" path="res://core/ai/behavior/ai_behavior_algo_recover.gd" id="8_wl4s2"]
 
-[node name="Player" unique_id=1957225794 groups=["AiPlayers"] instance=ExtResource("1_7lw5r")]
+[node name="AiPlayer" unique_id=1957225794 groups=["AiPlayers"] instance=ExtResource("1_7lw5r")]
 script = ExtResource("2_jcryl")
 
 [node name="SteeringAlgo" type="Node" parent="." index="1" unique_id=563288337]

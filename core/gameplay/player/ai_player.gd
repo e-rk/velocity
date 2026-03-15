@@ -10,11 +10,11 @@ extends Player
 func _ready():
 	super()
 	drive_algo.waypoints = self.waypoints
+	if not self.is_multiplayer_authority():
+		self.set_physics_process(false)
 
 
 func _physics_process(delta):
-	if not self.is_multiplayer_authority():
-		return
 	if not self.disable_steering:
 		behavior.decide(self, delta)
 		drive_algo.process(self, delta)
