@@ -30,15 +30,9 @@ func refresh():
 
 func set_waypoints(points: Array):
 	var pts: Array = points.map(to_vec2)
-
-	var sum := Vector2.ZERO
-	for p: Vector2 in pts:
-		sum += p
 	self.track_centroid = pts.reduce(func(acc: Vector2, x: Vector2): return acc + x) / pts.size()
 	var centered = pts.map(func(p: Vector2) -> Vector2: return p - self.track_centroid)
-
 	self.normalization_factor = centered.reduce(func(acc, p): return max(acc, p.length()), 0.0)
-
 	self.scaled_track_points.clear()
 	for p in centered:
 		self.scaled_track_points.append(p / self.normalization_factor * self.minimap_scale)
