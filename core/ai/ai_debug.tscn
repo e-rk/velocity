@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://da7uo8xn83qwh"]
+
+[ext_resource type="Script" uid="uid://bteerdojtu7tm" path="res://core/ai/ai_debug.gd" id="1_qe3g0"]
+
+[node name="AiDebug" type="Window" unique_id=146746847]
+transparent_bg = true
+oversampling_override = 1.0
+title = "Debug"
+position = Vector2i(0, 36)
+size = Vector2i(164, 171)
+wrap_controls = true
+always_on_top = true
+transparent = true
+unfocusable = true
+extend_to_title = true
+exclude_from_capture = true
+script = ExtResource("1_qe3g0")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=725612041]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SnapshotTrack" type="Button" parent="VBoxContainer" unique_id=346814122]
+layout_mode = 2
+text = "Snapshot track"
+
+[node name="SnapshotAvoidance" type="Button" parent="VBoxContainer" unique_id=1222532062]
+layout_mode = 2
+text = "Snapshot obstacles"
+
+[node name="PathDebug" type="CheckButton" parent="VBoxContainer" unique_id=135870285]
+layout_mode = 2
+text = "Enable tracks"
+
+[node name="ReloadShaders" type="Button" parent="VBoxContainer" unique_id=697731819]
+layout_mode = 2
+text = "Reload shaders"
+
+[node name="PathSelect" type="OptionButton" parent="VBoxContainer" unique_id=1336475385]
+layout_mode = 2
+selected = 0
+allow_reselect = true
+item_count = 1
+popup/item_0/text = "All"
+popup/item_0/id = 0
+popup/item_0/separator = true
+
+[node name="Timer" type="Timer" parent="." unique_id=979370651]
+process_callback = 0
+autostart = true
+
+[connection signal="pressed" from="VBoxContainer/SnapshotTrack" to="." method="_on_snapshot_track_pressed"]
+[connection signal="pressed" from="VBoxContainer/SnapshotAvoidance" to="." method="_on_snapshot_avoidance_pressed"]
+[connection signal="pressed" from="VBoxContainer/ReloadShaders" to="." method="_on_reload_shaders_pressed"]
+[connection signal="item_selected" from="VBoxContainer/PathSelect" to="." method="_on_option_button_item_selected"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

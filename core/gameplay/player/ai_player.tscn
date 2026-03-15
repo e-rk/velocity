@@ -1,5 +1,45 @@
 [gd_scene format=3 uid="uid://blqjp52kdtt5b"]
 
 [ext_resource type="PackedScene" uid="uid://yx0vatrxo640" path="res://core/gameplay/player/player.tscn" id="1_7lw5r"]
+[ext_resource type="Script" uid="uid://v0d7366c3uam" path="res://core/gameplay/player/ai_player.gd" id="2_jcryl"]
+[ext_resource type="Script" uid="uid://ccdylscq4dkc6" path="res://core/ai/steering/ai_steering_algo.gd" id="3_8i6v3"]
+[ext_resource type="Script" uid="uid://be5ql24x27fjf" path="res://core/ai/steering/ai_steering_algo_follow_path.gd" id="3_xgk80"]
+[ext_resource type="Script" uid="uid://bgv8tog3mnkvt" path="res://core/ai/steering/ai_steering_algo_reverse.gd" id="4_8i6v3"]
+[ext_resource type="Script" uid="uid://mfmg3t25ye4p" path="res://core/ai/behavior/ai_behavior_algo.gd" id="6_8rars"]
+[ext_resource type="Script" uid="uid://7xecqbluivsn" path="res://core/ai/behavior/ai_behavior_algo_racing.gd" id="7_tmfnq"]
+[ext_resource type="Script" uid="uid://etx7h01ulnoo" path="res://core/ai/behavior/ai_behavior_algo_recover.gd" id="8_wl4s2"]
 
 [node name="Player" unique_id=1957225794 groups=["AiPlayers", "Players"] instance=ExtResource("1_7lw5r")]
+script = ExtResource("2_jcryl")
+
+[node name="SteeringAlgo" type="Node" parent="." index="1" unique_id=563288337]
+script = ExtResource("3_8i6v3")
+obstacle_scale = 1.7
+curvature_scale = 3.05
+wall_scale = 0.0
+Kp = 12.0
+Ki = 0.7
+initial_state = NodePath("SteeringAlgoFollowPath")
+metadata/_custom_type_script = "uid://ccdylscq4dkc6"
+
+[node name="SteeringAlgoFollowPath" type="Node" parent="SteeringAlgo" index="0" unique_id=839211528]
+script = ExtResource("3_xgk80")
+metadata/_custom_type_script = "uid://be5ql24x27fjf"
+
+[node name="SteeringAlgoReverse" type="Node" parent="SteeringAlgo" index="1" unique_id=2029030718]
+script = ExtResource("4_8i6v3")
+metadata/_custom_type_script = "uid://bgv8tog3mnkvt"
+
+[node name="BehaviorAlgo" type="Node" parent="." index="2" unique_id=1330385226 node_paths=PackedStringArray("steering_controller")]
+script = ExtResource("6_8rars")
+steering_controller = NodePath("../SteeringAlgo")
+initial_state = NodePath("BehaviorAlgoRacing")
+metadata/_custom_type_script = "uid://mfmg3t25ye4p"
+
+[node name="BehaviorAlgoRacing" type="Node" parent="BehaviorAlgo" index="0" unique_id=1566813138]
+script = ExtResource("7_tmfnq")
+metadata/_custom_type_script = "uid://7xecqbluivsn"
+
+[node name="BehaviorAlgoRecover" type="Node" parent="BehaviorAlgo" index="1" unique_id=150059145]
+script = ExtResource("8_wl4s2")
+metadata/_custom_type_script = "uid://etx7h01ulnoo"
