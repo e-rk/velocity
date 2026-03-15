@@ -21,6 +21,7 @@ var work_image: Image
 static func create_from_base_image(img: Image) -> CarTexture:
 	var texture = CarTexture.new()
 	texture.base_image = img
+	texture.resource_local_to_scene = true
 	return texture
 
 

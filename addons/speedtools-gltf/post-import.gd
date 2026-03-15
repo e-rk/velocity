@@ -118,6 +118,14 @@ func apply_car_material(root: Node):
 			mesh.surface_set_material(surf, mapping[mesh.surface_get_material(surf)])
 
 
+func _set_materials_local_to_scene(car: Car):
+	for child in car.get_children():
+		if child is MeshInstance3D:
+			for i in range(child.mesh.get_surface_count()):
+				var surface = child.mesh.surface_get_material(i) as StandardMaterial3D
+				surface.resource_local_to_scene = true
+
+
 func _process_car_texture(car: Car):
 	var image_to_parts = {}
 	for child in car.get_children():
@@ -218,7 +226,7 @@ func _post_import(scene):
 				var object_node = new_scene.find_child(object)
 				new_scene.add_child(player)
 				player.owner = new_scene
-			animation_player.queue_free()
+			animation_player.free()
 		return new_scene
 	elif scene.get_meta("type") == "car":
 		var dimensions = scene.get_meta("dimensions")
@@ -245,6 +253,8 @@ func _post_import(scene):
 			if node is Camera3D:
 				node.cull_mask = Constants.visual_layer_to_mask([Constants.VisualLayer.PLAYER_INTERIOR, Constants.VisualLayer.TRACK, Constants.VisualLayer.OPPONENTS])
 				node.fov = 60
+			if node is MeshInstance3D:
+				node.mesh.resource_local_to_scene = true
 			if node.name.contains("_whl"):
 				self.make_wheel(node)
 			elif node.name.contains("_RPM"):
@@ -253,10 +263,13 @@ func _post_import(scene):
 			elif node.name.contains("_MPH"):
 				node = self.make_meter(node)
 				node.name = "speedometer"
+		scene.free()
 		scene = new_scene
 		if colors:
 			scene.color = colors[0]
 		self._process_car_texture(scene)
+		self._set_materials_local_to_scene(scene)
+
 		var interior_dashboard = scene.find_child("interior_dashboard_lit")
 		if interior_dashboard is MeshInstance3D:
 			interior_dashboard.position += -0.001 * Vector3.MODEL_FRONT
