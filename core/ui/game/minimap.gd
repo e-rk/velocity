@@ -1,67 +1,67 @@
 class_name Minimap
 extends Control
 
-var draw_scale = 300
-var center_point = Vector2.ZERO
-var _waypoints = [Vector2(0, 0)]
-var players: Array = []:
+
+@export var players: Array = []:
 	set(value):
 		players = value
-	get:
-		return players
+		self.refresh()
+
+@export var minimap_scale: float = 300.0
+
+var track_offset := Vector2.ZERO
+var center_point := Vector2.ZERO
+var track_centroid := Vector2.ZERO
+var normalization_factor := 1.0
+var scaled_track_points := PackedVector2Array()
+
+
+@onready var track_layer: Control = $TrackLayer
+@onready var player_layer: Control = $PlayerLayer
 
 
 func to_vec2(point: Vector3) -> Vector2:
 	return Vector2(-point.x, -point.z)
 
 
-func center_points_custom(points: Array, center: Vector2):
-	return points.map(func(x): return x - center)
-
-
-func center_points(points: Array) -> Array:
-	var sum = points.reduce(func(a, x): return a + x)
-	var center = sum / len(points)
-	return center_points_custom(points, center)
-
-
-func normalize_points(points: Array) -> Array:
-	var factor = calculate_normalization_factor(points)
-	return points.map(func(x): return x / factor)
-
-
-func calculate_normalization_factor(points: Array) -> float:
-	var centered = center_points(points)
-	return centered.reduce(func(a, x): return max(a, x.length()), 0)
-
-
-func scale_points(points: Array, scale: float) -> Array:
-	return points.map(func(x): return x * scale)
-
-
 func refresh():
-	self.queue_redraw()
+	self.player_layer.queue_redraw()
 
 
 func set_waypoints(points: Array):
-	_waypoints = points.map(to_vec2)
-	refresh()
+	var pts: Array = points.map(to_vec2)
+
+	var sum := Vector2.ZERO
+	for p: Vector2 in pts:
+		sum += p
+	self.track_centroid = pts.reduce(func(acc: Vector2, x: Vector2): return acc + x) / pts.size()
+	var centered = pts.map(func(p: Vector2) -> Vector2: return p - self.track_centroid)
+
+	self.normalization_factor = centered.reduce(func(acc, p): return max(acc, p.length()), 0.0)
+
+	self.scaled_track_points.clear()
+	for p in centered:
+		self.scaled_track_points.append(p / self.normalization_factor * self.minimap_scale)
+	self.scaled_track_points.append(self.scaled_track_points[0])
+	self.track_layer.queue_redraw()
+	self.refresh()
 
 
 func set_minimap_center(point: Vector3):
-	center_point = to_vec2(point)
-	refresh()
+	self.center_point = to_vec2(point)
+	self.track_offset = -((self.center_point - self.track_centroid) / self.normalization_factor * self.minimap_scale)
+	self.track_layer.queue_redraw()   # offset is baked into the draw call now
+	self.refresh()
 
 
-func _draw():
-	var centered_points = center_points_custom(_waypoints, center_point)
-	var factor = calculate_normalization_factor(centered_points)
-	var normalized_points = normalize_points(centered_points)
-	var scaled_points = scale_points(normalized_points, draw_scale)
-	scaled_points.append(scaled_points[0])
-	draw_polyline(PackedVector2Array(scaled_points), Color.WHITE, -1.0)
+func _on_track_layer_draw() -> void:
+	self.track_layer.draw_set_transform(self.track_offset)
+	self.track_layer.draw_polyline(self.scaled_track_points, Color.WHITE, -1.0)
 
+
+func _on_player_layer_draw() -> void:
 	for player in players:
-		var player_pos = ((to_vec2(player["global_position"]) - center_point) / factor) * draw_scale
-		var radius = 15.0 if player["emphasis"] else 10.0
-		draw_circle(player_pos, radius, player["color"])
+		var world_2d := to_vec2(player["global_position"])
+		var local_pos := (world_2d - self.center_point) / self.normalization_factor * self.minimap_scale
+		var radius := 15.0 if player["emphasis"] else 10.0
+		self.player_layer.draw_circle(local_pos, radius, player["color"])
