@@ -18,38 +18,38 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["basis"] = Basis()
-	result["gear"] = self.gear(data)
-	result["linear_velocity"] = self.local_linear_velocity(data)
-	result["throttle"] = self.throttle(data)
-	result["rpm"] = int(data["rpm"])
-	result["road_surface"] = self.road_surface(data)
-	result["weather"] = self.weather(data)
+func make_params(data: Dictionary) -> HandlingModelRE.HandlingState:
+	var result = HandlingModelRE.HandlingState.new()
+	result.performance = self.performance
+	result.basis = Basis()
+	result.gear = self.gear(data)
+	result.linear_velocity = self.local_linear_velocity(data)
+	result.throttle = self.throttle(data)
+	result.rpm = int(data.rpm)
+	result.road_surface = self.road_surface(data)
+	result.weather = self.weather(data)
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
 	var expected = self.wheel_force(data, "result_")
-	var wheel_data = Dictionary()
+	var wheel_data = HandlingModelRE.WheelData.new()
 	var force = self.wheel_force(data)
-	wheel_data["grip"] = self.wheel_lateral_grip(data)
+	wheel_data.grip = self.wheel_lateral_grip(data)
 	if self.wheel_is_front(data):
-		wheel_data["type"] = CarTypes.Wheel.FRONT_LEFT
+		wheel_data.type = CarTypes.Wheel.FRONT_LEFT
 	else:
-		wheel_data["type"] = CarTypes.Wheel.REAR_LEFT
+		wheel_data.type = CarTypes.Wheel.REAR_LEFT
 	var result = self.model.wheel_loss_of_grip(params, wheel_data, force)
 	var msg = (
 		"v="
-		+ str(params["linear_velocity"])
+		+ str(params.linear_velocity)
 		+ " sufr="
-		+ str(params["weather"])
+		+ str(params.weather)
 		+ " rpm="
-		+ str(params["rpm"])
+		+ str(params.rpm)
 		+ " rsurf="
-		+ str(params["road_surface"])
+		+ str(params.road_surface)
 	)
 	assert_almost_eq(result, expected, EPSILON * Vector3.ONE, msg)

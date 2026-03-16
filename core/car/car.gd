@@ -91,6 +91,9 @@ var siren_lights: Array[Light3D] = []
 var tail_light_energy : float = 0.0
 var brake_light_energy : float = 0.0
 
+var handling_model_params = HandlingModel.HandlingState.new()
+var handling_model_output = HandlingModel.HandlingOutput.new()
+
 @onready var collider: CollisionShape3D = $Collider
 @onready var interior_camera: Camera3D = get_node_or_null("Interior camera")
 @onready var interior_wheel = get_node_or_null("steering")
@@ -328,58 +331,61 @@ func _integrate_forces(state: PhysicsDirectBodyState3D):
 
 	var positional_attributes = self.get_current_positional_attributes(state)
 	var next_positional_attributes = self.get_next_positional_attributes(state, state.step * 2)
-	var model_params = {
-		"linear_velocity": state.linear_velocity,
-		"angular_velocity": state.angular_velocity,
-		"gravity_vector": state.total_gravity,
-		"has_contact_with_ground": self.has_contact_with_ground,
-		"timestep": state.step * 2,
-		"performance": self.performance,
-		"gear": self.current_gear,
-		"next_gear": self.gear,
-		"rpm": self.current_rpm,
-		"mass": self.mass,
-		"basis": state.transform.basis,
-		"basis_to_road": positional_attributes["basis_to_road"],
-		"current_steering": self.current_steering,
-		"throttle_input": self.throttle,
-		"throttle": self.current_throttle,
-		"brake_input": self.brake,
-		"brake": self.current_brake,
-		"turn_input": self.steering,
-		"handbrake": self.handbrake,
-		"inertia_inv": state.inverse_inertia,
-		"road_surface": 0,
-		"weather": 0,
-		"lost_grip": true,
-		"basis_to_road_next": next_positional_attributes["basis_to_road"],
-		"distance_above_ground": positional_attributes["distance_above_ground"],
-		"wheels": wheels,
-		"handbrake_accumulator": self.handbrake_accumulator,
-		"force": 0.0,
-		"gear_shift_counter": self.gear_shift_counter,
-		"shifted_down": self.shifted_down,
-		"g_transfer": self.g_transfer,
-		"unknown_bool": false,
-		"dimensions": self.dimensions()
-	}
-	var result = handling_model.process(model_params)
-	state.linear_velocity = result["linear_velocity"]
-	state.angular_velocity = result["angular_velocity"]
-	self.current_steering = result["current_steering"]
-	self.current_throttle = result["throttle"]
-	self.current_brake = result["brake"]
-	self.current_rpm = result["rpm"]
-	self.handbrake_accumulator = result["handbrake_accumulator"]
-	self.gear_shift_counter = result["gear_shift_counter"]
-	self.shifted_down = result["shifted_down"]
-	self.current_gear = result["gear"]
-	self.g_transfer = result["g_transfer"]
-	self.has_contact_with_ground = result["has_contact_with_ground"]
+
+	handling_model_params
+	handling_model_params.linear_velocity = state.linear_velocity
+	handling_model_params.angular_velocity = state.angular_velocity
+	handling_model_params.gravity_vector = state.total_gravity
+	handling_model_params.has_contact_with_ground = self.has_contact_with_ground
+	handling_model_params.timestep = state.step * 2
+	handling_model_params.performance = self.performance
+	handling_model_params.gear = self.current_gear
+	handling_model_params.next_gear = self.gear
+	handling_model_params.rpm = self.current_rpm
+	handling_model_params.mass = self.mass
+	handling_model_params.basis = state.transform.basis
+	handling_model_params.basis_to_road = positional_attributes["basis_to_road"]
+	handling_model_params.current_steering = self.current_steering
+	handling_model_params.throttle_input = self.throttle
+	handling_model_params.throttle = self.current_throttle
+	handling_model_params.brake_input = self.brake
+	handling_model_params.brake = self.current_brake
+	handling_model_params.turn_input = self.steering
+	handling_model_params.handbrake = self.handbrake
+	handling_model_params.inertia_inv = state.inverse_inertia
+	handling_model_params.road_surface = 0
+	handling_model_params.weather = 0
+	handling_model_params.lost_grip = true
+	handling_model_params.basis_to_road_next = next_positional_attributes["basis_to_road"]
+	handling_model_params.distance_above_ground = positional_attributes["distance_above_ground"]
+	handling_model_params.wheels = wheels
+	handling_model_params.handbrake_accumulator = self.handbrake_accumulator
+	handling_model_params.force = 0.0
+	handling_model_params.gear_shift_counter = self.gear_shift_counter
+	handling_model_params.shifted_down = self.shifted_down
+	handling_model_params.g_transfer = self.g_transfer
+	handling_model_params.unknown_bool = false
+	handling_model_params.dimensions = self.dimensions()
+
+	handling_model.process(handling_model_params, handling_model_output)
+
+	state.linear_velocity = handling_model_output.linear_velocity
+	state.angular_velocity = handling_model_output.angular_velocity
+	self.current_steering = handling_model_output.current_steering
+	self.current_throttle = handling_model_output.throttle
+	self.current_brake = handling_model_output.brake
+	self.current_rpm = handling_model_output.rpm
+	self.handbrake_accumulator = handling_model_output.handbrake_accumulator
+	self.gear_shift_counter = handling_model_output.gear_shift_counter
+	self.shifted_down = handling_model_output.shifted_down
+	self.current_gear = handling_model_output.gear
+	self.g_transfer = handling_model_output.g_transfer
+	self.has_contact_with_ground = handling_model_output.has_contact_with_ground
+
 	self.linear_acceleration = (state.linear_velocity - prev_linear_velocity) / (state.step * 2)
 	prev_linear_velocity = state.linear_velocity
 	prev_angular_velocity = state.angular_velocity
-	var height_adjust = self.handling_model.height_above_surface(model_params)
+	var height_adjust = self.handling_model.height_above_surface(handling_model_params)
 	if self.has_contact_with_ground:
 		self.keep_height_above_ground(state, height_adjust)
 	self._enable_lights(self.brake_lights, self.current_brake > 0)

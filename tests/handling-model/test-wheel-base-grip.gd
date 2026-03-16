@@ -18,19 +18,18 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["basis_to_road"] = self.basis_to_road(data)
-	result["gravity_vector"] = Vector3(0, -9.81, 0)
+func make_params(data: Dictionary) -> HandlingModelRE.HandlingState:
+	var result = HandlingModelRE.HandlingState.new()
+	result.performance = self.performance
+	result.basis_to_road = self.basis_to_road(data)
+	result.gravity_vector = Vector3(0, -9.81, 0)
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
-	var wheel= {"type": CarTypes.Wheel.FRONT_LEFT}
-	var surface_grip = float(data["surface_grip"])
-	var expected = float(data["result_base_grip"])
-	var result = self.model.wheel_base_road_grip(params, wheel, surface_grip)
+	var surface_grip = float(data.surface_grip)
+	var expected = float(data.result_base_grip)
+	var result = self.model.wheel_base_road_grip(params, surface_grip)
 	var msg = "surf=" + str(surface_grip)
 	assert_almost_eq(result, expected, EPSILON, msg)

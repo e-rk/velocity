@@ -71,7 +71,10 @@ func _get_torque_for_gear(performance: Resource,
 	var rpm := maxi(performance.engine_min_rpm(), performance.gear_velocity_to_rpm(gear) * speed)
 	if rpm > 0.95 * performance.engine_redline_rpm:
 		return 0.0
-	return handling_model.traction_powertrain({"performance": performance, "gear": gear}, rpm)
+	var state := HandlingModelRE.TractionState.new()
+	state.performance = performance
+	state.gear = gear
+	return handling_model.traction_powertrain(state, rpm)
 
 
 func best_gear_for_torque(performance: CarPerformance,
@@ -107,26 +110,32 @@ func calculate_steering_input(error: float,
 	return [result, error, new_integral]
 
 
-func _grip_params(performance: Resource, linear_velocity: Vector3, g_transfer: float) -> Dictionary:
-	return {
-		"performance"    : performance,
-		"basis_to_road"  : Basis.IDENTITY,
-		"basis"          : Basis.IDENTITY,
-		"linear_velocity": linear_velocity,
-		"gravity_vector" : Vector3(0.0, -9.8, 0.0),
-		"g_transfer"     : g_transfer,
-		"brake"          : 0.0,
-		"weather"        : CarTypes.Weather.DRY,
-		"unknown_bool"   : false,
-	}
+func _grip_params(performance: Resource, linear_velocity: Vector3, g_transfer: float) -> HandlingModelRE.HandlingState:
+	var data = HandlingModelRE.HandlingState.new()
+	data.performance     = performance
+	data.basis_to_road   = Basis.IDENTITY
+	data.basis           = Basis.IDENTITY
+	data.linear_velocity = linear_velocity
+	data.gravity_vector  = Vector3(0.0, -9.8, 0.0)
+	data.g_transfer      = g_transfer
+	data.brake           = 0.0
+	data.weather         = CarTypes.Weather.DRY
+	data.unknown_bool    = false
+	return data
 
 
-func _front_wheel_dict() -> Dictionary:
-	return { "type": CarTypes.Wheel.FRONT_LEFT, "road_surface": 0 }
+func _front_wheel_dict() -> HandlingModelRE.WheelData:
+	var data = HandlingModelRE.WheelData.new()
+	data.type = CarTypes.Wheel.FRONT_LEFT
+	data.road_surface = 0
+	return data
 
 
-func _rear_wheel_dict() -> Dictionary:
-	return { "type": CarTypes.Wheel.REAR_LEFT, "road_surface": 0 }
+func _rear_wheel_dict() -> HandlingModelRE.WheelData:
+	var data = HandlingModelRE.WheelData.new()
+	data.type = CarTypes.Wheel.REAR_LEFT
+	data.road_surface = 0
+	return data
 
 
 func compute_max_lateral_accel(performance: CarPerformance, handling_model: HandlingModelRE, linear_velocity: Vector3, g_transfer: float) -> float:

@@ -5,6 +5,8 @@ var model: HandlingModelRE
 @onready var car: Car = preload("res://import/cars/b911/b911.glb").instantiate()
 @onready var performance: CarPerformance = car.performance
 
+var result := HandlingModelRE.HandlingOutput.new()
+
 const EPSILON = 0.0000001
 
 
@@ -16,32 +18,32 @@ func get_csv() -> FileAccess:
 	return FileAccess.open("res://tests/handling-model/data/steering_angle.csv", FileAccess.READ)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["basis_to_road"] = Basis()
-	result["linear_velocity"] = self.local_linear_velocity(data)
-	result["handbrake"] = self.handbrake(data)
-	result["current_steering"] = self.steering(data)
-	result["has_contact_with_ground"] = !self.is_airborne(data)
-	result["slip_angle"] = self.slip_angle(data)
+func make_params(data: Dictionary) -> HandlingModelRE.HandlingState:
+	var result = HandlingModelRE.HandlingState.new()
+	result.performance = self.performance
+	result.basis_to_road = Basis()
+	result.linear_velocity = self.local_linear_velocity(data)
+	result.handbrake = self.handbrake(data)
+	result.current_steering = self.steering(data)
+	result.has_contact_with_ground = !self.is_airborne(data)
+	result.slip_angle = self.slip_angle(data)
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
-	var expected = float(data["result"])
-	var result = self.model.steering_angle(params)
+	var expected = float(data.result)
+	self.model.steering_angle(params, result)
 	var msg = (
 		"hb="
-		+ str(params["handbrake"])
+		+ str(params.handbrake)
 		+ " st="
-		+ str(params["current_steering"])
+		+ str(params.current_steering)
 		+ " v="
-		+ str(params["linear_velocity"])
+		+ str(params.linear_velocity)
 		+ " slip="
-		+ str(params["slip_angle"])
+		+ str(params.slip_angle)
 		+ " cwg="
-		+ str(params["has_contact_with_ground"])
+		+ str(params.has_contact_with_ground)
 	)
-	assert_almost_eq(result["steering"], expected, EPSILON, msg)
+	assert_almost_eq(result.steering, expected, EPSILON, msg)

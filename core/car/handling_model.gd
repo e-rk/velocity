@@ -1,6 +1,88 @@
 extends Resource
 class_name HandlingModel
 
+class HandlingState:
+	var linear_velocity: Vector3
+	var angular_velocity: Vector3
+	var gear: CarTypes.Gear
+	var rpm: int
+	var force: float
+	var lost_grip: bool
+	var handbrake_accumulator: int
+	var current_steering: float
+	var gear_shift_counter: int
+	var shifted_down: bool
+	var g_transfer: float
+	var throttle: float
+	var brake: float
+	var has_contact_with_ground: bool
+	var steering: float
+	var performance: CarPerformance
+	var handbrake: bool
+	var basis_to_road: Basis
+	var basis: Basis
+	var basis_to_road_next: Basis
+	var gravity_vector: Vector3
+	var mass: float
+	var inertia_inv: Vector3
+	var timestep: float
+	var wheels: Array
+	var turn_input: float
+	var throttle_input: float
+	var brake_input: float
+	var next_gear: CarTypes.Gear
+	var distance_above_ground: float
+	var dimensions: Vector3
+	var weather: int
+	var position: Vector3
+	var friction: float
+	var road_surface: int
+	var slip_angle: float
+	var speed_xz: float
+	var unknown_bool: bool
+
+class HandlingOutput:
+	const F_LINEAR_VELOCITY         = 1 << 0
+	const F_ANGULAR_VELOCITY        = 1 << 1
+	const F_GEAR                    = 1 << 2
+	const F_RPM                     = 1 << 3
+	const F_FORCE                   = 1 << 4
+	const F_LOST_GRIP               = 1 << 5
+	const F_HANDBRAKE_ACCUMULATOR   = 1 << 6
+	const F_CURRENT_STEERING        = 1 << 7
+	const F_GEAR_SHIFT_COUNTER      = 1 << 8
+	const F_SHIFTED_DOWN            = 1 << 9
+	const F_G_TRANSFER              = 1 << 10
+	const F_THROTTLE                = 1 << 11
+	const F_BRAKE                   = 1 << 12
+	const F_HAS_CONTACT_WITH_GROUND = 1 << 13
+	const F_STEERING                = 1 << 14
+	const F_POSITION                = 1 << 15
+	const F_LINEAR_ACCELERATION     = 1 << 16
+	const F_ANGULAR_ACCELERATION    = 1 << 17
+
+	var updated: int = 0
+
+	var linear_velocity: Vector3
+	var angular_velocity: Vector3
+	var gear: CarTypes.Gear
+	var rpm: int
+	var force: float
+	var lost_grip: bool
+	var handbrake_accumulator: int
+	var current_steering: float
+	var gear_shift_counter: int
+	var shifted_down: bool
+	var g_transfer: float
+	var throttle: float
+	var brake: float
+	var has_contact_with_ground: bool
+	var steering: float
+	var position: Vector3
+	var linear_acceleration: Vector3
+	var angular_acceleration: Vector3
+
+
 func extract(params: Dictionary) -> Dictionary:
 	return {
 		"linear_velocity": params["linear_velocity"],
@@ -20,60 +102,60 @@ func extract(params: Dictionary) -> Dictionary:
 	}
 
 func extend(f: Callable) -> Callable:
-	return func(params: Dictionary) -> Dictionary:
-		var value = f.call(params)
-		var result = params.duplicate(true)
-		if value.has("linear_velocity"):
-			result["linear_velocity"] = value["linear_velocity"]
-		if value.has("angular_velocity"):
-			result["angular_velocity"] = value["angular_velocity"]
-		if value.has("gear"):
-			result["gear"] = value["gear"]
-		if value.has("rpm"):
-			result["rpm"] = value["rpm"]
-		if value.has("current_steering"):
-			result["current_steering"] = value["current_steering"]
-		if value.has("lost_grip"):
-			result["lost_grip"] = value["lost_grip"]
-		if value.has("handbrake_accumulator"):
-			result["handbrake_accumulator"] = value["handbrake_accumulator"]
-		if value.has("force"):
-			result["force"] = value["force"]
-		if value.has("gear_shift_counter"):
-			result["gear_shift_counter"] = value["gear_shift_counter"]
-		if value.has("shifted_down"):
-			result["shifted_down"] = value["shifted_down"]
-		if value.has("g_transfer"):
-			result["g_transfer"] = value["g_transfer"]
-		if value.has("throttle"):
-			result["throttle"] = value["throttle"]
-		if value.has("brake"):
-			result["brake"] = value["brake"]
-		if value.has("has_contact_with_ground"):
-			result["has_contact_with_ground"] = value["has_contact_with_ground"]
-		if value.has("steering"):
-			result["steering"] = value["steering"]
-		return result
+	return func(state: HandlingState, output: HandlingOutput) -> void:
+		output.updated = 0
+		f.call(state, output)
+		if output.updated & HandlingOutput.F_LINEAR_VELOCITY:
+			state.linear_velocity = output.linear_velocity
+		if output.updated & HandlingOutput.F_ANGULAR_VELOCITY:
+			state.angular_velocity = output.angular_velocity
+		if output.updated & HandlingOutput.F_GEAR:
+			state.gear = output.gear
+		if output.updated & HandlingOutput.F_RPM:
+			state.rpm = output.rpm
+		if output.updated & HandlingOutput.F_CURRENT_STEERING:
+			state.current_steering = output.current_steering
+		if output.updated & HandlingOutput.F_LOST_GRIP:
+			state.lost_grip = output.lost_grip
+		if output.updated & HandlingOutput.F_HANDBRAKE_ACCUMULATOR:
+			state.handbrake_accumulator = output.handbrake_accumulator
+		if output.updated & HandlingOutput.F_FORCE:
+			state.force = output.force
+		if output.updated & HandlingOutput.F_GEAR_SHIFT_COUNTER:
+			state.gear_shift_counter = output.gear_shift_counter
+		if output.updated & HandlingOutput.F_SHIFTED_DOWN:
+			state.shifted_down = output.shifted_down
+		if output.updated & HandlingOutput.F_G_TRANSFER:
+			state.g_transfer = output.g_transfer
+		if output.updated & HandlingOutput.F_THROTTLE:
+			state.throttle = output.throttle
+		if output.updated & HandlingOutput.F_BRAKE:
+			state.brake = output.brake
+		if output.updated & HandlingOutput.F_HAS_CONTACT_WITH_GROUND:
+			state.has_contact_with_ground = output.has_contact_with_ground
+		if output.updated & HandlingOutput.F_STEERING:
+			state.steering = output.steering
+		if output.updated & HandlingOutput.F_POSITION:
+			state.position = output.position
 
 func integrate(f: Callable) -> Callable:
-	return func(params: Dictionary) -> Dictionary:
-		var value = f.call(params)
-		var linear_velocity = params["linear_velocity"]
-		var angular_velocity = params["angular_velocity"]
-		var timestep = params["timestep"]
-		if value.has("linear_acceleration"):
-			linear_velocity += value["linear_acceleration"] * timestep
-		if value.has("angular_acceleration"):
-			angular_velocity += value["angular_acceleration"] * timestep
-		value["linear_velocity"] = linear_velocity
-		value["angular_velocity"] = angular_velocity
-		return value
+	return func(state: HandlingState, output: HandlingOutput) -> void:
+		output.updated = 0
+		f.call(state, output)
+		var linear_velocity := state.linear_velocity
+		var angular_velocity := state.angular_velocity
+		if output.updated & HandlingOutput.F_LINEAR_ACCELERATION:
+			linear_velocity += output.linear_acceleration * state.timestep
+		if output.updated & HandlingOutput.F_ANGULAR_ACCELERATION:
+			angular_velocity += output.angular_acceleration * state.timestep
+		output.linear_velocity = linear_velocity
+		output.angular_velocity = angular_velocity
+		output.updated |= HandlingOutput.F_LINEAR_VELOCITY | HandlingOutput.F_ANGULAR_VELOCITY
 
 func enable_if(predicate: Callable, f: Callable) -> Callable:
-	return func(params: Dictionary) -> Dictionary:
-		if predicate.call(params):
-			return f.call(params)
-		return extract(params)
+	return func(state: HandlingState, output: HandlingOutput) -> void:
+		if predicate.call(state):
+			extend(f).call(state, output)
 
 func either(predicate: Callable, true_f: Callable, false_f: Callable) -> Callable:
 	return func(params: Dictionary) -> Dictionary:
@@ -82,13 +164,13 @@ func either(predicate: Callable, true_f: Callable, false_f: Callable) -> Callabl
 		return false_f.call(params)
 
 func neg(predicate: Callable) -> Callable:
-	return func(params: Dictionary) -> bool:
-		return not predicate.call(params)
+	return func(state: HandlingState) -> bool:
+		return not predicate.call(state)
 
 func compose(f: Callable, g: Callable) -> Callable:
-	return func(params: Dictionary) -> Dictionary:
-		var result = extend(g).call(params)
-		return extract.call(extend(f).call(result))
+	return func(state: HandlingState, output: HandlingOutput) -> void:
+		extend(g).call(state, output)
+		extend(f).call(state, output)
 
 func make_pipeline(composer: Callable, func_array: Array) -> Callable:
 	var last_idx = func_array.size() - 1
@@ -100,8 +182,35 @@ func make_pipeline(composer: Callable, func_array: Array) -> Callable:
 		i -= 1
 	return f
 
-func make_model_pipeline(func_array: Array) -> Callable:
-	return make_pipeline(compose, func_array)
+func make_model_pipeline(func_array: Array[Callable]) -> Callable:
+	return func(state: HandlingState, output: HandlingOutput):
+		return run_pipeline(state, output, func_array)
 
-func process(params: Dictionary) -> Dictionary:
-	return extract(params)
+func run_pipeline(state: HandlingState, output: HandlingOutput, func_array: Array[Callable]):
+	var updated_mask := 0
+	for f in func_array:
+		extend(f).call(state, output)
+		updated_mask |= output.updated
+
+func process(state: HandlingState, output: HandlingOutput) -> void:
+	output.linear_velocity = state.linear_velocity
+	output.angular_velocity = state.angular_velocity
+	output.gear = state.gear
+	output.rpm = state.rpm
+	output.current_steering = state.current_steering
+	output.lost_grip = state.lost_grip
+	output.handbrake_accumulator = state.handbrake_accumulator
+	output.force = state.force
+	output.gear_shift_counter = state.gear_shift_counter
+	output.shifted_down = state.shifted_down
+	output.g_transfer = state.g_transfer
+	output.throttle = state.throttle
+	output.brake = state.brake
+	output.has_contact_with_ground = state.has_contact_with_ground
+	output.updated = (HandlingOutput.F_LINEAR_VELOCITY | HandlingOutput.F_ANGULAR_VELOCITY |
+		HandlingOutput.F_GEAR | HandlingOutput.F_RPM | HandlingOutput.F_CURRENT_STEERING |
+		HandlingOutput.F_LOST_GRIP | HandlingOutput.F_HANDBRAKE_ACCUMULATOR |
+		HandlingOutput.F_FORCE | HandlingOutput.F_GEAR_SHIFT_COUNTER |
+		HandlingOutput.F_SHIFTED_DOWN | HandlingOutput.F_G_TRANSFER |
+		HandlingOutput.F_THROTTLE | HandlingOutput.F_BRAKE |
+		HandlingOutput.F_HAS_CONTACT_WITH_GROUND)

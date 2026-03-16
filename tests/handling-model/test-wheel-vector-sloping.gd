@@ -18,15 +18,15 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["basis_to_road"] = Basis(
+func make_params(data: Dictionary) -> HandlingModelRE.HandlingState:
+	var result = HandlingModelRE.HandlingState.new()
+	result.performance = self.performance
+	result.basis_to_road = Basis(
 		Vector3(1, 0, 0),
 		self.road_basis_normal_y(data),
 		Vector3(1, 0, 0),
 	)  # Note: not orthonormal
-	result["basis"] = Basis()
+	result.basis = Basis()
 	return result
 
 

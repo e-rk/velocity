@@ -18,15 +18,8 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params() -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	return result
-
-
 func body(data: Dictionary):
-	var params = self.make_params()
 	var rpm = self.rpm(data)
 	var expected = self.torque(data)
-	var torque = self.model.torque_for_rpm(params, rpm)
+	var torque = self.model.torque_for_rpm(performance, rpm)
 	assert_almost_eq(torque, expected, EPSILON, "rpm=" + str(rpm))

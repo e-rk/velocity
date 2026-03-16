@@ -18,35 +18,35 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["linear_velocity"] = self.local_linear_velocity(data)
-	result["basis_to_road"] = Basis()
-	result["angular_velocity"] = self.global_angular_velocity(data)
-	result["inertia_inv"] = self.inertia_inv(data)
-	result["mass"] = self.mass(data)
-	result["gear"] = self.gear(data)
-	result["has_contact_with_ground"] = !self.is_airborne(data)
-	result["speed_xz"] = self.speed_xz(data)
+func make_params(data: Dictionary) -> HandlingModelRE.HandlingState:
+	var result = HandlingModelRE.HandlingState.new()
+	result.performance = self.performance
+	result.linear_velocity = self.local_linear_velocity(data)
+	result.basis_to_road = Basis()
+	result.angular_velocity = self.global_angular_velocity(data)
+	result.inertia_inv = self.inertia_inv(data)
+	result.mass = self.mass(data)
+	result.gear = self.gear(data)
+	result.has_contact_with_ground = !self.is_airborne(data)
+	result.speed_xz = self.speed_xz(data)
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
 	var expected = self.wheel_planar_vector(data)
-	var wheel_data = Dictionary()
+	var wheel_data = HandlingModelRE.WheelData.new()
 	match self.wheel_type(data):
 		0:
-			wheel_data["type"] = CarTypes.Wheel.FRONT_LEFT
+			wheel_data.type = CarTypes.Wheel.FRONT_LEFT
 		1:
-			wheel_data["type"] = CarTypes.Wheel.FRONT_RIGHT
+			wheel_data.type = CarTypes.Wheel.FRONT_RIGHT
 		2:
-			wheel_data["type"] = CarTypes.Wheel.REAR_LEFT
+			wheel_data.type = CarTypes.Wheel.REAR_LEFT
 		3:
-			wheel_data["type"] = CarTypes.Wheel.REAR_RIGHT
+			wheel_data.type = CarTypes.Wheel.REAR_RIGHT
 		_:
 			assert(false)
 	var result = self.model.wheel_planar_vector(params, wheel_data)
-	var msg = "v=" + str(params["linear_velocity"]) + " gear=" + str(params["gear"]) + " type=" + str(wheel_data["type"])
+	var msg = "v=" + str(params.linear_velocity) + " gear=" + str(params.gear) + " type=" + str(wheel_data.type)
 	assert_almost_eq(result, expected, Vector3.ONE * EPSILON, msg)
