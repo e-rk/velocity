@@ -18,25 +18,27 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["basis_to_road"] = Basis()
-	result["linear_velocity"] = self.local_linear_velocity(data)
-	result["brake"] = self.brake(data)
+func make_params(data: Dictionary) -> HandlingModelRE.HandlingState:
+	var result = HandlingModelRE.HandlingState.new()
+	result.performance = self.performance
+	result.basis_to_road = Basis()
+	result.linear_velocity = self.local_linear_velocity(data)
+	result.brake = self.brake(data)
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
+	var wheel_data := HandlingModelRE.WheelData.new()
 	var wheels = [
-		{"type": CarTypes.Wheel.FRONT_LEFT},
-		{"type": CarTypes.Wheel.FRONT_RIGHT},
-		{"type": CarTypes.Wheel.REAR_LEFT},
-		{"type": CarTypes.Wheel.REAR_RIGHT},
+		CarTypes.Wheel.FRONT_LEFT,
+		CarTypes.Wheel.FRONT_RIGHT,
+		CarTypes.Wheel.REAR_LEFT,
+		CarTypes.Wheel.REAR_RIGHT,
 	]
 	for i in wheels.size():
+		wheel_data.type = wheels[i]
 		var expected = self.wheel_downforce(data, i)
-		var result = self.model.wheel_downforce_factor(params, wheels[i])
-		var msg = "v.z=" + str(params["linear_velocity"].z) + " type=" + str(wheels[i]["type"])
+		var result = self.model.wheel_downforce_factor(params, wheel_data)
+		var msg = "v.z=" + str(params.linear_velocity.z) + " type=" + str(wheels[i])
 		assert_almost_eq(result, expected, EPSILON, msg)

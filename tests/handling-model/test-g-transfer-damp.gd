@@ -18,12 +18,12 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["g_transfer"] = self.g_transfer(data)
-	result["weather"] = self.weather(data)
-	result["unknown_bool"] = data["unknown_bool"] != "0"
+func make_params(data: Dictionary) -> HandlingModelRE.HandlingState:
+	var result = HandlingModelRE.HandlingState.new()
+	result.performance = self.performance
+	result.g_transfer = self.g_transfer(data)
+	result.weather = self.weather(data)
+	result.unknown_bool = data.unknown_bool != "0"
 	return result
 
 

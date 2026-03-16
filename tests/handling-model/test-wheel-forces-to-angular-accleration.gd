@@ -18,20 +18,20 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["basis_to_road"] = Basis()
-	result["basis"] = Basis()
-	result["inertia_inv"] = self.inertia_inv(data)
-	result["mass"] = self.mass(data)
-	result["timestep"] = 1.0 / 32
+func make_params(data: Dictionary) -> HandlingModelRE.HandlingState:
+	var result = HandlingModelRE.HandlingState.new()
+	result.performance = self.performance
+	result.basis_to_road = Basis()
+	result.basis = Basis()
+	result.inertia_inv = self.inertia_inv(data)
+	result.mass = self.mass(data)
+	result.timestep = 1.0 / 32
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
-	var expected = float(data["result"]) * Vector3.UP
+	var expected = float(data.result) * Vector3.UP
 	var wheel_forces: Array[Vector3] = [
 		self.wheel_force(data, "wheel_0_"),
 		self.wheel_force(data, "wheel_1_"),

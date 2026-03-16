@@ -18,16 +18,16 @@ func get_csv() -> FileAccess:
 	)
 
 
-func make_params(data: Dictionary) -> Dictionary:
-	var result = Dictionary()
-	result["performance"] = self.performance
-	result["gear"] = self.gear(data)
+func make_params(data: Dictionary) -> HandlingModelRE.TractionState:
+	var result = HandlingModelRE.TractionState.new()
+	result.performance = self.performance
+	result.gear = self.gear(data)
 	return result
 
 
 func body(data: Dictionary):
 	var params = self.make_params(data)
 	var rpm = self.rpm(data)
-	var expected = float(data["result"])
+	var expected = float(data.result)
 	var result = self.model.traction_powertrain(params, rpm)
-	assert_almost_eq(result, expected, EPSILON, "gear=" + str(params["gear"]))
+	assert_almost_eq(result, expected, EPSILON, "gear=" + str(params.gear))
