@@ -73,13 +73,13 @@ var current_steering := 0.0
 var current_throttle := 0.0
 var current_brake := 0.0
 var current_gear := CarTypes.Gear.NEUTRAL
-var linear_acceleration = Vector3.ZERO
-var prev_linear_velocity = Vector3.ZERO
-var prev_angular_velocity = Vector3.ZERO
-var skip_counter = 0
-var handbrake_accumulator = 0
-var gear_shift_counter = 0
-var shifted_down = false
+var linear_acceleration := Vector3.ZERO
+var prev_linear_velocity := Vector3.ZERO
+var prev_angular_velocity := Vector3.ZERO
+var skip_counter := 0
+var handbrake_accumulator := 0
+var gear_shift_counter := 0
+var shifted_down := false
 var g_transfer := 0.0
 var has_contact_with_ground := true
 var head_lights: Array[Light3D] = []
@@ -96,7 +96,7 @@ var handling_model_output = HandlingModel.HandlingOutput.new()
 
 @onready var collider: CollisionShape3D = $Collider
 @onready var interior_camera: Camera3D = get_node_or_null("Interior camera")
-@onready var interior_wheel = get_node_or_null("steering")
+@onready var interior_wheel: MeshInstance3D = get_node_or_null("steering")
 @onready var rpm_meter: MeshInstance3D = get_node_or_null("tachometer")
 @onready var mph_meter: MeshInstance3D = get_node_or_null("speedometer")
 @onready var interior_dashboard_lit: MeshInstance3D = get_node_or_null("interior_dashboard_lit")
@@ -108,10 +108,10 @@ var handling_model_output = HandlingModel.HandlingOutput.new()
 @onready var wall_prober: RayCast3D = $WallProber
 
 
-func _ready():
+func _ready() -> void:
 	if handling_model == null:
 		handling_model = HandlingModelRE.new()
-	var nodes = self.get_children().filter(func(x): return x is Light3D)
+	var nodes := self.get_children().filter(func(x: Node) -> bool: return x is Light3D)
 	self.head_lights.assign(nodes.filter(func(x): return x.name.begins_with("headlight")))
 	self.tail_lights.assign(nodes.filter(func(x): return x.name.begins_with("taillight")))
 	self.brake_lights.assign(nodes.filter(func(x): return x.name.begins_with("brakelight")))
@@ -133,12 +133,12 @@ func _ready():
 		self.interior_wheel = self.find_child("*Steering*")
 
 
-func _enable_lights(lights: Array, show_lights: bool):
+func _enable_lights(lights: Array, show_lights: bool) -> void:
 	for light in lights:
 		light.visible = show_lights
 
 
-func _set_car_color(color: CarColorSet):
+func _set_car_color(color: CarColorSet) -> void:
 	for texture in self.car_textures:
 		texture.color_set = color
 
@@ -197,7 +197,7 @@ func get_next_positional_attributes(state: PhysicsDirectBodyState3D, timestep: f
 	return self.get_positional_attributes(next_position)
 
 
-func keep_height_above_ground(state: PhysicsDirectBodyState3D, height_adjust: float):
+func keep_height_above_ground(state: PhysicsDirectBodyState3D, height_adjust: float) -> void:
 	if height_adjust <= 0.0:
 		var pos = state.transform.origin
 		pos.y = pos.y - height_adjust
@@ -218,7 +218,7 @@ func is_siren_active() -> bool:
 	return false
 
 
-func _set_spectated(value: bool):
+func _set_spectated(value: bool) -> void:
 	var interior_mask = Constants.visual_layer_to_mask([Constants.VisualLayer.PLAYER_INTERIOR])
 	var exterior_mask = Constants.visual_layer_to_mask([Constants.VisualLayer.PLAYER])
 	if not value:
@@ -232,7 +232,7 @@ func _set_spectated(value: bool):
 			child.layers = exterior_mask
 
 
-func _process(delta: float):
+func _process(delta: float) -> void:
 	var velocity_local = self.basis.inverse() * self.linear_velocity * delta
 	var wheel_turn = (self.current_steering / 128.0) * (PI / 4)
 	for child in self.get_children().filter(func(x): return x is CarWheel):
@@ -252,16 +252,16 @@ func _min_dot(collision_point: Vector3, normal: Vector3, point_a: Vector3, point
 	return dot_a < dot_b
 
 
-func _collision(state: PhysicsDirectBodyState3D):
-	var next_position = state.transform.origin + state.linear_velocity * state.step * 2
-	var next_rotation = state.angular_velocity * state.step * 2
-	var next_basis = Basis.from_euler(next_rotation)
-	var rotated = next_basis * state.transform.basis
-	var next_transform = Transform3D(rotated, next_position)
+func _collision(state: PhysicsDirectBodyState3D) -> Dictionary:
+	var next_position := state.transform.origin + state.linear_velocity * state.step * 2
+	var next_rotation := state.angular_velocity * state.step * 2
+	var next_basis := Basis.from_euler(next_rotation)
+	var rotated := next_basis * state.transform.basis
+	var next_transform := Transform3D(rotated, next_position)
 
-	var shape_size = self.collider.shape.size
+	var shape_size: Vector3 = self.collider.shape.size
 	shape_size /= 2.0
-	var points_to_check = [
+	var points_to_check: Array[Vector3] = [
 		Vector3(shape_size.x, 0.0, shape_size.z),
 		Vector3(-shape_size.x, 0.0, shape_size.z),
 		Vector3(-shape_size.x, 0.0, -shape_size.z),
@@ -271,7 +271,7 @@ func _collision(state: PhysicsDirectBodyState3D):
 		Vector3(0.0, 0.0, shape_size.z),
 		Vector3(0.0, 0.0, -shape_size.z),
 	]
-	var points_current = points_to_check.map(func(x): return state.transform * x)
+	var points_current := points_to_check.map(func(x): return state.transform * x)
 	var points_next = points_to_check.map(func(x): return next_transform * x)
 
 	var current_linear_velocity = state.linear_velocity
@@ -313,7 +313,7 @@ func _collision(state: PhysicsDirectBodyState3D):
 	}
 
 
-func _integrate_forces(state: PhysicsDirectBodyState3D):
+func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	skip_counter = (skip_counter + 1) % 2
 	if skip_counter == 0:
 		return
