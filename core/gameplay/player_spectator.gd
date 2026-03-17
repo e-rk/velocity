@@ -1,5 +1,7 @@
 extends Node3D
 
+@export var sensitivity : float = 0.002
+
 @onready var ui: PlayerUI = $PlayerUI
 @onready var camera_arm: SpringArm3D = $CameraArm
 @onready var reflection: ReflectionProbe = $ReflectionProbe
@@ -18,11 +20,32 @@ var camera_mode: CameraMode = CameraMode.HELI
 var initial_arm_rotation = Basis.IDENTITY
 var stiffen_camera = false
 var spectated_player: Player
+var pitch: float = 0.0
+
 
 func _ready() -> void:
 	self.set_target_position(Vector3(0.0, 1.8, -5.2))
 	self.initial_arm_rotation = self.camera_arm.basis
 	self.change_player_timer.start()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	var interior_camera = spectated_player.car.get_interior_camera() if spectated_player else null
+	if not interior_camera or camera_mode != CameraMode.INTERIOR:
+		return
+	var looking = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	if event is InputEventMouseButton:
+		match event.button_index:
+			MOUSE_BUTTON_LEFT:
+				looking = event.pressed
+				Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN if looking else Input.MOUSE_MODE_VISIBLE
+			MOUSE_BUTTON_RIGHT:
+				interior_camera.basis = Basis.IDENTITY.rotated(Vector3.UP, PI)
+				pitch = 0.0
+	elif event is InputEventMouseMotion and looking:
+			interior_camera.rotate_y(-event.relative.x * sensitivity)
+			pitch = clamp(pitch - event.relative.y * sensitivity, -PI / 2.0, PI / 2.0)
+			interior_camera.rotation.x = pitch
 
 
 func set_waypoints(waypoints: Array):
