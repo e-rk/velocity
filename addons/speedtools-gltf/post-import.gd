@@ -155,7 +155,7 @@ func _process_car_texture(car: Car):
 func _make_performance(data: Dictionary) -> CarPerformance:
 	var performance = CarPerformance.new()
 	performance.mass = data["mass"]
-	performance.torque_curve = data["torque_curve"]
+	performance.torque_curve.assign(data["torque_curve"])
 	performance.manual_gear_efficiency = data["manual_gear_efficiency"]
 	performance.manual_velocity_to_rpm_ratio = data["manual_velocity_to_rpm_ratio"]
 	performance.manual_number_of_gears = data["manual_number_of_gears"]
@@ -176,12 +176,12 @@ func _make_performance(data: Dictionary) -> CarPerformance:
 	performance.understeer_gradient = data["understeer_gradient"]
 	performance.turning_circle_radius = data["turning_circle_radius"]
 	performance.gas_off_factor = data["gas_off_factor"]
-	performance.shift_blip_in_rpm = data["shift_blip_in_rpm"]
-	performance.brake_blip_in_rpm = data["brake_blip_in_rpm"]
+	performance.shift_blip_in_rpm.assign(data["shift_blip_in_rpm"])
+	performance.brake_blip_in_rpm.assign(data["brake_blip_in_rpm"])
 	performance.gear_shift_delay = data["gear_shift_delay"]
 	performance.g_transfer_factor = data["g_transfer_factor"]
-	performance.brake_decreasing_curve = data["brake_decreasing_curve"]
-	performance.brake_increasing_curve = data["brake_increasing_curve"]
+	performance.brake_decreasing_curve.assign(data["brake_decreasing_curve"])
+	performance.brake_increasing_curve.assign(data["brake_increasing_curve"])
 	return performance
 
 
