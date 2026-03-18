@@ -9,15 +9,17 @@ extends Node
 
 @onready var player: Player = $".."
 
+var current_ticks := 0
+
 
 func start_timer():
-	self.lap_start_timestamp = Time.get_ticks_msec()
+	self.lap_start_timestamp = self.current_ticks
 
 
 func capture_time():
 	var lap_time = self.current_lap_time()
 	self.best_lap_time = min(self.best_lap_time, lap_time)
-	self.lap_start_timestamp = Time.get_ticks_msec()
+	self.lap_start_timestamp = self.current_ticks
 
 
 func get_best_lap_time():
@@ -29,5 +31,8 @@ func get_best_lap_time():
 func current_lap_time() -> float:
 	if self.lap_start_timestamp == 0:
 		return 0.0
-	var current_ticks = Time.get_ticks_msec()
-	return (current_ticks - self.lap_start_timestamp) / 1000.0
+	return float(self.current_ticks - self.lap_start_timestamp) / Engine.physics_ticks_per_second
+
+
+func _physics_process(delta: float) -> void:
+	self.current_ticks += 1
