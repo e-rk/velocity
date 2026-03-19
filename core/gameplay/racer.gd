@@ -10,6 +10,8 @@ extends Node
 @onready var player: Player = $".."
 
 var current_ticks := 0
+var average_speed := 1.0
+var num_measurements := 0
 
 
 func start_timer():
@@ -34,5 +36,14 @@ func current_lap_time() -> float:
 	return float(self.current_ticks - self.lap_start_timestamp) / Engine.physics_ticks_per_second
 
 
+func _update_average_speed() -> void:
+	var speed := self.player.car.linear_velocity.length()
+	self.average_speed = (1.0 / (self.num_measurements + 1)) * (speed + self.num_measurements * self.average_speed)
+	self.average_speed = max(1.0, self.average_speed)
+	self.num_measurements += 1
+
+
 func _physics_process(delta: float) -> void:
 	self.current_ticks += 1
+	if not self.player.disable_steering:
+		self._update_average_speed()

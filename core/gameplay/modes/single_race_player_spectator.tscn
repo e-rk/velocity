@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://bpdmeo5ea7xat"]
+
+[ext_resource type="PackedScene" uid="uid://cuo7um5xrdifo" path="res://core/gameplay/player_spectator.tscn" id="1_vm2l7"]
+[ext_resource type="Shader" uid="uid://15332wfpffyw" path="res://core/resources/shader/rear_view_mirror.gdshader" id="2_j8wpd"]
+[ext_resource type="Script" uid="uid://bu6cfak8mw2xo" path="res://core/gameplay/modes/single_race_player_spectator.gd" id="2_vrkyr"]
+[ext_resource type="PackedScene" uid="uid://byesowkq5qbu3" path="res://core/ui/game/race_leaderboard.tscn" id="4_nw17l"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_vrkyr"]
+viewport_path = NodePath("RearViewMirror/SubViewport")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nw17l"]
+resource_local_to_scene = true
+shader = ExtResource("2_j8wpd")
+shader_parameter/viewport = SubResource("ViewportTexture_vrkyr")
+
+[node name="PlayerSpectator" unique_id=857663324 instance=ExtResource("1_vm2l7")]
+script = ExtResource("2_vrkyr")
+race_laps = 2
+
+[node name="RearViewMirror" parent="PlayerUI/HSplitContainer/RearViewMirror" parent_id_path=PackedInt32Array(1361609481, 909807405) index="0" unique_id=942523188]
+material = SubResource("ShaderMaterial_nw17l")
+
+[node name="RearViewCamera" parent="PlayerUI/HSplitContainer/RearViewMirror/RearViewMirror/SubViewport" parent_id_path=PackedInt32Array(1361609481, 909807405, 826522085) index="0" unique_id=1764865971]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.034)
+
+[node name="RaceLeaderboard" parent="PlayerUI" parent_id_path=PackedInt32Array(1361609481) index="2" unique_id=1164055734 instance=ExtResource("4_nw17l")]
+layout_mode = 1
+
+[node name="PositionUpdateTimer" type="Timer" parent="." index="6" unique_id=1324437513]
+process_callback = 0
+wait_time = 0.15
+autostart = true
+
+[connection signal="timeout" from="PositionUpdateTimer" to="." method="_on_position_update_timer_timeout"]
+
+[editable path="PlayerUI"]
+[editable path="PlayerUI/HSplitContainer/RearViewMirror"]

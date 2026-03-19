@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://byesowkq5qbu3"]
+
+[ext_resource type="Theme" uid="uid://df6k5ankl68ft" path="res://core/resources/ui/game_theme.tres" id="1_k35s1"]
+[ext_resource type="Script" uid="uid://5c681a5t5mae" path="res://core/ui/game/race_leaderboard.gd" id="2_kkevn"]
+
+[node name="RaceLeaderboard" type="PanelContainer" unique_id=1164055734]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -77.0
+offset_right = 145.0
+grow_vertical = 0
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme = ExtResource("1_k35s1")
+script = ExtResource("2_kkevn")
+
+[node name="Background" type="Panel" parent="." unique_id=459333989]
+z_index = -1
+layout_mode = 2
+
+[node name="Container" type="VBoxContainer" parent="." unique_id=1293666577]
+z_index = -1
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="Container" unique_id=1021759597]
+layout_mode = 2
+theme_type_variation = &"HeaderBackground"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Container/PanelContainer" unique_id=1381404252]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Container/PanelContainer/HBoxContainer" unique_id=720735490]
+layout_mode = 2
+theme_type_variation = &"PanelHeader"
+text = "Position"
+
+[node name="PlayerPosition" type="Label" parent="Container/PanelContainer/HBoxContainer" unique_id=951421769]
+unique_name_in_owner = true
+layout_mode = 2
+text = "1/1"
+
+[node name="MarginContainer" type="MarginContainer" parent="Container" unique_id=601187605]
+layout_mode = 2
+
+[node name="PlayerContainer" type="GridContainer" parent="Container/MarginContainer" unique_id=441400600]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("1_k35s1")
+columns = 2
+
+[node name="Label" type="Label" parent="Container/MarginContainer/PlayerContainer" unique_id=1012953184]
+layout_mode = 2
+text = "Player"
+
+[node name="Label2" type="Label" parent="Container/MarginContainer/PlayerContainer" unique_id=1963115285]
+layout_mode = 2
+text = "---------"
+
+[node name="Label3" type="Label" parent="Container/MarginContainer/PlayerContainer" unique_id=689511439]
+layout_mode = 2
+text = "Player"
+
+[node name="Label4" type="Label" parent="Container/MarginContainer/PlayerContainer" unique_id=1986341281]
+layout_mode = 2
+text = "---------"

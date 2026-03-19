@@ -12,8 +12,16 @@ border_width_bottom = 4
 border_color = Color(0.215686, 0.215686, 0.215686, 1)
 
 [resource]
+GridContainer/constants/h_separation = 15
+GridContainer/constants/v_separation = 0
 HeaderBackground/base_type = &"PanelContainer"
 HeaderBackground/styles/panel = ExtResource("3_atw6y")
+Label/constants/outline_size = 7
+Label/font_sizes/font_size = 18
+MarginContainer/constants/margin_bottom = 5
+MarginContainer/constants/margin_left = 10
+MarginContainer/constants/margin_right = 10
+MarginContainer/constants/margin_top = 0
 Panel/styles/panel = ExtResource("1_7fnqq")
 PanelContainer/styles/panel = ExtResource("1_eh36u")
 PanelHeader/base_type = &"Label"

@@ -6,6 +6,7 @@ extends Node3D
 
 
 func _ready() -> void:
+	self.add_to_group(&"Track")
 	for child in self.get_children():
 		if child is AnimationPlayer:
 			var action = child.get_meta(&"action", "")
