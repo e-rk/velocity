@@ -2,7 +2,7 @@ extends CsvTest
 
 var model: HandlingModelRE
 
-@onready var car: Car = preload("res://import/cars/B911/B911.glb").instantiate()
+@onready var car: Car = preload("res://import/cars/b911/b911.glb").instantiate()
 @onready var performance: CarPerformance = car.performance
 
 const EPSILON = 0.001
