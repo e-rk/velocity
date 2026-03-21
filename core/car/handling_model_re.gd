@@ -1009,45 +1009,19 @@ func calculate_g_transfer(state: HandlingState, linear_acceleration: Vector3) ->
 
 
 func process_wheels_cm(state: HandlingState, output: HandlingOutput) -> void:
-	var ws := HandlingState.new()
-	ws.basis_to_road = state.basis_to_road
-	ws.basis = state.basis
-	ws.linear_velocity = state.linear_velocity
-	ws.angular_velocity = state.angular_velocity
-	ws.performance = state.performance
-	ws.brake = state.brake
-	ws.g_transfer = state.g_transfer
-	ws.weather = state.weather
-	ws.unknown_bool = state.unknown_bool
-	ws.force = state.force
-	ws.handbrake = state.handbrake
-	ws.lost_grip = state.lost_grip
-	ws.current_steering = state.current_steering
-	ws.throttle = state.throttle
-	ws.speed_xz = state.speed_xz
-	ws.steering = state.steering
-	ws.inertia_inv = state.inertia_inv
-	ws.mass = state.mass
-	ws.gear = state.gear
-	ws.rpm = state.rpm
-	ws.road_surface = state.road_surface
-	ws.gravity_vector = state.gravity_vector
-	ws.timestep = state.timestep
-	ws.handbrake_accumulator = state.handbrake_accumulator
-	ws.has_contact_with_ground = state.has_contact_with_ground
 	var basis := state.basis_to_road
 	var g_transfer := state.g_transfer
 	var wheel_data: Array[WheelData] = []
 	for w in state.wheels:
-		wheel_data.append(self.calculate_wheel_data(ws, w))
+		wheel_data.append(self.calculate_wheel_data(state, w))
 	var linear_acceleration := Vector3.ZERO
 	var angular_acceleration := Vector3.ZERO
 	if wheel_data.any(func(x: WheelData): return 0 < x.grip):
-		var vectors: Array = wheel_data.map(func(x: WheelData): return wheel_force(ws, x))
-		linear_acceleration = wheel_forces_to_linear_acceleration(ws, vectors)
-		linear_acceleration = wheel_longitudal_acceleration(ws, linear_acceleration)
-		angular_acceleration = self.wheel_forces_to_angular_acceleration(ws, vectors)
-		g_transfer = calculate_g_transfer(ws, linear_acceleration)
+		var vectors: Array = wheel_data.map(func(x: WheelData): return wheel_force(state, x))
+		linear_acceleration = wheel_forces_to_linear_acceleration(state, vectors)
+		linear_acceleration = wheel_longitudal_acceleration(state, linear_acceleration)
+		angular_acceleration = self.wheel_forces_to_angular_acceleration(state, vectors)
+		g_transfer = calculate_g_transfer(state, linear_acceleration)
 	output.updated = HandlingOutput.F_LINEAR_ACCELERATION | HandlingOutput.F_ANGULAR_ACCELERATION | HandlingOutput.F_G_TRANSFER
 	output.linear_acceleration = basis * linear_acceleration
 	output.angular_acceleration = basis * angular_acceleration
