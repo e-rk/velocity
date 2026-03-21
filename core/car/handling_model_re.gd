@@ -139,7 +139,7 @@ func prepare_traction_model_ctx(state: HandlingState) -> TractionState:
 	ts.gear_shift_counter = state.gear_shift_counter
 	ts.handbrake_accumulator = state.handbrake_accumulator
 	ts.rpm_above_redline = false
-	ts.target_rpm = 0.0
+	ts.target_rpm = 0
 	ts.drag = self.drag({"basis_to_road": state.basis_to_road, "linear_velocity": state.linear_velocity, "performance": state.performance})
 	ts.force = 0.0
 	ts.slip_angle = state.slip_angle
@@ -220,7 +220,7 @@ func traction_model_rpm_above_redline(state: TractionState, output: TractionOutp
 		above_redline = true
 	if (4 * engine_redline_rpm / 3) < rpm:
 		lost_grip = true
-	rpm = roundf(min(rpm, engine_redline_rpm))
+	rpm = mini(rpm, engine_redline_rpm)
 	output.updated = TractionOutput.F_RPM | TractionOutput.F_LOST_GRIP | TractionOutput.F_RPM_ABOVE_REDLINE
 	output.rpm = rpm
 	output.lost_grip = lost_grip

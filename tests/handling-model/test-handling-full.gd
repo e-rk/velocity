@@ -74,16 +74,16 @@ func body(data: Dictionary):
 		pass
 	self.model.traction_pipeline(params, result)
 	var ttt = result.brake
-	var msg = "gear=" + str(params.gear) \
+	var msg = " gear=" + str(params.gear) \
 			+ " hb=" + str(params.handbrake) \
 			+ " v=" + str(params.linear_velocity) \
 			+ " w=" + str(params.angular_velocity) \
 			+ " bi=" + str(params.brake_input)
-	#assert_eq(result.rpm, expected_rpm, msg)
-	#assert_eq(result.handbrake, expected_handbrake, msg)
-	assert_eq(result.gear, expected_gear, msg)
-	assert_almost_eq(result.linear_velocity, expected_velocity, Vector3.ONE * 0.01, msg)
-	#assert_almost_eq(result.angular_velocity, expected_angular, Vector3.ONE * 0.001, msg)
-	#assert_almost_eq(result.current_steering, expected_steering, 0.001, msg)
-	assert_almost_eq(result.throttle, expected_throttle, 0.001, msg)
-	#assert_almost_eq(result.brake, expected_brake, 0.001, msg)
+	assert_eq(result.rpm, expected_rpm, "rpm" + msg)
+	assert_eq(result.lost_grip, expected_handbrake, msg)
+	assert_eq(result.gear, expected_gear, "gear" + msg)
+	assert_almost_eq(result.linear_velocity, expected_velocity, Vector3.ONE * 0.01, "vel" + msg)
+	assert_almost_eq(result.angular_velocity, expected_angular, Vector3.ONE * 0.001, msg)
+	assert_almost_eq(result.current_steering, expected_steering, 0.001, msg)
+	assert_almost_eq(result.throttle, expected_throttle, 0.001, "thr" + msg)
+	assert_almost_eq(result.brake, expected_brake, 0.001, msg)
