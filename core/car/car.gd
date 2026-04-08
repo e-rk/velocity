@@ -91,8 +91,10 @@ var siren_lights: Array[Light3D] = []
 var tail_light_energy : float = 0.0
 var brake_light_energy : float = 0.0
 
-var handling_model_params = HandlingModel.HandlingState.new()
-var handling_model_output = HandlingModel.HandlingOutput.new()
+var handling_model_params := HandlingModel.HandlingState.new()
+var handling_model_output := HandlingModel.HandlingOutput.new()
+var collision_params := HandlingModelRE.CollisionParams.new()
+var collision_output := HandlingModelRE.CollisionOutput.new()
 
 @onready var collider: CollisionShape3D = $Collider
 @onready var interior_camera: Camera3D = get_node_or_null("Interior camera")
@@ -252,7 +254,7 @@ func _min_dot(collision_point: Vector3, normal: Vector3, point_a: Vector3, point
 	return dot_a < dot_b
 
 
-func _collision(state: PhysicsDirectBodyState3D) -> Dictionary:
+func _collision(state: PhysicsDirectBodyState3D) -> HandlingModelRE.CollisionOutput:
 	var next_position := state.transform.origin + state.linear_velocity * state.step * 2
 	var next_rotation := state.angular_velocity * state.step * 2
 	var next_basis := Basis.from_euler(next_rotation)
@@ -287,30 +289,28 @@ func _collision(state: PhysicsDirectBodyState3D) -> Dictionary:
 			var collision_normal = self.wall_prober.get_collision_normal()
 			points_current.sort_custom(func(x, y): return _min_dot(collision_point, collision_normal, x, y))
 			var min_point = points_current[0]
-			var params = {
-				"position": current_position,
-				"angular_velocity": current_angular_velocity,
-				"linear_velocity": current_linear_velocity,
-				"friction": self.physics_material_override.friction,
-				"mass": self.mass,
-				"inertia_inv": state.inverse_inertia,
-				"basis": state.transform.basis,
-			}
-			var collision_result = self.handling_model.process_collision(
-				params,
+			self.collision_params.position = current_position
+			self.collision_params.angular_velocity = current_angular_velocity
+			self.collision_params.linear_velocity = current_linear_velocity
+			self.collision_params.friction = self.physics_material_override.friction
+			self.collision_params.mass = self.mass
+			self.collision_params.inertia_inv = state.inverse_inertia
+			self.collision_params.basis = state.transform.basis
+			self.handling_model.process_collision(
+				self.collision_params,
 				min_point,
 				collision_point,
 				collision_normal,
 				1.0,
+				self.collision_output
 			)
-			current_position = collision_result["position"]
-			current_linear_velocity = collision_result["linear_velocity"]
-			current_angular_velocity = collision_result["angular_velocity"]
-	return {
-		"position": current_position,
-		"linear_velocity": current_linear_velocity,
-		"angular_velocity": current_angular_velocity
-	}
+			current_position = self.collision_output.position
+			current_linear_velocity = self.collision_output.linear_velocity
+			current_angular_velocity = self.collision_output.angular_velocity
+	self.collision_output.position = current_position
+	self.collision_output.linear_velocity = current_linear_velocity
+	self.collision_output.angular_velocity = current_angular_velocity
+	return self.collision_output
 
 
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
@@ -324,10 +324,10 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		{"type": CarTypes.Wheel.REAR_RIGHT, "road_surface": 1},
 		{"type": CarTypes.Wheel.REAR_LEFT, "road_surface": 1},
 	]
-	var collision_result = self._collision(state)
-	state.linear_velocity = collision_result["linear_velocity"]
-	state.angular_velocity = collision_result["angular_velocity"]
-	state.transform.origin = collision_result["position"]
+	var collision_result := self._collision(state)
+	state.linear_velocity = collision_result.linear_velocity
+	state.angular_velocity = collision_result.angular_velocity
+	state.transform.origin = collision_result.position
 
 	var positional_attributes = self.get_current_positional_attributes(state)
 	var next_positional_attributes = self.get_next_positional_attributes(state, state.step * 2)
